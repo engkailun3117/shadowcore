@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGSA 企業合約引擎</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: #0f1419;
+            color: #e1e8ed;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: #1a1f2e;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #2d3748;
+        }
+
+        .nav-item.active {
+            background: #4a5568;
+        }
+
+        .badge {
+            background: #4c51bf;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        /* Left Panel - PDF Viewer */
+        .pdf-panel {
+            flex: 1;
+            background: #1a1f2e;
+            padding: 24px;
+            overflow-y: auto;
+            border-right: 1px solid #2d3748;
+        }
+
+        .pdf-viewer {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            min-height: 800px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .pdf-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 600px;
+            border: 2px dashed #4a5568;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pdf-placeholder:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #667eea;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        /* Right Panel - Analysis */
+        .analysis-panel {
+            width: 500px;
+            background: #0f1419;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* Health Score */
+        .health-score {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: #a0aec0;
+            margin-bottom: 8px;
+        }
+
+        .score-value {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-indicator {
+            width: 12px;
+            height: 12px;
+            background: #fda085;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        /* Analysis Cards */
+        .analysis-card {
+            background: #1a1f2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid;
+        }
+
+        .analysis-card.dispute {
+            border-left-color: #f56565;
+        }
+
+        .analysis-card.warning {
+            border-left-color: #ed8936;
+        }
+
+        .analysis-card.opportunity {
+            border-left-color: #48bb78;
+        }
+
+        .analysis-card.match {
+            border-left-color: #4299e1;
+        }
+
+        .analysis-card.unknown {
+            border-left-color: #718096;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-number {
+            width: 24px;
+            height: 24px;
+            background: #2d3748;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-badge.dispute {
+            background: rgba(245, 101, 101, 0.2);
+            color: #f56565;
+        }
+
+        .status-badge.warning {
+            background: rgba(237, 137, 54, 0.2);
+            color: #ed8936;
+        }
+
+        .status-badge.opportunity {
+            background: rgba(72, 187, 120, 0.2);
+            color: #48bb78;
+        }
+
+        .status-badge.match {
+            background: rgba(66, 153, 225, 0.2);
+            color: #4299e1;
+        }
+
+        .status-badge.unknown {
+            background: rgba(113, 128, 150, 0.2);
+            color: #a0aec0;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .comparison-item {
+            background: #0f1419;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .comparison-label {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 4px;
+        }
+
+        .comparison-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .ai-suggestion {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .ai-label {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: #1a1f2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .settings-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #a0aec0;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .setting-item {
+            margin-bottom: 16px;
+        }
+
+        .setting-label {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 8px;
+        }
+
+        .setting-value {
+            background: #0f1419;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #2d3748;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hidden file input */
+        #fileInput {
+            display: none;
+        }
+
+        /* Button */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <span class="logo-text">TGSA 企業合約引擎</span>
+        </div>
+        <div class="nav">
+            <div class="nav-item active">AI 智能價格</div>
+            <div class="nav-item">Q4 Server Procurement</div>
+            <div class="nav-item">
+                <span class="badge">ANALYSIS COMPLETE</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Panel - PDF Viewer -->
+        <div class="pdf-panel">
+            <div class="pdf-viewer">
+                <div id="pdfPlaceholder" class="pdf-placeholder">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">點擊上傳合約 PDF</div>
+                    <div class="upload-hint">支援 PDF 格式，最大 10MB</div>
+                </div>
+                <iframe id="pdfFrame" style="display:none; width:100%; height:800px; border:none;"></iframe>
+            </div>
+            <input type="file" id="fileInput" accept=".pdf" />
+        </div>
+
+        <!-- Right Panel - Analysis -->
+        <div class="analysis-panel">
+            <!-- Health Score -->
+            <div class="health-score">
+                <div class="score-label">健康度評分 (Health Score)</div>
+                <div>
+                    <span class="score-value" id="healthScore">--</span>
+                    <span class="score-indicator"></span>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>AI 正在分析合約中...</div>
+            </div>
+
+            <!-- Analysis Results -->
+            <div id="analysisResults" style="display:none;">
+                <!-- Payment Terms Card -->
+                <div class="analysis-card" id="paymentCard">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-number">1</span>
+                            Payment Terms (付款條件)
+                        </div>
+                        <span class="status-badge" id="paymentStatus">DISPUTE</span>
+                    </div>
+                    <div class="comparison">
+                        <div class="comparison-item">
+                            <div class="comparison-label">合約是</div>
+                            <div class="comparison-value" id="paymentContract">--</div>
+                        </div>
+                        <div class="comparison-item">
+                            <div class="comparison-label">AI 建議是</div>
+                            <div class="comparison-value" id="paymentTarget">--</div>
+                        </div>
+                    </div>
+                    <div class="ai-suggestion">
+                        <div class="ai-label">AI 意見：</div>
+                        <div id="paymentMessage">--</div>
+                    </div>
+                </div>
+
+                <!-- Liability Cap Card -->
+                <div class="analysis-card" id="liabilityCard">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-number">2</span>
+                            Liability Cap (責任上限)
+                        </div>
+                        <span class="status-badge" id="liabilityStatus">WARNING</span>
+                    </div>
+                    <div class="comparison">
+                        <div class="comparison-item">
+                            <div class="comparison-label">合約是</div>
+                            <div class="comparison-value" id="liabilityContract">--</div>
+                        </div>
+                        <div class="comparison-item">
+                            <div class="comparison-label">標準是</div>
+                            <div class="comparison-value" id="liabilityStandard">--</div>
+                        </div>
+                    </div>
+                    <div class="ai-suggestion">
+                        <div class="ai-label">AI 意見：</div>
+                        <div id="liabilityMessage">--</div>
+                    </div>
+                </div>
+
+                <!-- Total Price Card -->
+                <div class="analysis-card" id="priceCard">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-number">3</span>
+                            Total Price (總價分析)
+                        </div>
+                        <span class="status-badge" id="priceStatus">OPPORTUNITY</span>
+                    </div>
+                    <div class="comparison">
+                        <div class="comparison-item">
+                            <div class="comparison-label">合約是</div>
+                            <div class="comparison-value" id="priceContract">--</div>
+                        </div>
+                        <div class="comparison-item">
+                            <div class="comparison-label">目標是</div>
+                            <div class="comparison-value" id="priceTarget">--</div>
+                        </div>
+                    </div>
+                    <div class="ai-suggestion">
+                        <div class="ai-label">AI 意見：</div>
+                        <div id="priceMessage">--</div>
+                    </div>
+                </div>
+
+                <!-- Settings Panel -->
+                <div class="settings-panel">
+                    <div class="settings-title">核心目標 (PRIMARY GOALS)</div>
+                    <div class="setting-item">
+                        <div class="setting-label">Target Price (目標價)</div>
+                        <div class="setting-value" id="targetPrice">$1.08M</div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Payment</div>
+                        <div class="setting-value" id="targetPayment">Net 60</div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Warranty</div>
+                        <div class="setting-value" id="targetWarranty">3 Years</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const pdfPlaceholder = document.getElementById('pdfPlaceholder');
+        const pdfFrame = document.getElementById('pdfFrame');
+        const loading = document.getElementById('loading');
+        const analysisResults = document.getElementById('analysisResults');
+
+        // Click to upload
+        pdfPlaceholder.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Handle file selection
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Show PDF preview
+            const fileURL = URL.createObjectURL(file);
+            pdfFrame.src = fileURL;
+            pdfPlaceholder.style.display = 'none';
+            pdfFrame.style.display = 'block';
+
+            // Show loading
+            loading.classList.add('active');
+            analysisResults.style.display = 'none';
+
+            // Upload and analyze
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://localhost:3000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayAnalysis(data);
+                } else {
+                    alert('分析失敗: ' + (data.message || data.error));
+                }
+            } catch (error) {
+                alert('上傳失敗: ' + error.message);
+            } finally {
+                loading.classList.remove('active');
+            }
+        });
+
+        function displayAnalysis(data) {
+            // Update health score
+            document.getElementById('healthScore').textContent = data.health_score;
+
+            // Update Payment Terms
+            const payment = data.contract_analysis.payment_terms;
+            updateCard('payment', payment);
+
+            // Update Liability Cap
+            const liability = data.contract_analysis.liability_cap;
+            updateCard('liability', liability);
+
+            // Update Total Price
+            const price = data.contract_analysis.total_price;
+            updateCard('price', price);
+
+            // Show results
+            analysisResults.style.display = 'block';
+        }
+
+        function updateCard(type, analysis) {
+            const statusElement = document.getElementById(`${type}Status`);
+            const cardElement = document.getElementById(`${type}Card`);
+            const messageElement = document.getElementById(`${type}Message`);
+
+            // Update status
+            const status = analysis.status.toLowerCase();
+            statusElement.textContent = analysis.status;
+            statusElement.className = `status-badge ${status}`;
+            cardElement.className = `analysis-card ${status}`;
+
+            // Update message
+            messageElement.textContent = analysis.message;
+
+            // Update values based on type
+            if (type === 'payment') {
+                document.getElementById('paymentContract').textContent = analysis.contract_value || '未知';
+                document.getElementById('paymentTarget').textContent = analysis.target_value;
+            } else if (type === 'liability') {
+                document.getElementById('liabilityContract').textContent = analysis.contract_value || '未知';
+                document.getElementById('liabilityStandard').textContent = analysis.standard_value || '200% or $3M';
+            } else if (type === 'price') {
+                document.getElementById('priceContract').textContent = analysis.contract_value || '未知';
+                document.getElementById('priceTarget').textContent = analysis.target_value;
+            }
+        }
+    </script>
+</body>
+</html>
