@@ -204,6 +204,26 @@ function calculateHealthScore(analyses) {
 }
 
 /**
+ * 修復常見的 JSON 格式問題
+ * @param {string} jsonStr - JSON 字串
+ * @returns {string} 修復後的 JSON 字串
+ */
+function fixCommonJSONIssues(jsonStr) {
+  // 移除尾隨逗號（trailing commas）
+  let fixed = jsonStr.replace(/,(\s*[}\]])/g, "$1");
+
+  // 處理單引號（替換為雙引號）
+  // 注意：這是簡化處理，可能不適用所有情況
+  // fixed = fixed.replace(/'/g, '"');
+
+  // 移除 JSON 中的註解（// 和 /* */）
+  fixed = fixed.replace(/\/\/.*$/gm, "");
+  fixed = fixed.replace(/\/\*[\s\S]*?\*\//g, "");
+
+  return fixed;
+}
+
+/**
  * 從 OpenAI 回應中提取 JSON
  * 處理可能包含 markdown code blocks 或額外文字的情況
  * @param {string} text - OpenAI 回應文字
@@ -214,10 +234,22 @@ function extractJSON(text) {
   try {
     return JSON.parse(text);
   } catch (e) {
-    // 如果失敗，嘗試提取 markdown code block 中的 JSON
-    const jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    console.log("直接解析失敗，嘗試其他方法...");
+
+    // 嘗試提取 markdown code block 中的 JSON
+    let jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[1]);
+      try {
+        return JSON.parse(jsonMatch[1]);
+      } catch (e2) {
+        console.log("從 markdown 提取失敗，嘗試修復 JSON...");
+        try {
+          const fixed = fixCommonJSONIssues(jsonMatch[1]);
+          return JSON.parse(fixed);
+        } catch (e3) {
+          console.error("修復失敗:", e3.message);
+        }
+      }
     }
 
     // 嘗試找到第一個 { 和最後一個 }
@@ -226,11 +258,26 @@ function extractJSON(text) {
 
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       const jsonStr = text.substring(firstBrace, lastBrace + 1);
-      return JSON.parse(jsonStr);
+
+      // 先嘗試直接解析
+      try {
+        return JSON.parse(jsonStr);
+      } catch (e2) {
+        console.log("提取的 JSON 解析失敗，嘗試修復...");
+        // 嘗試修復常見問題後再解析
+        try {
+          const fixed = fixCommonJSONIssues(jsonStr);
+          console.log("修復後的 JSON:", fixed.substring(0, 200) + "...");
+          return JSON.parse(fixed);
+        } catch (e3) {
+          console.error("修復後仍失敗:", e3.message);
+          throw new Error(`無法解析 JSON，即使修復後仍失敗。原始錯誤: ${e3.message}\n提取的 JSON: ${jsonStr.substring(0, 500)}`);
+        }
+      }
     }
 
-    // 如果都失敗，拋出原始錯誤
-    throw new Error(`無法從回應中提取 JSON: ${e.message}\n原始回應: ${text}`);
+    // 如果都失敗，拋出詳細錯誤
+    throw new Error(`無法從回應中提取 JSON。原始錯誤: ${e.message}\n完整回應: ${text.substring(0, 1000)}`);
   }
 }
 
@@ -256,57 +303,48 @@ app.post("/upload", upload.single("file"), async (req, res) => {
           content: [
             {
               type: "input_text",
-              text: `
-你是一個專業合約分析系統。請仔細分析這份合約文件，並提取以下關鍵資訊：
+              text: `你是一個專業合約分析系統。請仔細分析這份合約文件，並提取以下關鍵資訊。
+
+CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明或 markdown 格式。
 
 任務：
+1. 文件類型：判斷是 "合約" 或 "報價單"（找不到填 "不確定"）
+2. 乙方公司名稱：賣方/供應商/乙方公司名稱（找不到填 "Unknown"）
+3. 付款條件：提取付款天數（如 Net 30, Net 60）（找不到填 null 和 0）
+4. 責任上限：提取賠償上限金額或百分比（找不到填 null 和 0）
+5. 總價：提取合約總金額（找不到填 null 和 0）
+6. 保固期限：提取保固年限（找不到填 null 和 0）
 
-1. **文件類型**：判斷這份文件是 "合約" 還是 "報價單"。若無法判斷請回答 "不確定"。
-
-2. **乙方公司名稱**：從合約中找出賣方/供應商/乙方的公司名稱。
-
-3. **付款條件 (Payment Terms)**：
-   - 提取付款天數，例如 "Net 30 days", "Net 60 days", "Net 45 days" 等
-   - 如果是百分比付款，請提取百分比和時間點
-   - 若找不到，回答 null
-
-4. **責任上限 (Liability Cap)**：
-   - 提取賠償責任或損害賠償的上限金額
-   - 可能以固定金額（如 "$1.5M", "$3M"）或百分比形式（如 "100% of fees", "200% of contract value"）表示
-   - 若找不到，回答 null
-
-5. **總價 (Total Price)**：
-   - 提取合約總金額
-   - 以美元金額表示（如 "$1.08M", "$1,080,000"）
-   - 若找不到，回答 null
-
-6. **保固期限 (Warranty Period)**：
-   - 提取保固或維護期限（如 "1 Year", "2 Years", "3 Years"）
-   - 若找不到，回答 null
-
-請用以下 JSON 格式回覆（所有金額請統一使用百萬美元格式，如 1.08 代表 $1.08M）：
+回傳格式（純 JSON，無其他內容）：
 {
-  "document_type": "",
-  "seller_company": "",
+  "document_type": "合約",
+  "seller_company": "公司名稱",
   "payment_terms": {
-    "raw_text": "",
-    "net_days": 0
+    "raw_text": "Net 30 days",
+    "net_days": 30
   },
   "liability_cap": {
-    "raw_text": "",
-    "amount_million": 0,
-    "type": "fixed_amount or percentage"
+    "raw_text": "100% of fees paid",
+    "amount_million": 1.15,
+    "type": "percentage"
   },
   "total_price": {
-    "raw_text": "",
-    "amount_million": 0
+    "raw_text": "$1,080,000",
+    "amount_million": 1.08
   },
   "warranty_period": {
-    "raw_text": "",
-    "years": 0
+    "raw_text": "3 Years",
+    "years": 3
   }
 }
-              `,
+
+注意事項：
+- 所有金額統一使用百萬美元（如 1.08 = $1.08M）
+- 找不到資訊時，raw_text 填 null，數字填 0
+- type 欄位只能是 "fixed_amount" 或 "percentage"
+- 不要使用尾隨逗號（trailing commas）
+- 不要添加註解或額外說明
+- 只回傳 JSON 物件，不要包含 markdown code blocks`,
             },
             {
               type: "input_file",
