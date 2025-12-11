@@ -203,6 +203,37 @@ function calculateHealthScore(analyses) {
   return Math.round(avgScore);
 }
 
+/**
+ * 從 OpenAI 回應中提取 JSON
+ * 處理可能包含 markdown code blocks 或額外文字的情況
+ * @param {string} text - OpenAI 回應文字
+ * @returns {Object} 解析後的 JSON 物件
+ */
+function extractJSON(text) {
+  // 嘗試直接解析
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    // 如果失敗，嘗試提取 markdown code block 中的 JSON
+    const jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[1]);
+    }
+
+    // 嘗試找到第一個 { 和最後一個 }
+    const firstBrace = text.indexOf("{");
+    const lastBrace = text.lastIndexOf("}");
+
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      const jsonStr = text.substring(firstBrace, lastBrace + 1);
+      return JSON.parse(jsonStr);
+    }
+
+    // 如果都失敗，拋出原始錯誤
+    throw new Error(`無法從回應中提取 JSON: ${e.message}\n原始回應: ${text}`);
+  }
+}
+
 // =========================
 //    PDF 上傳 + AI 分析
 // =========================
@@ -286,7 +317,23 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       ],
     });
 
-    const result = JSON.parse(response.output_text);
+    // 記錄原始回應以供調試
+    console.log("OpenAI 原始回應:", response.output_text.substring(0, 500) + "...");
+
+    // 使用強健的 JSON 提取函數，處理可能包含 markdown 或額外文字的回應
+    let result;
+    try {
+      result = extractJSON(response.output_text);
+      console.log("成功解析 JSON，提取的資料:", JSON.stringify(result, null, 2));
+    } catch (parseError) {
+      console.error("JSON 解析失敗:", parseError.message);
+      console.error("完整回應:", response.output_text);
+      return res.status(500).json({
+        success: false,
+        error: "AI 回應格式錯誤",
+        details: parseError.message,
+      });
+    }
 
     const documentType = result.document_type;
     const sellerCompany = result.seller_company;
