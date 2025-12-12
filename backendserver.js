@@ -46,19 +46,32 @@ const tavily = new TavilyClient({
 // =========================
 
 /**
- * 計算健康評分（基於 AI 提供的 risk_score）
- * @param {Array} analyses - 各項分析結果（含 AI 評估的 risk_score）
+ * 計算健康評分（基於 AI 提供的 risk_score，使用加權平均）
+ * @param {Object} paymentTerms - 付款條件分析結果
+ * @param {Object} liabilityCap - 責任上限分析結果
+ * @param {Object} totalPrice - 總價分析結果
  * @returns {number} 健康評分 (0-100)
  */
-function calculateHealthScore(analyses) {
-  const validAnalyses = analyses.filter((a) => a && a.risk_score !== undefined);
+function calculateHealthScore(paymentTerms, liabilityCap, totalPrice) {
+  // 設定權重（總和必須為 1）
+  const WEIGHTS = {
+    payment_terms: 0.25,    // 25% - 付款條件
+    liability_cap: 0.25,    // 25% - 責任上限
+    total_price: 0.5,       // 50% - 總價
+  };
 
-  if (validAnalyses.length === 0) return 50;
+  // 提取風險分數，如果不存在則使用 50 分（中性）
+  const paymentScore = paymentTerms?.risk_score ?? 50;
+  const liabilityScore = liabilityCap?.risk_score ?? 50;
+  const priceScore = totalPrice?.risk_score ?? 50;
 
-  const totalScore = validAnalyses.reduce((sum, a) => sum + a.risk_score, 0);
-  const avgScore = totalScore / validAnalyses.length;
+  // 加權平均計算
+  const weightedScore =
+    (paymentScore * WEIGHTS.payment_terms) +
+    (liabilityScore * WEIGHTS.liability_cap) +
+    (priceScore * WEIGHTS.total_price);
 
-  return Math.round(avgScore);
+  return Math.round(weightedScore);
 }
 
 /**
@@ -274,13 +287,13 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       });
     }
 
-    // 3. 計算健康評分（直接使用 AI 提供的 risk_score）
-    // 只計算三個核心指標：付款條件、責任上限、總價
-    const healthScore = calculateHealthScore([
+    // 3. 計算健康評分（使用加權平均）
+    // 權重分配：付款條件 25%、責任上限 25%、總價 50%
+    const healthScore = calculateHealthScore(
       result.payment_terms,
       result.liability_cap,
-      result.total_price,
-    ]);
+      result.total_price
+    );
 
     // 4. 用 Tavily 搜尋公司資料（保留原有功能）
     const companyProfile = await tavily.search({
