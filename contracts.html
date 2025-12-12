@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合約列表 - TGSA 企業合約引擎</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 16px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .btn-new {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .btn-new:hover {
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 32px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #1a202c;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 32px;
+        }
+
+        .contracts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .contract-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .contract-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .contract-card.high {
+            border-left-color: #48bb78;
+        }
+
+        .contract-card.medium {
+            border-left-color: #ed8936;
+        }
+
+        .contract-card.low {
+            border-left-color: #f56565;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .health-score {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .health-score.high { color: #48bb78; }
+        .health-score.medium { color: #ed8936; }
+        .health-score.low { color: #f56565; }
+
+        .contract-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .contract-company {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 4px;
+        }
+
+        .contract-date {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-text {
+            font-size: 18px;
+            color: #718096;
+            margin-bottom: 24px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>TGSA 企業合約引擎</span>
+            </div>
+            <a href="index.html" class="btn-new">+ 新增合約分析</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>合約列表</h1>
+        <p class="subtitle">管理和查看所有已分析的合約</p>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <div>載入中...</div>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display:none;">
+            <div class="empty-icon">📋</div>
+            <div class="empty-text">尚無已分析的合約</div>
+            <a href="index.html" class="btn-new">開始分析第一份合約</a>
+        </div>
+
+        <div id="contractsGrid" class="contracts-grid" style="display:none;"></div>
+    </div>
+
+    <script>
+        async function loadContracts() {
+            try {
+                const response = await fetch('http://localhost:3000/contracts');
+                const data = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!data.success || data.contracts.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    return;
+                }
+
+                const grid = document.getElementById('contractsGrid');
+                grid.style.display = 'grid';
+
+                // 按上傳日期排序（最新的在前）
+                const sortedContracts = data.contracts.sort((a, b) =>
+                    new Date(b.upload_date) - new Date(a.upload_date)
+                );
+
+                sortedContracts.forEach(contract => {
+                    const card = createContractCard(contract);
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading contracts:', error);
+                document.getElementById('loading').innerHTML =
+                    '<div style="color:#f56565;">載入失敗: ' + error.message + '</div>';
+            }
+        }
+
+        function createContractCard(contract) {
+            const card = document.createElement('div');
+
+            let scoreClass = 'low';
+            if (contract.health_score >= 80) scoreClass = 'high';
+            else if (contract.health_score >= 60) scoreClass = 'medium';
+
+            card.className = `contract-card ${scoreClass}`;
+            card.onclick = () => {
+                window.location.href = `contract-detail.html?id=${contract.contract_id}`;
+            };
+
+            const date = new Date(contract.upload_date);
+            const formattedDate = date.toLocaleDateString('zh-TW', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }) + ' ' + date.toLocaleTimeString('zh-TW', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div>
+                        <div class="contract-title">${contract.filename}</div>
+                        <div class="contract-company">${contract.seller_company || '未知公司'}</div>
+                        <div class="contract-date">📅 ${formattedDate}</div>
+                    </div>
+                    <div class="health-score ${scoreClass}">${contract.health_score}</div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // 頁面載入時獲取合約列表
+        loadContracts();
+    </script>
+</body>
+</html>
