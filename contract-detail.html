@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合約詳情 - TGSA 企業合約引擎</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 16px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 32px;
+        }
+
+        .breadcrumb {
+            color: #718096;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .contract-header {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .contract-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 16px;
+        }
+
+        .contract-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .meta-value {
+            font-size: 16px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .health-score-large {
+            text-align: center;
+            padding: 24px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 8px;
+        }
+
+        .score-value-large {
+            font-size: 64px;
+            font-weight: 700;
+        }
+
+        .score-value-large.high { color: #48bb78; }
+        .score-value-large.medium { color: #ed8936; }
+        .score-value-large.low { color: #f56565; }
+
+        .score-description {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 8px;
+        }
+
+        .analysis-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 16px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .analysis-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #e2e8f0;
+        }
+
+        .analysis-card.status-MATCH {
+            border-left-color: #48bb78;
+        }
+
+        .analysis-card.status-OPPORTUNITY {
+            border-left-color: #48bb78;
+        }
+
+        .analysis-card.status-WARNING {
+            border-left-color: #ed8936;
+        }
+
+        .analysis-card.status-DISPUTE {
+            border-left-color: #f56565;
+        }
+
+        .analysis-card.status-UNKNOWN {
+            border-left-color: #a0aec0;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.MATCH {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-badge.OPPORTUNITY {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-badge.WARNING {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .status-badge.DISPUTE {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status-badge.UNKNOWN {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .card-message {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .detail-label {
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .raw-text {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #4a5568;
+            font-style: italic;
+            margin-top: 12px;
+            border-left: 3px solid #cbd5e0;
+        }
+
+        .company-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .company-subsection {
+            margin-bottom: 24px;
+        }
+
+        .company-subsection:last-child {
+            margin-bottom: 0;
+        }
+
+        .subsection-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .company-content {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+
+        .company-content ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .company-content li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f7fafc;
+        }
+
+        .company-content li:last-child {
+            border-bottom: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .error-text {
+            font-size: 18px;
+            color: #f56565;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>TGSA 企業合約引擎</span>
+            </div>
+            <div class="header-actions">
+                <a href="contracts.html" class="btn btn-secondary">← 返回列表</a>
+                <button id="deleteBtn" class="btn btn-danger" style="display:none;">刪除合約</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">首頁</a> / <a href="contracts.html">合約列表</a> / <span id="breadcrumbTitle">合約詳情</span>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <div>載入合約資料中...</div>
+        </div>
+
+        <div id="errorState" class="error-state" style="display:none;">
+            <div class="error-icon">⚠️</div>
+            <div class="error-text" id="errorMessage">無法載入合約資料</div>
+            <a href="contracts.html" class="btn btn-secondary">返回列表</a>
+        </div>
+
+        <div id="contractContent" style="display:none;">
+            <!-- Contract Header -->
+            <div class="contract-header">
+                <div class="contract-title" id="contractTitle"></div>
+                <div class="contract-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">公司名稱</div>
+                        <div class="meta-value" id="companyName"></div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">文件類型</div>
+                        <div class="meta-value" id="documentType"></div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">上傳日期</div>
+                        <div class="meta-value" id="uploadDate"></div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">合約 ID</div>
+                        <div class="meta-value" id="contractId" style="font-size:12px;font-family:monospace;"></div>
+                    </div>
+                </div>
+
+                <div class="health-score-large">
+                    <div class="score-label">合約健康評分</div>
+                    <div class="score-value-large" id="healthScoreLarge"></div>
+                    <div class="score-description" id="scoreDescription"></div>
+                </div>
+            </div>
+
+            <!-- Contract Analysis -->
+            <div class="analysis-section">
+                <div class="section-title">📋 合約條款分析</div>
+                <div class="analysis-grid" id="analysisGrid"></div>
+            </div>
+
+            <!-- Company Background -->
+            <div class="analysis-section" id="companySection" style="display:none;">
+                <div class="section-title">🏢 公司背景調查</div>
+                <div class="company-section">
+                    <div class="company-subsection" id="companyProfileSection" style="display:none;">
+                        <div class="subsection-title">📊 公司概況</div>
+                        <div class="company-content" id="companyProfile"></div>
+                    </div>
+                    <div class="company-subsection" id="companyCustomsSection" style="display:none;">
+                        <div class="subsection-title">🚢 海關進出口記錄</div>
+                        <div class="company-content" id="companyCustoms"></div>
+                    </div>
+                    <div class="company-subsection" id="companyLegalSection" style="display:none;">
+                        <div class="subsection-title">⚖️ 法律訴訟記錄</div>
+                        <div class="company-content" id="companyLegal"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentContractId = null;
+
+        function getContractIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        async function loadContractDetails() {
+            const contractId = getContractIdFromURL();
+            if (!contractId) {
+                showError('無效的合約 ID');
+                return;
+            }
+
+            currentContractId = contractId;
+
+            try {
+                const response = await fetch(`http://localhost:3000/contracts/${contractId}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    showError(data.message || '無法載入合約資料');
+                    return;
+                }
+
+                displayContractDetails(data.contract);
+            } catch (error) {
+                console.error('Error loading contract:', error);
+                showError('載入失敗: ' + error.message);
+            }
+        }
+
+        function displayContractDetails(contract) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('contractContent').style.display = 'block';
+            document.getElementById('deleteBtn').style.display = 'block';
+
+            // Header information
+            document.getElementById('contractTitle').textContent = contract.filename;
+            document.getElementById('breadcrumbTitle').textContent = contract.filename;
+            document.getElementById('companyName').textContent = contract.seller_company || '未知';
+            document.getElementById('documentType').textContent = contract.document_type || '合約';
+            document.getElementById('contractId').textContent = contract.contract_id;
+
+            const date = new Date(contract.upload_date);
+            document.getElementById('uploadDate').textContent = date.toLocaleDateString('zh-TW', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Health score
+            const healthScore = contract.health_score;
+            const scoreElement = document.getElementById('healthScoreLarge');
+            scoreElement.textContent = healthScore;
+
+            let scoreClass = 'low';
+            let scoreDesc = '合約存在多項風險，建議重新協商';
+            if (healthScore >= 80) {
+                scoreClass = 'high';
+                scoreDesc = '合約條款良好，風險較低';
+            } else if (healthScore >= 60) {
+                scoreClass = 'medium';
+                scoreDesc = '合約可接受，但存在一些需要注意的風險';
+            }
+
+            scoreElement.className = `score-value-large ${scoreClass}`;
+            document.getElementById('scoreDescription').textContent = scoreDesc;
+
+            // Analysis cards
+            displayAnalysisCards(contract.contract_analysis);
+
+            // Company background
+            if (contract.company_data) {
+                displayCompanyData(contract.company_data);
+            }
+        }
+
+        function displayAnalysisCards(analysis) {
+            const grid = document.getElementById('analysisGrid');
+            grid.innerHTML = '';
+
+            const sections = [
+                {
+                    key: 'payment_terms',
+                    title: '💰 付款條件',
+                    data: analysis.payment_terms
+                },
+                {
+                    key: 'liability_cap',
+                    title: '⚖️ 責任上限',
+                    data: analysis.liability_cap
+                },
+                {
+                    key: 'total_price',
+                    title: '💵 總價分析',
+                    data: analysis.total_price
+                }
+            ];
+
+            sections.forEach(section => {
+                if (section.data) {
+                    const card = createAnalysisCard(section.title, section.data);
+                    grid.appendChild(card);
+                }
+            });
+
+            // Add warranty if exists (but not in scoring)
+            if (analysis.warranty) {
+                const warrantyCard = createWarrantyCard(analysis.warranty);
+                grid.appendChild(warrantyCard);
+            }
+        }
+
+        function createAnalysisCard(title, data) {
+            const card = document.createElement('div');
+            const status = data.status || 'UNKNOWN';
+            card.className = `analysis-card status-${status}`;
+
+            const statusIcons = {
+                'MATCH': '✅',
+                'OPPORTUNITY': '🟢',
+                'WARNING': '⚠️',
+                'DISPUTE': '🔴',
+                'UNKNOWN': '❓'
+            };
+
+            let detailsHTML = '';
+            if (data.contract_value || data.target_value) {
+                detailsHTML = `
+                    <div class="card-details">
+                        ${data.contract_value ? `
+                            <div class="detail-row">
+                                <span class="detail-label">合約條款</span>
+                                <span class="detail-value">${data.contract_value}</span>
+                            </div>
+                        ` : ''}
+                        ${data.target_value ? `
+                            <div class="detail-row">
+                                <span class="detail-label">參考標準</span>
+                                <span class="detail-value">${data.target_value}</span>
+                            </div>
+                        ` : ''}
+                        ${data.risk_score !== undefined ? `
+                            <div class="detail-row">
+                                <span class="detail-label">風險評分</span>
+                                <span class="detail-value">${data.risk_score}/100</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="card-title">
+                    ${title}
+                    <span class="status-badge ${status}">${statusIcons[status]} ${status}</span>
+                </div>
+                <div class="card-message">${data.message || '無額外資訊'}</div>
+                ${detailsHTML}
+                ${data.raw_text ? `<div class="raw-text">📄 原文：${data.raw_text}</div>` : ''}
+            `;
+
+            return card;
+        }
+
+        function createWarrantyCard(data) {
+            const card = document.createElement('div');
+            card.className = 'analysis-card';
+
+            card.innerHTML = `
+                <div class="card-title">🛡️ 保固期限</div>
+                <div class="card-message">保固期限為 ${data.years || '未知'} 年</div>
+                ${data.raw_text ? `<div class="raw-text">📄 原文：${data.raw_text}</div>` : ''}
+            `;
+
+            return card;
+        }
+
+        function displayCompanyData(companyData) {
+            const hasData = (companyData.profile && companyData.profile.length > 0) ||
+                           (companyData.customs && companyData.customs.length > 0) ||
+                           (companyData.legal && companyData.legal.length > 0);
+
+            if (!hasData) return;
+
+            document.getElementById('companySection').style.display = 'block';
+
+            // Profile
+            if (companyData.profile && companyData.profile.length > 0) {
+                document.getElementById('companyProfileSection').style.display = 'block';
+                const profileHTML = companyData.profile.map(item => `<p>${item}</p>`).join('');
+                document.getElementById('companyProfile').innerHTML = profileHTML;
+            }
+
+            // Customs
+            if (companyData.customs && companyData.customs.length > 0) {
+                document.getElementById('companyCustomsSection').style.display = 'block';
+                const customsHTML = '<ul>' + companyData.customs.map(item => `<li>${item}</li>`).join('') + '</ul>';
+                document.getElementById('companyCustoms').innerHTML = customsHTML;
+            }
+
+            // Legal
+            if (companyData.legal && companyData.legal.length > 0) {
+                document.getElementById('companyLegalSection').style.display = 'block';
+                const legalHTML = '<ul>' + companyData.legal.map(item => `<li>${item}</li>`).join('') + '</ul>';
+                document.getElementById('companyLegal').innerHTML = legalHTML;
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        // Delete contract
+        document.getElementById('deleteBtn').addEventListener('click', async function() {
+            if (!currentContractId) return;
+
+            const confirmDelete = confirm('確定要刪除這份合約嗎？此操作無法復原。');
+            if (!confirmDelete) return;
+
+            try {
+                const response = await fetch(`http://localhost:3000/contracts/${currentContractId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('合約已成功刪除');
+                    window.location.href = 'contracts.html';
+                } else {
+                    alert('刪除失敗: ' + (data.message || '未知錯誤'));
+                }
+            } catch (error) {
+                console.error('Error deleting contract:', error);
+                alert('刪除失敗: ' + error.message);
+            }
+        });
+
+        // Load contract on page load
+        loadContractDetails();
+    </script>
+</body>
+</html>

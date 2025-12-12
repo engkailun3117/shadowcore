@@ -427,8 +427,8 @@
             <span class="logo-text">TGSA 企業合約引擎</span>
         </div>
         <div class="nav">
-            <div class="nav-item active">AI 智能分析</div>
-            <div class="nav-item">合約審查</div>
+            <a href="index.html" class="nav-item active" style="text-decoration:none;">AI 智能分析</a>
+            <a href="contracts.html" class="nav-item" style="text-decoration:none;">合約列表</a>
             <div class="nav-item">
                 <span class="badge">🤖 AI POWERED</span>
             </div>
@@ -607,7 +607,18 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    displayAnalysis(data);
+                    // 檢查是否為重複文件
+                    if (data.duplicate) {
+                        handleDuplicate(data.existing_contract);
+                    } else {
+                        // 顯示分析結果
+                        displayAnalysis(data);
+
+                        // 2秒後自動跳轉到合約詳情頁
+                        setTimeout(() => {
+                            window.location.href = `contract-detail.html?id=${data.contract_id}`;
+                        }, 2000);
+                    }
                 } else {
                     alert('分析失敗: ' + (data.message || data.error));
                 }
@@ -648,6 +659,22 @@
 
             // Show results
             analysisResults.style.display = 'block';
+        }
+
+        function handleDuplicate(existingContract) {
+            const message = `此合約已存在於系統中：\n\n` +
+                `文件名：${existingContract.filename}\n` +
+                `公司：${existingContract.seller_company}\n` +
+                `健康評分：${existingContract.health_score}\n` +
+                `上傳日期：${new Date(existingContract.upload_date).toLocaleString('zh-TW')}\n\n` +
+                `是否要查看已存在的合約詳情？`;
+
+            if (confirm(message)) {
+                window.location.href = `contract-detail.html?id=${existingContract.contract_id}`;
+            } else {
+                // 用戶選擇取消，重新載入頁面
+                window.location.reload();
+            }
         }
 
         function updateCard(type, analysis) {
