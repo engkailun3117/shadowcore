@@ -610,8 +610,8 @@
         });
 
         function displayAnalysis(data) {
-            // Update health score
-            document.getElementById('healthScore').textContent = data.health_score;
+            // Update health score (確保顯示整數，沒有小數點)
+            document.getElementById('healthScore').textContent = Math.floor(data.health_score);
 
             // Update Payment Terms
             const payment = data.contract_analysis.payment_terms;
