@@ -228,7 +228,8 @@ function extractJSON(text) {
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const pdfPath = req.file.path;
-    const originalFilename = req.file.originalname;
+    // Fix encoding issue for non-ASCII filenames (Chinese characters, etc.)
+    const originalFilename = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
 
     // 1. 計算文件 hash 檢測重複
     const fileHash = calculateFileHash(pdfPath);
