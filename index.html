@@ -287,15 +287,38 @@
             background: rgba(102, 126, 234, 0.1);
             border: 1px solid rgba(102, 126, 234, 0.3);
             border-radius: 8px;
-            padding: 12px;
+            padding: 14px;
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 1.7;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-suggestion::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
         }
 
         .ai-label {
             color: #667eea;
-            font-weight: 600;
-            margin-bottom: 4px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-suggestion div:last-child {
+            color: #e1e8ed;
+            padding-left: 8px;
         }
 
         /* Settings Panel */
@@ -394,10 +417,10 @@
             <span class="logo-text">TGSA 企業合約引擎</span>
         </div>
         <div class="nav">
-            <div class="nav-item active">AI 智能價格</div>
-            <div class="nav-item">Q4 Server Procurement</div>
+            <div class="nav-item active">AI 智能分析</div>
+            <div class="nav-item">合約審查</div>
             <div class="nav-item">
-                <span class="badge">ANALYSIS COMPLETE</span>
+                <span class="badge">🤖 AI POWERED</span>
             </div>
         </div>
     </div>
@@ -447,16 +470,16 @@
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
-                            <div class="comparison-label">合約是</div>
+                            <div class="comparison-label">合約條款</div>
                             <div class="comparison-value" id="paymentContract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">AI 建議是</div>
+                            <div class="comparison-label">行業標準</div>
                             <div class="comparison-value" id="paymentTarget">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
-                        <div class="ai-label">AI 意見：</div>
+                        <div class="ai-label">💡 AI 專業建議：</div>
                         <div id="paymentMessage">--</div>
                     </div>
                 </div>
@@ -472,16 +495,16 @@
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
-                            <div class="comparison-label">合約是</div>
+                            <div class="comparison-label">合約條款</div>
                             <div class="comparison-value" id="liabilityContract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">標準是</div>
+                            <div class="comparison-label">行業標準</div>
                             <div class="comparison-value" id="liabilityStandard">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
-                        <div class="ai-label">AI 意見：</div>
+                        <div class="ai-label">💡 AI 專業建議：</div>
                         <div id="liabilityMessage">--</div>
                     </div>
                 </div>
@@ -497,34 +520,38 @@
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
-                            <div class="comparison-label">合約是</div>
+                            <div class="comparison-label">合約金額</div>
                             <div class="comparison-value" id="priceContract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">目標是</div>
+                            <div class="comparison-label">市場參考</div>
                             <div class="comparison-value" id="priceTarget">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
-                        <div class="ai-label">AI 意見：</div>
+                        <div class="ai-label">💡 AI 專業建議：</div>
                         <div id="priceMessage">--</div>
                     </div>
                 </div>
 
                 <!-- Settings Panel -->
                 <div class="settings-panel">
-                    <div class="settings-title">核心目標 (PRIMARY GOALS)</div>
+                    <div class="settings-title">🤖 AI 分析模式 (AI ANALYSIS)</div>
                     <div class="setting-item">
-                        <div class="setting-label">Target Price (目標價)</div>
-                        <div class="setting-value" id="targetPrice">$1.08M</div>
+                        <div class="setting-label">分析引擎</div>
+                        <div class="setting-value">GPT-4.1 專業版</div>
                     </div>
                     <div class="setting-item">
-                        <div class="setting-label">Payment</div>
-                        <div class="setting-value" id="targetPayment">Net 60</div>
+                        <div class="setting-label">專業角色</div>
+                        <div class="setting-value">資深合約談判專家</div>
                     </div>
                     <div class="setting-item">
-                        <div class="setting-label">Warranty</div>
-                        <div class="setting-value" id="targetWarranty">3 Years</div>
+                        <div class="setting-label">參考標準</div>
+                        <div class="setting-value">行業最佳實踐</div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">建議類型</div>
+                        <div class="setting-value">情境化專業建議</div>
                     </div>
                 </div>
             </div>
