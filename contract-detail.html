@@ -580,12 +580,6 @@
                     grid.appendChild(card);
                 }
             });
-
-            // Add warranty if exists (but not in scoring)
-            if (analysis.warranty) {
-                const warrantyCard = createWarrantyCard(analysis.warranty);
-                grid.appendChild(warrantyCard);
-            }
         }
 
         function createAnalysisCard(title, data) {
@@ -634,19 +628,6 @@
                 </div>
                 <div class="card-message">${data.message || '無額外資訊'}</div>
                 ${detailsHTML}
-                ${data.raw_text ? `<div class="raw-text">📄 原文：${data.raw_text}</div>` : ''}
-            `;
-
-            return card;
-        }
-
-        function createWarrantyCard(data) {
-            const card = document.createElement('div');
-            card.className = 'analysis-card';
-
-            card.innerHTML = `
-                <div class="card-title">🛡️ 保固期限</div>
-                <div class="card-message">保固期限為 ${data.years || '未知'} 年</div>
                 ${data.raw_text ? `<div class="raw-text">📄 原文：${data.raw_text}</div>` : ''}
             `;
 
