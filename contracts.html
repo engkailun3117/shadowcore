@@ -119,11 +119,18 @@
             justify-content: space-between;
             align-items: start;
             margin-bottom: 16px;
+            gap: 16px;
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
         }
 
         .health-score {
             font-size: 32px;
             font-weight: 700;
+            flex-shrink: 0;
         }
 
         .health-score.high { color: #48bb78; }
@@ -274,7 +281,7 @@
 
             card.innerHTML = `
                 <div class="card-header">
-                    <div>
+                    <div class="card-info">
                         <div class="contract-title">${contract.filename}</div>
                         <div class="contract-company">${contract.seller_company || '未知公司'}</div>
                         <div class="contract-date">📅 ${formattedDate}</div>
