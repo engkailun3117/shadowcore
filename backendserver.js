@@ -271,11 +271,11 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
     }
 
     // 3. 計算健康評分（直接使用 AI 提供的 risk_score）
+    // 只計算三個核心指標：付款條件、責任上限、總價
     const healthScore = calculateHealthScore([
       result.payment_terms,
       result.liability_cap,
       result.total_price,
-      result.warranty_period,
     ]);
 
     // 4. 用 Tavily 搜尋公司資料（保留原有功能）
