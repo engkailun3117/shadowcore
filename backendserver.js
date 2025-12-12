@@ -208,7 +208,9 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
   },
   "total_price": {
     "raw_text": "$1,080,000",
-    "amount_million": 1.08,
+    "amount": 1080000,
+    "currency": "USD",
+    "formatted": "$1.08M",
     "status": "MATCH",
     "risk_score": 100,
     "suggestion": "價格在合理範圍內，與市場行情相符。建議確認是否包含所有必要的服務和支援，避免後續額外費用。",
@@ -225,7 +227,9 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
 }
 
 注意事項：
-- 所有金額使用百萬美元單位（1.08 = $1.08M）
+- 總價保持合約原始貨幣，不要轉換（例如：台幣就用 TWD，美金就用 USD，人民幣就用 CNY）
+- amount 是原始數字，currency 是貨幣代碼（USD/TWD/CNY/EUR 等），formatted 是易讀格式
+- 責任上限如果是金額也保持原始貨幣
 - 找不到資訊時：raw_text=null, 數字=0, status="UNKNOWN", risk_score=50, suggestion="無法找到此資訊"
 - status 必須是: DISPUTE, WARNING, OPPORTUNITY, MATCH, UNKNOWN 之一
 - risk_score 必須是 0-100 的整數
@@ -326,9 +330,8 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
           status: result.total_price.status || "UNKNOWN",
           message: result.total_price.suggestion || "無法分析",
           raw_text: result.total_price.raw_text,
-          contract_value: result.total_price.amount_million
-            ? `$${result.total_price.amount_million}M`
-            : "未知",
+          contract_value: result.total_price.formatted || "未知",
+          currency: result.total_price.currency || "N/A",
           target_value: result.total_price.market_reference || "市場行情",
           risk_score: result.total_price.risk_score || 50,
         },
