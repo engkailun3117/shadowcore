@@ -714,23 +714,11 @@
                 return null;
             }
 
-            // Helper function to format answer with source links
+            // Helper function to format answer
             function formatAnswer(answer, tavilyData) {
                 if (!answer) return '';
 
                 let html = `<p style="line-height: 1.8; color: #4a5568;">${answer}</p>`;
-
-                // Add source links if available
-                if (tavilyData.results && tavilyData.results.length > 0) {
-                    html += '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">';
-                    html += '<p style="font-size: 12px; color: #718096; margin-bottom: 6px;">參考來源：</p>';
-                    tavilyData.results.slice(0, 2).forEach(result => {
-                        if (result.url && result.title) {
-                            html += `<p style="font-size: 12px; margin-bottom: 4px;"><a href="${result.url}" target="_blank" style="color: #667eea; text-decoration: none;">🔗 ${result.title}</a></p>`;
-                        }
-                    });
-                    html += '</div>';
-                }
 
                 return html;
             }
