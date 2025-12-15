@@ -556,29 +556,19 @@
             const grid = document.getElementById('analysisGrid');
             grid.innerHTML = '';
 
-            const sections = [
-                {
-                    key: 'payment_terms',
-                    title: '💰 付款條件',
-                    data: analysis.payment_terms
-                },
-                {
-                    key: 'liability_cap',
-                    title: '⚖️ 責任上限',
-                    data: analysis.liability_cap
-                },
-                {
-                    key: 'total_price',
-                    title: '💵 總價分析',
-                    data: analysis.total_price
-                }
-            ];
+            // 處理動態條款陣列
+            const clauses = analysis.clauses || [];
 
-            sections.forEach(section => {
-                if (section.data) {
-                    const card = createAnalysisCard(section.title, section.data);
-                    grid.appendChild(card);
-                }
+            if (clauses.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #718096;">未找到合約條款分析</div>';
+                return;
+            }
+
+            clauses.forEach(clause => {
+                // 建立條款標題（使用 icon + name）
+                const title = `${clause.clause_icon || '📋'} ${clause.clause_name || '未知條款'}`;
+                const card = createAnalysisCard(title, clause);
+                grid.appendChild(card);
             });
         }
 
@@ -596,7 +586,7 @@
             };
 
             let detailsHTML = '';
-            if (data.contract_value || data.target_value) {
+            if (data.contract_value || data.reference_value || data.target_value) {
                 detailsHTML = `
                     <div class="card-details">
                         ${data.contract_value ? `
@@ -605,10 +595,10 @@
                                 <span class="detail-value">${data.contract_value}</span>
                             </div>
                         ` : ''}
-                        ${data.target_value ? `
+                        ${(data.reference_value || data.target_value) ? `
                             <div class="detail-row">
                                 <span class="detail-label">參考標準</span>
-                                <span class="detail-value">${data.target_value}</span>
+                                <span class="detail-value">${data.reference_value || data.target_value}</span>
                             </div>
                         ` : ''}
                         ${data.risk_score !== undefined ? `
