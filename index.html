@@ -468,80 +468,85 @@
 
             <!-- Analysis Results -->
             <div id="analysisResults" style="display:none;">
-                <!-- Payment Terms Card -->
-                <div class="analysis-card" id="paymentCard">
+                <!-- Dynamic Clause Card 1 -->
+                <div class="analysis-card" id="clause1Card">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-number">1</span>
-                            Payment Terms (付款條件)
+                            條款 1
                         </div>
-                        <span class="status-badge" id="paymentStatus">DISPUTE</span>
+                        <span class="status-badge" id="clause1Status">UNKNOWN</span>
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
                             <div class="comparison-label">合約條款</div>
-                            <div class="comparison-value" id="paymentContract">--</div>
+                            <div class="comparison-value" id="clause1Contract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">行業標準</div>
-                            <div class="comparison-value" id="paymentTarget">--</div>
+                            <div class="comparison-label">參考標準</div>
+                            <div class="comparison-value" id="clause1Reference">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
                         <div class="ai-label">💡 AI 專業建議：</div>
-                        <div id="paymentMessage">--</div>
+                        <div id="clause1Message">--</div>
                     </div>
                 </div>
 
-                <!-- Liability Cap Card -->
-                <div class="analysis-card" id="liabilityCard">
+                <!-- Dynamic Clause Card 2 -->
+                <div class="analysis-card" id="clause2Card">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-number">2</span>
-                            Liability Cap (責任上限)
+                            條款 2
                         </div>
-                        <span class="status-badge" id="liabilityStatus">WARNING</span>
+                        <span class="status-badge" id="clause2Status">UNKNOWN</span>
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
                             <div class="comparison-label">合約條款</div>
-                            <div class="comparison-value" id="liabilityContract">--</div>
+                            <div class="comparison-value" id="clause2Contract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">行業標準</div>
-                            <div class="comparison-value" id="liabilityStandard">--</div>
+                            <div class="comparison-label">參考標準</div>
+                            <div class="comparison-value" id="clause2Reference">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
                         <div class="ai-label">💡 AI 專業建議：</div>
-                        <div id="liabilityMessage">--</div>
+                        <div id="clause2Message">--</div>
                     </div>
                 </div>
 
-                <!-- Total Price Card -->
-                <div class="analysis-card" id="priceCard">
+                <!-- Dynamic Clause Card 3 -->
+                <div class="analysis-card" id="clause3Card">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-number">3</span>
-                            Total Price (總價分析)
+                            條款 3
                         </div>
-                        <span class="status-badge" id="priceStatus">OPPORTUNITY</span>
+                        <span class="status-badge" id="clause3Status">UNKNOWN</span>
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
-                            <div class="comparison-label">合約金額</div>
-                            <div class="comparison-value" id="priceContract">--</div>
+                            <div class="comparison-label">合約條款</div>
+                            <div class="comparison-value" id="clause3Contract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">市場參考</div>
-                            <div class="comparison-value" id="priceTarget">--</div>
+                            <div class="comparison-label">參考標準</div>
+                            <div class="comparison-value" id="clause3Reference">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
                         <div class="ai-label">💡 AI 專業建議：</div>
-                        <div id="priceMessage">--</div>
+                        <div id="clause3Message">--</div>
                     </div>
                 </div>
+
+                <!-- View Full Details Button -->
+                <button id="viewDetailsBtn" class="btn-primary" style="width: 100%; margin-bottom: 16px; display: none;" onclick="viewFullDetails()">
+                    查看完整合約分析 →
+                </button>
 
                 <!-- Settings Panel -->
                 <div class="settings-panel">
@@ -614,10 +619,8 @@
                         // 顯示分析結果
                         displayAnalysis(data);
 
-                        // 2秒後自動跳轉到合約詳情頁
-                        setTimeout(() => {
-                            window.location.href = `contract-detail.html?id=${data.contract_id}`;
-                        }, 2000);
+                        // 保存 contract_id 供後續使用
+                        window.currentContractId = data.contract_id;
                     }
                 } else {
                     alert('分析失敗: ' + (data.message || data.error));
@@ -650,17 +653,26 @@
 
             // 取前三個條款顯示在預設的三個卡片中
             if (clauses.length > 0) {
-                updateCard('payment', clauses[0], 1);
+                updateCard('clause1', clauses[0], 1);
             }
             if (clauses.length > 1) {
-                updateCard('liability', clauses[1], 2);
+                updateCard('clause2', clauses[1], 2);
             }
             if (clauses.length > 2) {
-                updateCard('price', clauses[2], 3);
+                updateCard('clause3', clauses[2], 3);
             }
 
             // Show results
             analysisResults.style.display = 'block';
+
+            // Show the view details button
+            document.getElementById('viewDetailsBtn').style.display = 'block';
+        }
+
+        function viewFullDetails() {
+            if (window.currentContractId) {
+                window.location.href = `contract-detail.html?id=${window.currentContractId}`;
+            }
         }
 
         function handleDuplicate(existingContract) {
