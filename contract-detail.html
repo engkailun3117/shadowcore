@@ -111,18 +111,52 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
-        .contract-title {
-            font-size: 24px;
+        .header-main {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+            margin-bottom: 32px;
+            align-items: start;
+        }
+
+        .company-info {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .company-name-display {
+            font-size: 36px;
             font-weight: 700;
             color: #1a202c;
-            margin-bottom: 16px;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .company-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .contract-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #718096;
+            margin-top: 8px;
         }
 
         .contract-meta {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
-            margin-bottom: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
         }
 
         .meta-item {
@@ -147,18 +181,23 @@
         .health-score-large {
             text-align: center;
             padding: 24px;
-            border-top: 1px solid #e2e8f0;
+            background: #f7fafc;
+            border-radius: 12px;
+            min-width: 200px;
         }
 
         .score-label {
-            font-size: 14px;
+            font-size: 12px;
             color: #718096;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
         }
 
         .score-value-large {
-            font-size: 64px;
+            font-size: 72px;
             font-weight: 700;
+            line-height: 1;
         }
 
         .score-value-large.high { color: #48bb78; }
@@ -166,9 +205,24 @@
         .score-value-large.low { color: #f56565; }
 
         .score-description {
-            font-size: 14px;
+            font-size: 13px;
             color: #718096;
-            margin-top: 8px;
+            margin-top: 12px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .header-main {
+                grid-template-columns: 1fr;
+            }
+
+            .health-score-large {
+                margin-top: 20px;
+            }
+
+            .company-name-display {
+                font-size: 28px;
+            }
         }
 
         .analysis-section {
@@ -417,30 +471,38 @@
         <div id="contractContent" style="display:none;">
             <!-- Contract Header -->
             <div class="contract-header">
-                <div class="contract-title" id="contractTitle"></div>
-                <div class="contract-meta">
-                    <div class="meta-item">
-                        <div class="meta-label">公司名稱</div>
-                        <div class="meta-value" id="companyName"></div>
+                <div class="header-main">
+                    <!-- Left: Company Information -->
+                    <div class="company-info">
+                        <div>
+                            <span class="company-badge" id="documentTypeBadge">合約</span>
+                        </div>
+                        <div class="company-name-display" id="companyName">載入中...</div>
+                        <div class="contract-title" id="contractTitle">合約文件</div>
                     </div>
-                    <div class="meta-item">
-                        <div class="meta-label">文件類型</div>
-                        <div class="meta-value" id="documentType"></div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">上傳日期</div>
-                        <div class="meta-value" id="uploadDate"></div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">合約 ID</div>
-                        <div class="meta-value" id="contractId" style="font-size:12px;font-family:monospace;"></div>
+
+                    <!-- Right: Health Score -->
+                    <div class="health-score-large">
+                        <div class="score-label">健康評分</div>
+                        <div class="score-value-large" id="healthScoreLarge">--</div>
+                        <div class="score-description" id="scoreDescription">評估中</div>
                     </div>
                 </div>
 
-                <div class="health-score-large">
-                    <div class="score-label">合約健康評分</div>
-                    <div class="score-value-large" id="healthScoreLarge"></div>
-                    <div class="score-description" id="scoreDescription"></div>
+                <!-- Bottom: Meta Information -->
+                <div class="contract-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">文件類型</div>
+                        <div class="meta-value" id="documentType">--</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">上傳日期</div>
+                        <div class="meta-value" id="uploadDate">--</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">合約 ID</div>
+                        <div class="meta-value" id="contractId" style="font-size:12px;font-family:monospace;">--</div>
+                    </div>
                 </div>
             </div>
 
@@ -509,11 +571,17 @@
             document.getElementById('contractContent').style.display = 'block';
             document.getElementById('deleteBtn').style.display = 'block';
 
-            // Header information
+            // Header information - Company name (prominent)
+            document.getElementById('companyName').textContent = contract.seller_company || '未知公司';
             document.getElementById('contractTitle').textContent = contract.filename;
             document.getElementById('breadcrumbTitle').textContent = contract.filename;
-            document.getElementById('companyName').textContent = contract.seller_company || '未知';
-            document.getElementById('documentType').textContent = contract.document_type || '合約';
+
+            // Document type badge
+            const docType = contract.document_type || '合約';
+            document.getElementById('documentTypeBadge').textContent = docType;
+            document.getElementById('documentType').textContent = docType;
+
+            // Other meta information
             document.getElementById('contractId').textContent = contract.contract_id;
 
             const date = new Date(contract.upload_date);
