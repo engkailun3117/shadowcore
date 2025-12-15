@@ -625,62 +625,74 @@
         }
 
         function displayCompanyData(companyData) {
-            // Helper function to extract top result from Tavily response
-            function getTopResult(tavilyData) {
+            // Helper function to extract Tavily answer
+            function getTavilyAnswer(tavilyData) {
                 if (!tavilyData) return null;
 
-                // Check if it's a Tavily response with results array
+                // Check if Tavily returned an answer field
+                if (tavilyData.answer && tavilyData.answer.trim()) {
+                    return tavilyData.answer;
+                }
+
+                // Fallback: if no answer but has results, use first result content
                 if (tavilyData.results && Array.isArray(tavilyData.results) && tavilyData.results.length > 0) {
-                    return tavilyData.results[0]; // Return the top result
+                    const topResult = tavilyData.results[0];
+                    let text = '';
+                    if (topResult.title) text += topResult.title + '\n\n';
+                    if (topResult.content) text += topResult.content;
+                    return text.trim();
                 }
 
                 return null;
             }
 
-            // Helper function to format a result item
-            function formatResult(result) {
-                if (!result) return '';
+            // Helper function to format answer with source links
+            function formatAnswer(answer, tavilyData) {
+                if (!answer) return '';
 
-                let html = '';
-                if (result.title) {
-                    html += `<h4 style="margin-bottom: 8px; color: #2d3748; font-size: 15px;">${result.title}</h4>`;
-                }
-                if (result.content) {
-                    html += `<p style="margin-bottom: 8px; line-height: 1.6;">${result.content}</p>`;
-                }
-                if (result.url) {
-                    html += `<p style="font-size: 12px;"><a href="${result.url}" target="_blank" style="color: #667eea; text-decoration: none;">🔗 來源連結</a></p>`;
+                let html = `<p style="line-height: 1.8; color: #4a5568;">${answer}</p>`;
+
+                // Add source links if available
+                if (tavilyData.results && tavilyData.results.length > 0) {
+                    html += '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">';
+                    html += '<p style="font-size: 12px; color: #718096; margin-bottom: 6px;">參考來源：</p>';
+                    tavilyData.results.slice(0, 2).forEach(result => {
+                        if (result.url && result.title) {
+                            html += `<p style="font-size: 12px; margin-bottom: 4px;"><a href="${result.url}" target="_blank" style="color: #667eea; text-decoration: none;">🔗 ${result.title}</a></p>`;
+                        }
+                    });
+                    html += '</div>';
                 }
 
                 return html;
             }
 
-            const profileResult = getTopResult(companyData.profile);
-            const customsResult = getTopResult(companyData.customs);
-            const legalResult = getTopResult(companyData.legal);
+            const profileAnswer = getTavilyAnswer(companyData.profile);
+            const customsAnswer = getTavilyAnswer(companyData.customs);
+            const legalAnswer = getTavilyAnswer(companyData.legal);
 
-            const hasData = profileResult || customsResult || legalResult;
+            const hasData = profileAnswer || customsAnswer || legalAnswer;
 
             if (!hasData) return;
 
             document.getElementById('companySection').style.display = 'block';
 
             // Profile
-            if (profileResult) {
+            if (profileAnswer) {
                 document.getElementById('companyProfileSection').style.display = 'block';
-                document.getElementById('companyProfile').innerHTML = formatResult(profileResult);
+                document.getElementById('companyProfile').innerHTML = formatAnswer(profileAnswer, companyData.profile);
             }
 
             // Customs
-            if (customsResult) {
+            if (customsAnswer) {
                 document.getElementById('companyCustomsSection').style.display = 'block';
-                document.getElementById('companyCustoms').innerHTML = formatResult(customsResult);
+                document.getElementById('companyCustoms').innerHTML = formatAnswer(customsAnswer, companyData.customs);
             }
 
             // Legal
-            if (legalResult) {
+            if (legalAnswer) {
                 document.getElementById('companyLegalSection').style.display = 'block';
-                document.getElementById('companyLegal').innerHTML = formatResult(legalResult);
+                document.getElementById('companyLegal').innerHTML = formatAnswer(legalAnswer, companyData.legal);
             }
         }
 

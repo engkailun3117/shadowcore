@@ -373,20 +373,23 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
     // 3. 計算健康評分（基於所有條款的平均風險分數）
     const healthScore = calculateHealthScore(result.clauses || []);
 
-    // 4. 用 Tavily 搜尋公司資料（保留原有功能）
+    // 4. 用 Tavily 搜尋公司資料（使用 answer 功能獲取簡潔回應）
     const companyProfile = await tavily.search({
       query: `${sellerCompany} 公司簡介 business profile`,
-      max_results: 5,
+      max_results: 3,
+      include_answer: true,
     });
 
     const customsInfo = await tavily.search({
       query: `${sellerCompany} 海關 進出口 customs import export`,
-      max_results: 5,
+      max_results: 3,
+      include_answer: true,
     });
 
     const legalInfo = await tavily.search({
       query: `${sellerCompany} 法律 合規 legal compliance`,
-      max_results: 5,
+      max_results: 3,
+      include_answer: true,
     });
 
     // Clean up uploaded file
