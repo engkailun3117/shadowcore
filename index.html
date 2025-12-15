@@ -645,17 +645,19 @@
                 scoreElement.classList.add('low'); // 紅色
             }
 
-            // Update Payment Terms
-            const payment = data.contract_analysis.payment_terms;
-            updateCard('payment', payment);
+            // 處理新的 clauses 陣列結構
+            const clauses = data.contract_analysis.clauses || [];
 
-            // Update Liability Cap
-            const liability = data.contract_analysis.liability_cap;
-            updateCard('liability', liability);
-
-            // Update Total Price
-            const price = data.contract_analysis.total_price;
-            updateCard('price', price);
+            // 取前三個條款顯示在預設的三個卡片中
+            if (clauses.length > 0) {
+                updateCard('payment', clauses[0], 1);
+            }
+            if (clauses.length > 1) {
+                updateCard('liability', clauses[1], 2);
+            }
+            if (clauses.length > 2) {
+                updateCard('price', clauses[2], 3);
+            }
 
             // Show results
             analysisResults.style.display = 'block';
@@ -677,30 +679,40 @@
             }
         }
 
-        function updateCard(type, analysis) {
+        function updateCard(type, clause, cardNumber) {
+            if (!clause) return;
+
             const statusElement = document.getElementById(`${type}Status`);
             const cardElement = document.getElementById(`${type}Card`);
             const messageElement = document.getElementById(`${type}Message`);
 
+            // Update card title with clause name and icon
+            const titleElement = cardElement.querySelector('.card-title');
+            if (titleElement) {
+                titleElement.innerHTML = `
+                    <span class="card-number">${cardNumber}</span>
+                    ${clause.clause_icon || '📋'} ${clause.clause_name || '未知條款'}
+                `;
+            }
+
             // Update status
-            const status = analysis.status.toLowerCase();
-            statusElement.textContent = analysis.status;
+            const status = (clause.status || 'UNKNOWN').toLowerCase();
+            statusElement.textContent = clause.status || 'UNKNOWN';
             statusElement.className = `status-badge ${status}`;
             cardElement.className = `analysis-card ${status}`;
 
             // Update message
-            messageElement.textContent = analysis.message;
+            messageElement.textContent = clause.message || '無分析資訊';
 
-            // Update values based on type
-            if (type === 'payment') {
-                document.getElementById('paymentContract').textContent = analysis.contract_value || '未知';
-                document.getElementById('paymentTarget').textContent = analysis.target_value;
-            } else if (type === 'liability') {
-                document.getElementById('liabilityContract').textContent = analysis.contract_value || '未知';
-                document.getElementById('liabilityStandard').textContent = analysis.standard_value || '200% or $3M';
-            } else if (type === 'price') {
-                document.getElementById('priceContract').textContent = analysis.contract_value || '未知';
-                document.getElementById('priceTarget').textContent = analysis.target_value;
+            // Update values - use generic field names for all cards
+            const contractValueElement = cardElement.querySelector('.comparison-item:first-child .comparison-value');
+            const referenceValueElement = cardElement.querySelector('.comparison-item:last-child .comparison-value');
+
+            if (contractValueElement) {
+                contractValueElement.textContent = clause.contract_value || '未知';
+            }
+            if (referenceValueElement) {
+                referenceValueElement.textContent = clause.reference_value || clause.target_value || '無參考標準';
             }
         }
     </script>
