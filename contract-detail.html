@@ -455,7 +455,7 @@
                 <div class="section-title">🏢 公司背景調查</div>
                 <div class="company-section">
                     <div class="company-subsection" id="companyProfileSection" style="display:none;">
-                        <div class="subsection-title">📊 公司概況</div>
+                        <div class="subsection-title">📊 公司簡介</div>
                         <div class="company-content" id="companyProfile"></div>
                     </div>
                     <div class="company-subsection" id="companyCustomsSection" style="display:none;">
@@ -463,7 +463,7 @@
                         <div class="company-content" id="companyCustoms"></div>
                     </div>
                     <div class="company-subsection" id="companyLegalSection" style="display:none;">
-                        <div class="subsection-title">⚖️ 法律訴訟記錄</div>
+                        <div class="subsection-title">⚖️ 法律合規</div>
                         <div class="company-content" id="companyLegal"></div>
                     </div>
                 </div>
@@ -625,33 +625,62 @@
         }
 
         function displayCompanyData(companyData) {
-            const hasData = (companyData.profile && companyData.profile.length > 0) ||
-                           (companyData.customs && companyData.customs.length > 0) ||
-                           (companyData.legal && companyData.legal.length > 0);
+            // Helper function to extract top result from Tavily response
+            function getTopResult(tavilyData) {
+                if (!tavilyData) return null;
+
+                // Check if it's a Tavily response with results array
+                if (tavilyData.results && Array.isArray(tavilyData.results) && tavilyData.results.length > 0) {
+                    return tavilyData.results[0]; // Return the top result
+                }
+
+                return null;
+            }
+
+            // Helper function to format a result item
+            function formatResult(result) {
+                if (!result) return '';
+
+                let html = '';
+                if (result.title) {
+                    html += `<h4 style="margin-bottom: 8px; color: #2d3748; font-size: 15px;">${result.title}</h4>`;
+                }
+                if (result.content) {
+                    html += `<p style="margin-bottom: 8px; line-height: 1.6;">${result.content}</p>`;
+                }
+                if (result.url) {
+                    html += `<p style="font-size: 12px;"><a href="${result.url}" target="_blank" style="color: #667eea; text-decoration: none;">🔗 來源連結</a></p>`;
+                }
+
+                return html;
+            }
+
+            const profileResult = getTopResult(companyData.profile);
+            const customsResult = getTopResult(companyData.customs);
+            const legalResult = getTopResult(companyData.legal);
+
+            const hasData = profileResult || customsResult || legalResult;
 
             if (!hasData) return;
 
             document.getElementById('companySection').style.display = 'block';
 
             // Profile
-            if (companyData.profile && companyData.profile.length > 0) {
+            if (profileResult) {
                 document.getElementById('companyProfileSection').style.display = 'block';
-                const profileHTML = companyData.profile.map(item => `<p>${item}</p>`).join('');
-                document.getElementById('companyProfile').innerHTML = profileHTML;
+                document.getElementById('companyProfile').innerHTML = formatResult(profileResult);
             }
 
             // Customs
-            if (companyData.customs && companyData.customs.length > 0) {
+            if (customsResult) {
                 document.getElementById('companyCustomsSection').style.display = 'block';
-                const customsHTML = '<ul>' + companyData.customs.map(item => `<li>${item}</li>`).join('') + '</ul>';
-                document.getElementById('companyCustoms').innerHTML = customsHTML;
+                document.getElementById('companyCustoms').innerHTML = formatResult(customsResult);
             }
 
             // Legal
-            if (companyData.legal && companyData.legal.length > 0) {
+            if (legalResult) {
                 document.getElementById('companyLegalSection').style.display = 'block';
-                const legalHTML = '<ul>' + companyData.legal.map(item => `<li>${item}</li>`).join('') + '</ul>';
-                document.getElementById('companyLegal').innerHTML = legalHTML;
+                document.getElementById('companyLegal').innerHTML = formatResult(legalResult);
             }
         }
 
