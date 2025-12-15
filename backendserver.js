@@ -116,32 +116,21 @@ function saveContract(contractData) {
 // =========================
 
 /**
- * 計算健康評分（基於 AI 提供的 risk_score，使用加權平均）
- * @param {Object} paymentTerms - 付款條件分析結果
- * @param {Object} liabilityCap - 責任上限分析結果
- * @param {Object} totalPrice - 總價分析結果
+ * 計算健康評分（基於所有條款的風險分數平均值）
+ * @param {Array} clauses - 所有條款分析結果陣列
  * @returns {number} 健康評分 (0-100)
  */
-function calculateHealthScore(paymentTerms, liabilityCap, totalPrice) {
-  // 設定權重（總和必須為 1）
-  const WEIGHTS = {
-    payment_terms: 0.25,    // 25% - 付款條件
-    liability_cap: 0.25,    // 25% - 責任上限
-    total_price: 0.5,       // 50% - 總價
-  };
+function calculateHealthScore(clauses) {
+  if (!clauses || clauses.length === 0) {
+    return 50; // 預設中性分數
+  }
 
-  // 提取風險分數，如果不存在則使用 50 分（中性）
-  const paymentScore = paymentTerms?.risk_score ?? 50;
-  const liabilityScore = liabilityCap?.risk_score ?? 50;
-  const priceScore = totalPrice?.risk_score ?? 50;
+  // 計算所有條款的風險分數平均值
+  const totalScore = clauses.reduce((sum, clause) => {
+    return sum + (clause.risk_score ?? 50);
+  }, 0);
 
-  // 加權平均計算
-  const weightedScore =
-    (paymentScore * WEIGHTS.payment_terms) +
-    (liabilityScore * WEIGHTS.liability_cap) +
-    (priceScore * WEIGHTS.total_price);
-
-  return Math.round(weightedScore);
+  return Math.round(totalScore / clauses.length);
 }
 
 /**
@@ -261,7 +250,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
           content: [
             {
               type: "input_text",
-              text: `你是一個資深合約談判專家和法律顧問。請仔細分析這份合約文件，提取關鍵資訊並根據行業最佳實踐提供專業建議。
+              text: `你是一個資深合約談判專家和法律顧問。請仔細分析這份合約文件，識別並分析所有重要的合約條款。
 
 CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明或 markdown 格式。
 
@@ -270,70 +259,77 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
 1. **基本資訊提取**：
    - 文件類型（合約/報價單）
    - 賣方公司名稱
-   - 付款條件（天數）
-   - 責任上限（金額或百分比）
-   - 合約總價
-   - 保固期限
 
-2. **專業風險評估**（每個條款）：
+2. **識別所有關鍵條款**：
+   請找出合約中的所有重要條款，包括但不限於：
+   - 付款條件 (Payment Terms)
+   - 責任上限 (Liability Cap)
+   - 合約總價 (Total Price)
+   - 交付期限 (Delivery Terms)
+   - 終止條款 (Termination Clause)
+   - 智慧財產權 (IP Rights)
+   - 保密條款 (Confidentiality)
+   - 保固/維護 (Warranty/Maintenance)
+   - 違約罰則 (Penalties)
+   - 爭議解決 (Dispute Resolution)
+   - 其他任何重要的商業條款
+
+3. **每個條款的專業風險評估**：
+   - clause_name: 條款名稱（例如：付款條件、責任上限等）
+   - clause_icon: 適合的 emoji 圖示（例如：💰、⚖️、📅、🔒等）
+   - raw_text: 原文摘錄
+   - contract_value: 合約中的具體內容（簡潔描述）
+   - reference_value: 行業標準或參考值（如適用）
    - status: "DISPUTE"（高風險，建議重新協商）/ "WARNING"（需注意）/ "OPPORTUNITY"（有利條款）/ "MATCH"（符合最佳實踐）/ "UNKNOWN"（無法判斷）
    - risk_score: 0-100 分（0=極高風險，100=無風險/有利）
-   - suggestion: 專業建議（50-100字，說明為什麼這個條款有利/不利，以及建議如何處理）
-
-3. **行業標準參考**：
-   - 付款條件：一般 IT/採購合約建議 Net 45-60 天
-   - 責任上限：建議至少為合約金額的 150-200% 或 $2-3M（取較大值）
-   - 保固期限：一般硬體採購建議 2-3 年
+   - message: 專業建議（50-150字，說明為什麼這個條款有利/不利，以及建議如何處理）
 
 回傳格式（純 JSON）：
 {
   "document_type": "合約",
   "seller_company": "公司名稱",
-  "payment_terms": {
-    "raw_text": "Net 30 days from invoice date",
-    "net_days": 30,
-    "status": "DISPUTE",
-    "risk_score": 40,
-    "suggestion": "付款期限 Net 30 天相對較短，可能對買方現金流造成壓力。建議協商延長至 Net 60 天，這是行業標準，可以提供更靈活的資金調度空間。",
-    "industry_standard": "Net 45-60 days"
-  },
-  "liability_cap": {
-    "raw_text": "Seller's liability shall not exceed 100% of fees paid",
-    "amount_million": 1.15,
-    "type": "percentage",
-    "status": "WARNING",
-    "risk_score": 45,
-    "suggestion": "責任上限僅為合約金額的 100%，低於行業標準的 150-200%。如果發生重大問題，賠償可能不足以覆蓋實際損失。建議要求提高至至少 200% 或 $3M。",
-    "industry_standard": "150-200% of contract value or $2-3M"
-  },
-  "total_price": {
-    "raw_text": "$1,080,000",
-    "amount": 1080000,
-    "currency": "USD",
-    "formatted": "$1.08M",
-    "status": "MATCH",
-    "risk_score": 100,
-    "suggestion": "價格在合理範圍內，與市場行情相符。建議確認是否包含所有必要的服務和支援，避免後續額外費用。",
-    "market_reference": "合理的伺服器採購價格範圍"
-  },
-  "warranty_period": {
-    "raw_text": "3 Years warranty",
-    "years": 3,
-    "status": "MATCH",
-    "risk_score": 100,
-    "suggestion": "3 年保固期符合硬體採購的最佳實踐，可以充分保障設備在使用期間的維修需求。",
-    "industry_standard": "2-3 years for hardware"
-  }
+  "clauses": [
+    {
+      "clause_name": "付款條件",
+      "clause_icon": "💰",
+      "raw_text": "Net 30 days from invoice date",
+      "contract_value": "Net 30 天",
+      "reference_value": "一般建議 Net 45-60 天",
+      "status": "DISPUTE",
+      "risk_score": 40,
+      "message": "付款期限 Net 30 天相對較短，可能對買方現金流造成壓力。建議協商延長至 Net 60 天，這是行業標準，可以提供更靈活的資金調度空間。"
+    },
+    {
+      "clause_name": "責任上限",
+      "clause_icon": "⚖️",
+      "raw_text": "Seller's liability shall not exceed 100% of fees paid",
+      "contract_value": "合約金額的 100%",
+      "reference_value": "建議 150-200% 或 $2-3M",
+      "status": "WARNING",
+      "risk_score": 45,
+      "message": "責任上限僅為合約金額的 100%，低於行業標準的 150-200%。如果發生重大問題，賠償可能不足以覆蓋實際損失。建議要求提高至至少 200% 或 $3M。"
+    },
+    {
+      "clause_name": "合約總價",
+      "clause_icon": "💵",
+      "raw_text": "NT$52,500 元整（含稅）",
+      "contract_value": "NT$52,500",
+      "reference_value": "一般政府部門助理薪資範圍合理定價",
+      "status": "MATCH",
+      "risk_score": 100,
+      "message": "價格在合理範圍內，與市場行情相符。合約含稅，條款清晰明確。"
+    }
+  ]
 }
 
 注意事項：
-- 總價保持合約原始貨幣，不要轉換（例如：台幣就用 TWD，美金就用 USD，人民幣就用 CNY）
-- amount 是原始數字，currency 是貨幣代碼（USD/TWD/CNY/EUR 等），formatted 是易讀格式
-- 責任上限如果是金額也保持原始貨幣
-- 找不到資訊時：raw_text=null, 數字=0, status="UNKNOWN", risk_score=50, suggestion="無法找到此資訊"
+- 請識別並列出合約中的所有重要條款，不要遺漏任何關鍵內容
+- 每個條款都必須包含風險評估和專業建議
 - status 必須是: DISPUTE, WARNING, OPPORTUNITY, MATCH, UNKNOWN 之一
 - risk_score 必須是 0-100 的整數
-- suggestion 要具體、專業、可執行
+- message 要具體、專業、可執行
+- clause_icon 請選擇合適的 emoji 來代表該條款類型
+- 保持原始貨幣和單位，不要轉換
 - 不要使用尾隨逗號
 - 只回傳 JSON，不要 markdown code blocks`,
             },
@@ -374,13 +370,8 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       });
     }
 
-    // 3. 計算健康評分（使用加權平均）
-    // 權重分配：付款條件 25%、責任上限 25%、總價 50%
-    const healthScore = calculateHealthScore(
-      result.payment_terms,
-      result.liability_cap,
-      result.total_price
-    );
+    // 3. 計算健康評分（基於所有條款的平均風險分數）
+    const healthScore = calculateHealthScore(result.clauses || []);
 
     // 4. 用 Tavily 搜尋公司資料（保留原有功能）
     const companyProfile = await tavily.search({
@@ -412,34 +403,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       document_type: documentType,
       seller_company: sellerCompany,
       contract_analysis: {
-        payment_terms: {
-          status: result.payment_terms.status || "UNKNOWN",
-          message: result.payment_terms.suggestion || "無法分析",
-          raw_text: result.payment_terms.raw_text,
-          contract_value: result.payment_terms.net_days ? `Net ${result.payment_terms.net_days} days` : "未知",
-          target_value: result.payment_terms.industry_standard || "行業標準",
-          risk_score: result.payment_terms.risk_score || 50,
-        },
-        liability_cap: {
-          status: result.liability_cap.status || "UNKNOWN",
-          message: result.liability_cap.suggestion || "無法分析",
-          raw_text: result.liability_cap.raw_text,
-          contract_value: result.liability_cap.amount_million
-            ? `$${result.liability_cap.amount_million}M`
-            : "未知",
-          standard_value: result.liability_cap.industry_standard || "行業標準",
-          risk_score: result.liability_cap.risk_score || 50,
-        },
-        total_price: {
-          status: result.total_price.status || "UNKNOWN",
-          message: result.total_price.suggestion || "無法分析",
-          raw_text: result.total_price.raw_text,
-          contract_value: result.total_price.formatted || "未知",
-          currency: result.total_price.currency || "N/A",
-          target_value: result.total_price.market_reference || "市場行情",
-          risk_score: result.total_price.risk_score || 50,
-        },
-        warranty: result.warranty_period,
+        clauses: result.clauses || []
       },
       raw_data: result,
       company_data: {
@@ -451,7 +415,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
 
     saveContract(contractData);
 
-    // 返回完整分析結果（使用 AI 直接提供的分析）
+    // 返回完整分析結果
     res.json({
       contract_id: contractId,
       success: true,
@@ -459,34 +423,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       document_type: documentType,
       seller_company: sellerCompany,
       contract_analysis: {
-        payment_terms: {
-          status: result.payment_terms.status || "UNKNOWN",
-          message: result.payment_terms.suggestion || "無法分析",
-          raw_text: result.payment_terms.raw_text,
-          contract_value: result.payment_terms.net_days ? `Net ${result.payment_terms.net_days} days` : "未知",
-          target_value: result.payment_terms.industry_standard || "行業標準",
-          risk_score: result.payment_terms.risk_score || 50,
-        },
-        liability_cap: {
-          status: result.liability_cap.status || "UNKNOWN",
-          message: result.liability_cap.suggestion || "無法分析",
-          raw_text: result.liability_cap.raw_text,
-          contract_value: result.liability_cap.amount_million
-            ? `$${result.liability_cap.amount_million}M`
-            : "未知",
-          standard_value: result.liability_cap.industry_standard || "行業標準",
-          risk_score: result.liability_cap.risk_score || 50,
-        },
-        total_price: {
-          status: result.total_price.status || "UNKNOWN",
-          message: result.total_price.suggestion || "無法分析",
-          raw_text: result.total_price.raw_text,
-          contract_value: result.total_price.formatted || "未知",
-          currency: result.total_price.currency || "N/A",
-          target_value: result.total_price.market_reference || "市場行情",
-          risk_score: result.total_price.risk_score || 50,
-        },
-        warranty: result.warranty_period,
+        clauses: result.clauses || []
       },
       raw_data: result,
       company_data: {

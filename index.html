@@ -468,80 +468,85 @@
 
             <!-- Analysis Results -->
             <div id="analysisResults" style="display:none;">
-                <!-- Payment Terms Card -->
-                <div class="analysis-card" id="paymentCard">
+                <!-- Dynamic Clause Card 1 -->
+                <div class="analysis-card" id="clause1Card">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-number">1</span>
-                            Payment Terms (付款條件)
+                            條款 1
                         </div>
-                        <span class="status-badge" id="paymentStatus">DISPUTE</span>
+                        <span class="status-badge" id="clause1Status">UNKNOWN</span>
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
                             <div class="comparison-label">合約條款</div>
-                            <div class="comparison-value" id="paymentContract">--</div>
+                            <div class="comparison-value" id="clause1Contract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">行業標準</div>
-                            <div class="comparison-value" id="paymentTarget">--</div>
+                            <div class="comparison-label">參考標準</div>
+                            <div class="comparison-value" id="clause1Reference">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
                         <div class="ai-label">💡 AI 專業建議：</div>
-                        <div id="paymentMessage">--</div>
+                        <div id="clause1Message">--</div>
                     </div>
                 </div>
 
-                <!-- Liability Cap Card -->
-                <div class="analysis-card" id="liabilityCard">
+                <!-- Dynamic Clause Card 2 -->
+                <div class="analysis-card" id="clause2Card">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-number">2</span>
-                            Liability Cap (責任上限)
+                            條款 2
                         </div>
-                        <span class="status-badge" id="liabilityStatus">WARNING</span>
+                        <span class="status-badge" id="clause2Status">UNKNOWN</span>
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
                             <div class="comparison-label">合約條款</div>
-                            <div class="comparison-value" id="liabilityContract">--</div>
+                            <div class="comparison-value" id="clause2Contract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">行業標準</div>
-                            <div class="comparison-value" id="liabilityStandard">--</div>
+                            <div class="comparison-label">參考標準</div>
+                            <div class="comparison-value" id="clause2Reference">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
                         <div class="ai-label">💡 AI 專業建議：</div>
-                        <div id="liabilityMessage">--</div>
+                        <div id="clause2Message">--</div>
                     </div>
                 </div>
 
-                <!-- Total Price Card -->
-                <div class="analysis-card" id="priceCard">
+                <!-- Dynamic Clause Card 3 -->
+                <div class="analysis-card" id="clause3Card">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-number">3</span>
-                            Total Price (總價分析)
+                            條款 3
                         </div>
-                        <span class="status-badge" id="priceStatus">OPPORTUNITY</span>
+                        <span class="status-badge" id="clause3Status">UNKNOWN</span>
                     </div>
                     <div class="comparison">
                         <div class="comparison-item">
-                            <div class="comparison-label">合約金額</div>
-                            <div class="comparison-value" id="priceContract">--</div>
+                            <div class="comparison-label">合約條款</div>
+                            <div class="comparison-value" id="clause3Contract">--</div>
                         </div>
                         <div class="comparison-item">
-                            <div class="comparison-label">市場參考</div>
-                            <div class="comparison-value" id="priceTarget">--</div>
+                            <div class="comparison-label">參考標準</div>
+                            <div class="comparison-value" id="clause3Reference">--</div>
                         </div>
                     </div>
                     <div class="ai-suggestion">
                         <div class="ai-label">💡 AI 專業建議：</div>
-                        <div id="priceMessage">--</div>
+                        <div id="clause3Message">--</div>
                     </div>
                 </div>
+
+                <!-- View Full Details Button -->
+                <button id="viewDetailsBtn" class="btn-primary" style="width: 100%; margin-bottom: 16px; display: none;" onclick="viewFullDetails()">
+                    查看完整合約分析 →
+                </button>
 
                 <!-- Settings Panel -->
                 <div class="settings-panel">
@@ -614,10 +619,8 @@
                         // 顯示分析結果
                         displayAnalysis(data);
 
-                        // 2秒後自動跳轉到合約詳情頁
-                        setTimeout(() => {
-                            window.location.href = `contract-detail.html?id=${data.contract_id}`;
-                        }, 2000);
+                        // 保存 contract_id 供後續使用
+                        window.currentContractId = data.contract_id;
                     }
                 } else {
                     alert('分析失敗: ' + (data.message || data.error));
@@ -645,20 +648,31 @@
                 scoreElement.classList.add('low'); // 紅色
             }
 
-            // Update Payment Terms
-            const payment = data.contract_analysis.payment_terms;
-            updateCard('payment', payment);
+            // 處理新的 clauses 陣列結構
+            const clauses = data.contract_analysis.clauses || [];
 
-            // Update Liability Cap
-            const liability = data.contract_analysis.liability_cap;
-            updateCard('liability', liability);
-
-            // Update Total Price
-            const price = data.contract_analysis.total_price;
-            updateCard('price', price);
+            // 取前三個條款顯示在預設的三個卡片中
+            if (clauses.length > 0) {
+                updateCard('clause1', clauses[0], 1);
+            }
+            if (clauses.length > 1) {
+                updateCard('clause2', clauses[1], 2);
+            }
+            if (clauses.length > 2) {
+                updateCard('clause3', clauses[2], 3);
+            }
 
             // Show results
             analysisResults.style.display = 'block';
+
+            // Show the view details button
+            document.getElementById('viewDetailsBtn').style.display = 'block';
+        }
+
+        function viewFullDetails() {
+            if (window.currentContractId) {
+                window.location.href = `contract-detail.html?id=${window.currentContractId}`;
+            }
         }
 
         function handleDuplicate(existingContract) {
@@ -677,30 +691,40 @@
             }
         }
 
-        function updateCard(type, analysis) {
+        function updateCard(type, clause, cardNumber) {
+            if (!clause) return;
+
             const statusElement = document.getElementById(`${type}Status`);
             const cardElement = document.getElementById(`${type}Card`);
             const messageElement = document.getElementById(`${type}Message`);
 
+            // Update card title with clause name and icon
+            const titleElement = cardElement.querySelector('.card-title');
+            if (titleElement) {
+                titleElement.innerHTML = `
+                    <span class="card-number">${cardNumber}</span>
+                    ${clause.clause_icon || '📋'} ${clause.clause_name || '未知條款'}
+                `;
+            }
+
             // Update status
-            const status = analysis.status.toLowerCase();
-            statusElement.textContent = analysis.status;
+            const status = (clause.status || 'UNKNOWN').toLowerCase();
+            statusElement.textContent = clause.status || 'UNKNOWN';
             statusElement.className = `status-badge ${status}`;
             cardElement.className = `analysis-card ${status}`;
 
             // Update message
-            messageElement.textContent = analysis.message;
+            messageElement.textContent = clause.message || '無分析資訊';
 
-            // Update values based on type
-            if (type === 'payment') {
-                document.getElementById('paymentContract').textContent = analysis.contract_value || '未知';
-                document.getElementById('paymentTarget').textContent = analysis.target_value;
-            } else if (type === 'liability') {
-                document.getElementById('liabilityContract').textContent = analysis.contract_value || '未知';
-                document.getElementById('liabilityStandard').textContent = analysis.standard_value || '200% or $3M';
-            } else if (type === 'price') {
-                document.getElementById('priceContract').textContent = analysis.contract_value || '未知';
-                document.getElementById('priceTarget').textContent = analysis.target_value;
+            // Update values - use generic field names for all cards
+            const contractValueElement = cardElement.querySelector('.comparison-item:first-child .comparison-value');
+            const referenceValueElement = cardElement.querySelector('.comparison-item:last-child .comparison-value');
+
+            if (contractValueElement) {
+                contractValueElement.textContent = clause.contract_value || '未知';
+            }
+            if (referenceValueElement) {
+                referenceValueElement.textContent = clause.reference_value || clause.target_value || '無參考標準';
             }
         }
     </script>
