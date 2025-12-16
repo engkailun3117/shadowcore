@@ -648,18 +648,14 @@
                 scoreElement.classList.add('low'); // 紅色
             }
 
-            // 處理新的 clauses 陣列結構
-            const clauses = data.contract_analysis.clauses || [];
+            // 顯示四個維度信息（如果有的話）
+            if (data.health_dimensions) {
+                const dimensions = data.health_dimensions;
 
-            // 取前三個條款顯示在預設的三個卡片中
-            if (clauses.length > 0) {
-                updateCard('clause1', clauses[0], 1);
-            }
-            if (clauses.length > 1) {
-                updateCard('clause2', clauses[1], 2);
-            }
-            if (clauses.length > 2) {
-                updateCard('clause3', clauses[2], 3);
+                // 更新三個卡片顯示維度信息
+                updateDimensionCard('clause1', 'MAD 生存風險', dimensions.mad, '🔴', getDimensionLabel('mad', dimensions.mad));
+                updateDimensionCard('clause2', 'MAO 互利營收', dimensions.mao, '🟢', getDimensionLabel('mao', dimensions.mao));
+                updateDimensionCard('clause3', 'MAA 行政內耗', dimensions.maa, '🟠', getDimensionLabel('maa', dimensions.maa));
             }
 
             // Show results
@@ -667,6 +663,63 @@
 
             // Show the view details button
             document.getElementById('viewDetailsBtn').style.display = 'block';
+        }
+
+        function getDimensionLabel(dimension, score) {
+            if (dimension === 'mad') {
+                if (score >= 91) return '致命風險';
+                if (score >= 61) return '重傷';
+                if (score >= 21) return '擦傷';
+                return '安全';
+            } else if (dimension === 'mao') {
+                if (score >= 81) return '頂標';
+                if (score >= 61) return '高標';
+                if (score >= 21) return '中標';
+                return '低標';
+            } else if (dimension === 'maa') {
+                if (score >= 81) return '癱瘓級';
+                if (score >= 51) return '官僚地獄';
+                if (score >= 21) return '標準行政';
+                return '數位化';
+            } else if (dimension === 'map') {
+                if (score >= 71) return '緊密合作';
+                if (score >= 41) return '穩定生意';
+                if (score >= 1) return '能做生意';
+                return '無法執行';
+            }
+            return '';
+        }
+
+        function updateDimensionCard(cardId, name, score, icon, label) {
+            const statusElement = document.getElementById(`${cardId}Status`);
+            const cardElement = document.getElementById(`${cardId}Card`);
+            const messageElement = document.getElementById(`${cardId}Message`);
+
+            if (statusElement) {
+                statusElement.textContent = `${icon} ${name}: ${score}分`;
+            }
+
+            if (messageElement) {
+                messageElement.textContent = label;
+            }
+
+            if (cardElement) {
+                cardElement.className = 'analysis-card';
+                // 根據維度類型設置顏色
+                if (name.includes('MAD') && score >= 61) {
+                    cardElement.classList.add('dispute');
+                } else if (name.includes('MAD') && score >= 21) {
+                    cardElement.classList.add('warning');
+                } else if ((name.includes('MAO') || name.includes('MAP')) && score >= 61) {
+                    cardElement.classList.add('opportunity');
+                } else if (name.includes('MAA') && score >= 51) {
+                    cardElement.classList.add('dispute');
+                } else if (name.includes('MAA') && score >= 21) {
+                    cardElement.classList.add('warning');
+                } else {
+                    cardElement.classList.add('match');
+                }
+            }
         }
 
         function viewFullDetails() {
@@ -691,42 +744,6 @@
             }
         }
 
-        function updateCard(type, clause, cardNumber) {
-            if (!clause) return;
-
-            const statusElement = document.getElementById(`${type}Status`);
-            const cardElement = document.getElementById(`${type}Card`);
-            const messageElement = document.getElementById(`${type}Message`);
-
-            // Update card title with clause name and icon
-            const titleElement = cardElement.querySelector('.card-title');
-            if (titleElement) {
-                titleElement.innerHTML = `
-                    <span class="card-number">${cardNumber}</span>
-                    ${clause.clause_icon || '📋'} ${clause.clause_name || '未知條款'}
-                `;
-            }
-
-            // Update status
-            const status = (clause.status || 'UNKNOWN').toLowerCase();
-            statusElement.textContent = clause.status || 'UNKNOWN';
-            statusElement.className = `status-badge ${status}`;
-            cardElement.className = `analysis-card ${status}`;
-
-            // Update message
-            messageElement.textContent = clause.message || '無分析資訊';
-
-            // Update values - use generic field names for all cards
-            const contractValueElement = cardElement.querySelector('.comparison-item:first-child .comparison-value');
-            const referenceValueElement = cardElement.querySelector('.comparison-item:last-child .comparison-value');
-
-            if (contractValueElement) {
-                contractValueElement.textContent = clause.contract_value || '未知';
-            }
-            if (referenceValueElement) {
-                referenceValueElement.textContent = clause.reference_value || clause.target_value || '無參考標準';
-            }
-        }
     </script>
 </body>
 </html>
