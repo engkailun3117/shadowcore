@@ -514,6 +514,14 @@
                         <div class="subsection-title">📊 公司簡介</div>
                         <div class="company-content" id="companyProfile"></div>
                     </div>
+                    <div class="company-subsection" id="responsiblePersonSection" style="display:none;">
+                        <div class="subsection-title">👤 公司負責人</div>
+                        <div class="company-content" id="responsiblePerson"></div>
+                    </div>
+                    <div class="company-subsection" id="responsiblePersonLegalSection" style="display:none;">
+                        <div class="subsection-title">⚠️ 負責人法律狀況</div>
+                        <div class="company-content" id="responsiblePersonLegal"></div>
+                    </div>
                     <div class="company-subsection" id="companyCustomsSection" style="display:none;">
                         <div class="subsection-title">🚢 海關進出口記錄</div>
                         <div class="company-content" id="companyCustoms"></div>
@@ -724,10 +732,12 @@
             }
 
             const profileAnswer = getTavilyAnswer(companyData.profile);
+            const responsiblePersonAnswer = getTavilyAnswer(companyData.responsible_person);
+            const responsiblePersonLegalAnswer = getTavilyAnswer(companyData.responsible_person_legal);
             const customsAnswer = getTavilyAnswer(companyData.customs);
             const legalAnswer = getTavilyAnswer(companyData.legal);
 
-            const hasData = profileAnswer || customsAnswer || legalAnswer;
+            const hasData = profileAnswer || responsiblePersonAnswer || responsiblePersonLegalAnswer || customsAnswer || legalAnswer;
 
             if (!hasData) return;
 
@@ -737,6 +747,18 @@
             if (profileAnswer) {
                 document.getElementById('companyProfileSection').style.display = 'block';
                 document.getElementById('companyProfile').innerHTML = formatAnswer(profileAnswer, companyData.profile);
+            }
+
+            // Responsible Person
+            if (responsiblePersonAnswer) {
+                document.getElementById('responsiblePersonSection').style.display = 'block';
+                document.getElementById('responsiblePerson').innerHTML = formatAnswer(responsiblePersonAnswer, companyData.responsible_person);
+            }
+
+            // Responsible Person Legal
+            if (responsiblePersonLegalAnswer) {
+                document.getElementById('responsiblePersonLegalSection').style.display = 'block';
+                document.getElementById('responsiblePersonLegal').innerHTML = formatAnswer(responsiblePersonLegalAnswer, companyData.responsible_person_legal);
             }
 
             // Customs

@@ -392,6 +392,19 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       include_answer: true,
     });
 
+    // 5. 搜尋公司負責人資訊
+    const responsiblePersonInfo = await tavily.search({
+      query: `「${sellerCompany}」的公司負責人是誰？董事長、總經理、代表人姓名。請用繁體中文回答。`,
+      max_results: 3,
+      include_answer: true,
+    });
+
+    const responsiblePersonLegal = await tavily.search({
+      query: `「${sellerCompany}」公司負責人的法律問題、訴訟記錄、違法紀錄、司法案件。請用繁體中文回答。`,
+      max_results: 3,
+      include_answer: true,
+    });
+
     // Clean up uploaded file
     fs.unlinkSync(pdfPath);
 
@@ -413,6 +426,8 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
         profile: companyProfile,
         customs: customsInfo,
         legal: legalInfo,
+        responsible_person: responsiblePersonInfo,
+        responsible_person_legal: responsiblePersonLegal,
       },
     };
 
@@ -433,6 +448,8 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
         profile: companyProfile,
         customs: customsInfo,
         legal: legalInfo,
+        responsible_person: responsiblePersonInfo,
+        responsible_person_legal: responsiblePersonLegal,
       },
     });
   } catch (err) {
