@@ -211,6 +211,60 @@
             line-height: 1.4;
         }
 
+        /* Dimension Cards */
+        .dimension-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .dimension-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .dimension-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .dimension-name {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .dimension-score {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .dimension-score.mad-high { color: #f56565; }
+        .dimension-score.mad-medium { color: #ed8936; }
+        .dimension-score.mad-low { color: #48bb78; }
+
+        .dimension-score.mao-high { color: #48bb78; }
+        .dimension-score.mao-medium { color: #ed8936; }
+        .dimension-score.mao-low { color: #f56565; }
+
+        .dimension-score.maa-high { color: #f56565; }
+        .dimension-score.maa-medium { color: #ed8936; }
+        .dimension-score.maa-low { color: #48bb78; }
+
+        .dimension-score.map-high { color: #48bb78; }
+        .dimension-score.map-medium { color: #ed8936; }
+        .dimension-score.map-low { color: #718096; }
+
+        .dimension-label {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
         @media (max-width: 768px) {
             .header-main {
                 grid-template-columns: 1fr;
@@ -489,6 +543,40 @@
                     </div>
                 </div>
 
+                <!-- Dimensional Breakdown -->
+                <div class="dimensions-breakdown" id="dimensionsBreakdown" style="display:none; margin-top: 20px; padding: 20px; background: #f7fafc; border-radius: 8px;">
+                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #2d3748;">📊 四維度分析</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="dimension-card">
+                            <div class="dimension-icon">🔴</div>
+                            <div class="dimension-name">MAD 生存風險</div>
+                            <div class="dimension-score" id="madScore">--</div>
+                            <div class="dimension-label" id="madLabel">--</div>
+                        </div>
+                        <div class="dimension-card">
+                            <div class="dimension-icon">🟢</div>
+                            <div class="dimension-name">MAO 互利營收</div>
+                            <div class="dimension-score" id="maoScore">--</div>
+                            <div class="dimension-label" id="maoLabel">--</div>
+                        </div>
+                        <div class="dimension-card">
+                            <div class="dimension-icon">🟠</div>
+                            <div class="dimension-name">MAA 行政內耗</div>
+                            <div class="dimension-score" id="maaScore">--</div>
+                            <div class="dimension-label" id="maaLabel">--</div>
+                        </div>
+                        <div class="dimension-card">
+                            <div class="dimension-icon">🚀</div>
+                            <div class="dimension-name">MAP 戰略潛力</div>
+                            <div class="dimension-score" id="mapScore">--</div>
+                            <div class="dimension-label" id="mapLabel">--</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; font-size: 14px; color: #4a5568;">
+                        <strong>計算公式：</strong> 淨值 = MAO - MAA，最終分數 = 淨值 × (1 - MAD/100) × (1 + MAP/200)
+                    </div>
+                </div>
+
                 <!-- Bottom: Meta Information -->
                 <div class="contract-meta">
                     <div class="meta-item">
@@ -619,6 +707,11 @@
             scoreElement.className = `score-value-large ${scoreClass}`;
             document.getElementById('scoreDescription').textContent = scoreDesc;
 
+            // Dimensional breakdown
+            if (contract.health_dimensions) {
+                displayDimensionalBreakdown(contract.health_dimensions);
+            }
+
             // Analysis cards
             displayAnalysisCards(contract.contract_analysis);
 
@@ -626,6 +719,87 @@
             if (contract.company_data) {
                 displayCompanyData(contract.company_data);
             }
+        }
+
+        function displayDimensionalBreakdown(dimensions) {
+            const breakdownDiv = document.getElementById('dimensionsBreakdown');
+            breakdownDiv.style.display = 'block';
+
+            // MAD (生存風險) - 越高越危險
+            const madScore = dimensions.mad || 0;
+            const madElement = document.getElementById('madScore');
+            madElement.textContent = madScore;
+            let madClass = 'mad-low';
+            let madLabel = '安全';
+            if (madScore >= 91) {
+                madClass = 'mad-high';
+                madLabel = '致命風險';
+            } else if (madScore >= 61) {
+                madClass = 'mad-high';
+                madLabel = '重傷';
+            } else if (madScore >= 21) {
+                madClass = 'mad-medium';
+                madLabel = '擦傷';
+            }
+            madElement.className = `dimension-score ${madClass}`;
+            document.getElementById('madLabel').textContent = madLabel;
+
+            // MAO (互利營收) - 越高越好
+            const maoScore = dimensions.mao || 0;
+            const maoElement = document.getElementById('maoScore');
+            maoElement.textContent = maoScore;
+            let maoClass = 'mao-low';
+            let maoLabel = '低標';
+            if (maoScore >= 81) {
+                maoClass = 'mao-high';
+                maoLabel = '頂標';
+            } else if (maoScore >= 61) {
+                maoClass = 'mao-high';
+                maoLabel = '高標';
+            } else if (maoScore >= 21) {
+                maoClass = 'mao-medium';
+                maoLabel = '中標';
+            }
+            maoElement.className = `dimension-score ${maoClass}`;
+            document.getElementById('maoLabel').textContent = maoLabel;
+
+            // MAA (行政內耗) - 越高越差
+            const maaScore = dimensions.maa || 0;
+            const maaElement = document.getElementById('maaScore');
+            maaElement.textContent = maaScore;
+            let maaClass = 'maa-low';
+            let maaLabel = '無感';
+            if (maaScore >= 81) {
+                maaClass = 'maa-high';
+                maaLabel = '癱瘓級';
+            } else if (maaScore >= 51) {
+                maaClass = 'maa-high';
+                maaLabel = '官僚地獄';
+            } else if (maaScore >= 21) {
+                maaClass = 'maa-medium';
+                maaLabel = '標準行政';
+            }
+            maaElement.className = `dimension-score ${maaClass}`;
+            document.getElementById('maaLabel').textContent = maaLabel;
+
+            // MAP (戰略潛力) - 越高越好
+            const mapScore = dimensions.map || 0;
+            const mapElement = document.getElementById('mapScore');
+            mapElement.textContent = mapScore;
+            let mapClass = 'map-low';
+            let mapLabel = '無法執行';
+            if (mapScore >= 71) {
+                mapClass = 'map-high';
+                mapLabel = '緊密合作';
+            } else if (mapScore >= 41) {
+                mapClass = 'map-medium';
+                mapLabel = '穩定生意';
+            } else if (mapScore >= 1) {
+                mapClass = 'map-medium';
+                mapLabel = '能做生意';
+            }
+            mapElement.className = `dimension-score ${mapClass}`;
+            document.getElementById('mapLabel').textContent = mapLabel;
         }
 
         function displayAnalysisCards(analysis) {

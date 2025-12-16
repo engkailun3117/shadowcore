@@ -116,21 +116,95 @@ function saveContract(contractData) {
 // =========================
 
 /**
- * 計算健康評分（基於所有條款的風險分數平均值）
+ * 計算健康評分（基於四個維度的多維度分析）
+ *
+ * 四個維度：
+ * - MAD (生存風險指標): 0-100, 越高越危險, 最高權重
+ * - MAO (互利營收指標): 0-100, 越高越好, 代表收益
+ * - MAA (行政內耗指標): 0-100, 越高越差, 代表隱藏成本
+ * - MAP (戰略潛力指標): 0-100, 越高越好, 代表長期價值
+ *
+ * 計算邏輯：
+ * 1. 淨值 = MAO - MAA (收益減去內耗成本)
+ * 2. 生存風險調整 (MAD >= 91 觸發熔斷機制)
+ * 3. 戰略潛力加成 (MAP 提供長期價值加成)
+ *
  * @param {Array} clauses - 所有條款分析結果陣列
- * @returns {number} 健康評分 (0-100)
+ * @returns {Object} { score: 健康評分 (0-100), dimensions: { mad, mao, maa, map } }
  */
 function calculateHealthScore(clauses) {
   if (!clauses || clauses.length === 0) {
-    return 50; // 預設中性分數
+    return {
+      score: 50,
+      dimensions: { mad: 0, mao: 50, maa: 50, map: 0 }
+    };
   }
 
-  // 計算所有條款的風險分數平均值
-  const totalScore = clauses.reduce((sum, clause) => {
-    return sum + (clause.risk_score ?? 50);
-  }, 0);
+  // 計算每個維度的平均分數
+  const scores = clauses.reduce((acc, clause) => {
+    acc.mad += clause.mad_score || 0;
+    acc.mao += clause.mao_score || 50;
+    acc.maa += clause.maa_score || 50;
+    acc.map += clause.map_score || 0;
+    return acc;
+  }, { mad: 0, mao: 0, maa: 0, map: 0 });
 
-  return Math.round(totalScore / clauses.length);
+  const count = clauses.length;
+  const avgMAD = scores.mad / count;
+  const avgMAO = scores.mao / count;
+  const avgMAA = scores.maa / count;
+  const avgMAP = scores.map / count;
+
+  // 🔴 熔斷機制：MAD >= 91 (致命風險區)
+  if (avgMAD >= 91) {
+    const fatalScore = Math.round(5 + (100 - avgMAD)); // 0-14 分範圍
+    return {
+      score: fatalScore,
+      dimensions: {
+        mad: Math.round(avgMAD),
+        mao: Math.round(avgMAO),
+        maa: Math.round(avgMAA),
+        map: Math.round(avgMAP)
+      }
+    };
+  }
+
+  // 步驟 1: 計算淨營運價值 (MAO - MAA)
+  // 代表扣除行政內耗後的實際收益
+  const netValue = avgMAO - avgMAA; // 範圍: -100 到 100
+
+  // 步驟 2: 標準化淨值到 0-100 區間
+  const normalizedNet = (netValue + 100) / 2; // 範圍: 0 到 100
+
+  // 步驟 3: 應用生存風險係數
+  // MAD 越高，存活係數越低
+  // MAD=0 (安全) -> 係數=1.0
+  // MAD=50 (中度風險) -> 係數=0.5
+  // MAD=90 (重傷) -> 係數=0.1
+  const survivalMultiplier = (100 - avgMAD) / 100;
+
+  // 步驟 4: 計算基礎分數
+  const baseScore = normalizedNet * survivalMultiplier;
+
+  // 步驟 5: 應用戰略潛力加成
+  // MAP 為長期關係提供價值加成（最高 20% 加成）
+  // MAP=0 -> 無加成
+  // MAP=50 -> 10% 加成
+  // MAP=100 -> 20% 加成
+  const strategicBonus = (avgMAP / 100) * baseScore * 0.2;
+
+  // 步驟 6: 計算最終分數
+  const finalScore = baseScore + strategicBonus;
+
+  return {
+    score: Math.round(Math.min(100, Math.max(0, finalScore))),
+    dimensions: {
+      mad: Math.round(avgMAD),
+      mao: Math.round(avgMAO),
+      maa: Math.round(avgMAA),
+      map: Math.round(avgMAP)
+    }
+  };
 }
 
 /**
@@ -274,15 +348,43 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
    - 爭議解決 (Dispute Resolution)
    - 其他任何重要的商業條款
 
-3. **每個條款的專業風險評估**：
+3. **每個條款的專業風險評估（四個維度）**：
+
+   基本資訊：
    - clause_name: 條款名稱（例如：付款條件、責任上限等）
    - clause_icon: 適合的 emoji 圖示（例如：💰、⚖️、📅、🔒等）
    - raw_text: 原文摘錄
    - contract_value: 合約中的具體內容（簡潔描述）
    - reference_value: 行業標準或參考值（如適用）
    - status: "DISPUTE"（高風險，建議重新協商）/ "WARNING"（需注意）/ "OPPORTUNITY"（有利條款）/ "MATCH"（符合最佳實踐）/ "UNKNOWN"（無法判斷）
-   - risk_score: 0-100 分（0=極高風險，100=無風險/有利）
+   - risk_score: 0-100 分（0=極高風險，100=無風險/有利）【保留以便向後兼容】
    - message: 專業建議（50-150字，說明為什麼這個條款有利/不利，以及建議如何處理）
+
+   **四個維度評分（全新）**：
+
+   🔴 **MAD (生存風險指標)** - "這個條款會不會殺死公司？" (0-100)
+   - 0-20 分 (綠區-安全): 標準商業條款（如：一般保固責任、合理違約金）
+   - 21-60 分 (黃區-擦傷): 風險偏高需注意（如：付款期超過 120 天、匯率風險由我方全額承擔）
+   - 61-90 分 (橘區-重傷): 嚴重損害利益（如：無償授權核心 IP、賠償無上限但有排除條款）
+   - 91-100 分 (紅區-致命): 觸發熔斷（如：單方無條件解約權、無限連帶責任、放棄法律管轄權）
+
+   🟢 **MAO (互利營收指標)** - "這個條款現在能賺多少？" (0-100)
+   - 0-20 分 (低標): 基本交易（如：市價採購、無折扣）
+   - 21-60 分 (中標): 優於市場（如：價格低於市價 5%、付款期優於同業）
+   - 61-80 分 (高標): 顯著獲利（如：獨家供應權、保證採購量、預付款機制）
+   - 81-100 分 (頂標): 壟斷級優勢（如：取得對方專利免費授權、對方承擔所有物流與關稅成本）
+
+   🟠 **MAA (行政內耗指標)** - "執行這個條款的成本？" (0-100)
+   - 0-20 分 (數位化/無感): API 自動對接、電子簽章、無需人工介入
+   - 21-50 分 (標準行政): 每月一次月報、正常的驗收流程
+   - 51-80 分 (官僚地獄): 需每週紙本查核、跨國實體會議、需養專人伺候對方視察
+   - 81-100 分 (癱瘓級內耗): 逐筆訂單人工審批、極度複雜的合規證明（需數月準備）、朝令夕改的規格變更
+
+   🚀 **MAP (戰略潛力與憲章指標)** - "以 MAO 為目標的長期原則框架" (0-100)
+   - 0 分 (無法執行): 缺乏基礎商業條款，無法開立訂單或建立供應商代碼
+   - 1-40 分 (純交易里程碑): 能做生意。雙方已完成開戶審核，合約具備明確交付與付款條件，確立單次買賣關係的合法性
+   - 41-70 分 (反覆常態交易): 穩定生意。合約架構支持重複性下單與常態化驗收，雙方建立穩定供需節奏
+   - 71-100 分 (緊密合作夥伴): 共生生意。合約包含數據共享機制（API 對接/即時庫存可視）、強化合規性要求（符合 TGSA 憲章/ESG 標準），雙方形成利益共同體
 
 回傳格式（純 JSON）：
 {
@@ -297,6 +399,10 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       "reference_value": "一般建議 Net 45-60 天",
       "status": "DISPUTE",
       "risk_score": 40,
+      "mad_score": 35,
+      "mao_score": 25,
+      "maa_score": 20,
+      "map_score": 30,
       "message": "付款期限 Net 30 天相對較短，可能對買方現金流造成壓力。建議協商延長至 Net 60 天，這是行業標準，可以提供更靈活的資金調度空間。"
     },
     {
@@ -307,6 +413,10 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       "reference_value": "建議 150-200% 或 $2-3M",
       "status": "WARNING",
       "risk_score": 45,
+      "mad_score": 55,
+      "mao_score": 40,
+      "maa_score": 15,
+      "map_score": 25,
       "message": "責任上限僅為合約金額的 100%，低於行業標準的 150-200%。如果發生重大問題，賠償可能不足以覆蓋實際損失。建議要求提高至至少 200% 或 $3M。"
     },
     {
@@ -317,6 +427,10 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       "reference_value": "一般政府部門助理薪資範圍合理定價",
       "status": "MATCH",
       "risk_score": 100,
+      "mad_score": 5,
+      "mao_score": 70,
+      "maa_score": 10,
+      "map_score": 50,
       "message": "價格在合理範圍內，與市場行情相符。合約含稅，條款清晰明確。"
     }
   ]
@@ -326,7 +440,8 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
 - 請識別並列出合約中的所有重要條款，不要遺漏任何關鍵內容
 - 每個條款都必須包含風險評估和專業建議
 - status 必須是: DISPUTE, WARNING, OPPORTUNITY, MATCH, UNKNOWN 之一
-- risk_score 必須是 0-100 的整數
+- risk_score 和四個維度分數（mad_score, mao_score, maa_score, map_score）都必須是 0-100 的整數
+- 四個維度分數必須根據上述定義的區間範圍仔細評估
 - message 要具體、專業、可執行
 - clause_icon 請選擇合適的 emoji 來代表該條款類型
 - 保持原始貨幣和單位，不要轉換
@@ -370,8 +485,10 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       });
     }
 
-    // 3. 計算健康評分（基於所有條款的平均風險分數）
-    const healthScore = calculateHealthScore(result.clauses || []);
+    // 3. 計算健康評分（基於四個維度的多維度分析）
+    const healthScoreResult = calculateHealthScore(result.clauses || []);
+    const healthScore = healthScoreResult.score;
+    const healthDimensions = healthScoreResult.dimensions;
 
     // 4. 用 Tavily 搜尋公司資料（使用 answer 功能獲取繁體中文回應）
     const companyProfile = await tavily.search({
@@ -416,6 +533,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       filename: originalFilename,
       upload_date: new Date().toISOString(),
       health_score: healthScore,
+      health_dimensions: healthDimensions,
       document_type: documentType,
       seller_company: sellerCompany,
       contract_analysis: {
@@ -438,6 +556,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       contract_id: contractId,
       success: true,
       health_score: healthScore,
+      health_dimensions: healthDimensions,
       document_type: documentType,
       seller_company: sellerCompany,
       contract_analysis: {
