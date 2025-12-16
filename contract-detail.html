@@ -111,18 +111,52 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
-        .contract-title {
-            font-size: 24px;
+        .header-main {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+            margin-bottom: 32px;
+            align-items: start;
+        }
+
+        .company-info {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .company-name-display {
+            font-size: 36px;
             font-weight: 700;
             color: #1a202c;
-            margin-bottom: 16px;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .company-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .contract-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #718096;
+            margin-top: 8px;
         }
 
         .contract-meta {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
-            margin-bottom: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
         }
 
         .meta-item {
@@ -147,18 +181,23 @@
         .health-score-large {
             text-align: center;
             padding: 24px;
-            border-top: 1px solid #e2e8f0;
+            background: #f7fafc;
+            border-radius: 12px;
+            min-width: 200px;
         }
 
         .score-label {
-            font-size: 14px;
+            font-size: 12px;
             color: #718096;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
         }
 
         .score-value-large {
-            font-size: 64px;
+            font-size: 72px;
             font-weight: 700;
+            line-height: 1;
         }
 
         .score-value-large.high { color: #48bb78; }
@@ -166,9 +205,24 @@
         .score-value-large.low { color: #f56565; }
 
         .score-description {
-            font-size: 14px;
+            font-size: 13px;
             color: #718096;
-            margin-top: 8px;
+            margin-top: 12px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .header-main {
+                grid-template-columns: 1fr;
+            }
+
+            .health-score-large {
+                margin-top: 20px;
+            }
+
+            .company-name-display {
+                font-size: 28px;
+            }
         }
 
         .analysis-section {
@@ -417,37 +471,39 @@
         <div id="contractContent" style="display:none;">
             <!-- Contract Header -->
             <div class="contract-header">
-                <div class="contract-title" id="contractTitle"></div>
+                <div class="header-main">
+                    <!-- Left: Company Information -->
+                    <div class="company-info">
+                        <div>
+                            <span class="company-badge" id="documentTypeBadge">合約</span>
+                        </div>
+                        <div class="company-name-display" id="companyName">載入中...</div>
+                        <div class="contract-title" id="contractTitle">合約文件</div>
+                    </div>
+
+                    <!-- Right: Health Score -->
+                    <div class="health-score-large">
+                        <div class="score-label">健康評分</div>
+                        <div class="score-value-large" id="healthScoreLarge">--</div>
+                        <div class="score-description" id="scoreDescription">評估中</div>
+                    </div>
+                </div>
+
+                <!-- Bottom: Meta Information -->
                 <div class="contract-meta">
                     <div class="meta-item">
-                        <div class="meta-label">公司名稱</div>
-                        <div class="meta-value" id="companyName"></div>
-                    </div>
-                    <div class="meta-item">
                         <div class="meta-label">文件類型</div>
-                        <div class="meta-value" id="documentType"></div>
+                        <div class="meta-value" id="documentType">--</div>
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">上傳日期</div>
-                        <div class="meta-value" id="uploadDate"></div>
+                        <div class="meta-value" id="uploadDate">--</div>
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">合約 ID</div>
-                        <div class="meta-value" id="contractId" style="font-size:12px;font-family:monospace;"></div>
+                        <div class="meta-value" id="contractId" style="font-size:12px;font-family:monospace;">--</div>
                     </div>
                 </div>
-
-                <div class="health-score-large">
-                    <div class="score-label">合約健康評分</div>
-                    <div class="score-value-large" id="healthScoreLarge"></div>
-                    <div class="score-description" id="scoreDescription"></div>
-                </div>
-            </div>
-
-            <!-- Contract Analysis -->
-            <div class="analysis-section">
-                <div class="section-title">📋 合約條款分析</div>
-                <div class="analysis-grid" id="analysisGrid"></div>
             </div>
 
             <!-- Company Background -->
@@ -455,18 +511,32 @@
                 <div class="section-title">🏢 公司背景調查</div>
                 <div class="company-section">
                     <div class="company-subsection" id="companyProfileSection" style="display:none;">
-                        <div class="subsection-title">📊 公司概況</div>
+                        <div class="subsection-title">📊 公司簡介</div>
                         <div class="company-content" id="companyProfile"></div>
+                    </div>
+                    <div class="company-subsection" id="responsiblePersonSection" style="display:none;">
+                        <div class="subsection-title">👤 公司負責人</div>
+                        <div class="company-content" id="responsiblePerson"></div>
+                    </div>
+                    <div class="company-subsection" id="responsiblePersonLegalSection" style="display:none;">
+                        <div class="subsection-title">⚠️ 負責人法律狀況</div>
+                        <div class="company-content" id="responsiblePersonLegal"></div>
                     </div>
                     <div class="company-subsection" id="companyCustomsSection" style="display:none;">
                         <div class="subsection-title">🚢 海關進出口記錄</div>
                         <div class="company-content" id="companyCustoms"></div>
                     </div>
                     <div class="company-subsection" id="companyLegalSection" style="display:none;">
-                        <div class="subsection-title">⚖️ 法律訴訟記錄</div>
+                        <div class="subsection-title">⚖️ 法律合規</div>
                         <div class="company-content" id="companyLegal"></div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Contract Analysis -->
+            <div class="analysis-section">
+                <div class="section-title">📋 合約條款分析</div>
+                <div class="analysis-grid" id="analysisGrid"></div>
             </div>
         </div>
     </div>
@@ -509,11 +579,17 @@
             document.getElementById('contractContent').style.display = 'block';
             document.getElementById('deleteBtn').style.display = 'block';
 
-            // Header information
+            // Header information - Company name (prominent)
+            document.getElementById('companyName').textContent = contract.seller_company || '未知公司';
             document.getElementById('contractTitle').textContent = contract.filename;
             document.getElementById('breadcrumbTitle').textContent = contract.filename;
-            document.getElementById('companyName').textContent = contract.seller_company || '未知';
-            document.getElementById('documentType').textContent = contract.document_type || '合約';
+
+            // Document type badge
+            const docType = contract.document_type || '合約';
+            document.getElementById('documentTypeBadge').textContent = docType;
+            document.getElementById('documentType').textContent = docType;
+
+            // Other meta information
             document.getElementById('contractId').textContent = contract.contract_id;
 
             const date = new Date(contract.upload_date);
@@ -625,33 +701,76 @@
         }
 
         function displayCompanyData(companyData) {
-            const hasData = (companyData.profile && companyData.profile.length > 0) ||
-                           (companyData.customs && companyData.customs.length > 0) ||
-                           (companyData.legal && companyData.legal.length > 0);
+            // Helper function to extract Tavily answer
+            function getTavilyAnswer(tavilyData) {
+                if (!tavilyData) return null;
+
+                // Check if Tavily returned an answer field
+                if (tavilyData.answer && tavilyData.answer.trim()) {
+                    return tavilyData.answer;
+                }
+
+                // Fallback: if no answer but has results, use first result content
+                if (tavilyData.results && Array.isArray(tavilyData.results) && tavilyData.results.length > 0) {
+                    const topResult = tavilyData.results[0];
+                    let text = '';
+                    if (topResult.title) text += topResult.title + '\n\n';
+                    if (topResult.content) text += topResult.content;
+                    return text.trim();
+                }
+
+                return null;
+            }
+
+            // Helper function to format answer
+            function formatAnswer(answer, tavilyData) {
+                if (!answer) return '';
+
+                let html = `<p style="line-height: 1.8; color: #4a5568;">${answer}</p>`;
+
+                return html;
+            }
+
+            const profileAnswer = getTavilyAnswer(companyData.profile);
+            const responsiblePersonAnswer = getTavilyAnswer(companyData.responsible_person);
+            const responsiblePersonLegalAnswer = getTavilyAnswer(companyData.responsible_person_legal);
+            const customsAnswer = getTavilyAnswer(companyData.customs);
+            const legalAnswer = getTavilyAnswer(companyData.legal);
+
+            const hasData = profileAnswer || responsiblePersonAnswer || responsiblePersonLegalAnswer || customsAnswer || legalAnswer;
 
             if (!hasData) return;
 
             document.getElementById('companySection').style.display = 'block';
 
             // Profile
-            if (companyData.profile && companyData.profile.length > 0) {
+            if (profileAnswer) {
                 document.getElementById('companyProfileSection').style.display = 'block';
-                const profileHTML = companyData.profile.map(item => `<p>${item}</p>`).join('');
-                document.getElementById('companyProfile').innerHTML = profileHTML;
+                document.getElementById('companyProfile').innerHTML = formatAnswer(profileAnswer, companyData.profile);
+            }
+
+            // Responsible Person
+            if (responsiblePersonAnswer) {
+                document.getElementById('responsiblePersonSection').style.display = 'block';
+                document.getElementById('responsiblePerson').innerHTML = formatAnswer(responsiblePersonAnswer, companyData.responsible_person);
+            }
+
+            // Responsible Person Legal
+            if (responsiblePersonLegalAnswer) {
+                document.getElementById('responsiblePersonLegalSection').style.display = 'block';
+                document.getElementById('responsiblePersonLegal').innerHTML = formatAnswer(responsiblePersonLegalAnswer, companyData.responsible_person_legal);
             }
 
             // Customs
-            if (companyData.customs && companyData.customs.length > 0) {
+            if (customsAnswer) {
                 document.getElementById('companyCustomsSection').style.display = 'block';
-                const customsHTML = '<ul>' + companyData.customs.map(item => `<li>${item}</li>`).join('') + '</ul>';
-                document.getElementById('companyCustoms').innerHTML = customsHTML;
+                document.getElementById('companyCustoms').innerHTML = formatAnswer(customsAnswer, companyData.customs);
             }
 
             // Legal
-            if (companyData.legal && companyData.legal.length > 0) {
+            if (legalAnswer) {
                 document.getElementById('companyLegalSection').style.display = 'block';
-                const legalHTML = '<ul>' + companyData.legal.map(item => `<li>${item}</li>`).join('') + '</ul>';
-                document.getElementById('companyLegal').innerHTML = legalHTML;
+                document.getElementById('companyLegal').innerHTML = formatAnswer(legalAnswer, companyData.legal);
             }
         }
 

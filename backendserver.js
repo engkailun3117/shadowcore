@@ -258,7 +258,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
 
 1. **基本資訊提取**：
    - 文件類型（合約/報價單）
-   - 賣方公司名稱
+   - 乙方公司名稱
 
 2. **識別所有關鍵條款**：
    請找出合約中的所有重要條款，包括但不限於：
@@ -373,20 +373,36 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
     // 3. 計算健康評分（基於所有條款的平均風險分數）
     const healthScore = calculateHealthScore(result.clauses || []);
 
-    // 4. 用 Tavily 搜尋公司資料（保留原有功能）
+    // 4. 用 Tavily 搜尋公司資料（使用 answer 功能獲取繁體中文回應）
     const companyProfile = await tavily.search({
-      query: `${sellerCompany} 公司簡介 business profile`,
-      max_results: 5,
+      query: `關於「${sellerCompany}」的公司簡介、業務概況、公司背景。請用繁體中文回答。`,
+      max_results: 3,
+      include_answer: true,
     });
 
     const customsInfo = await tavily.search({
-      query: `${sellerCompany} 海關 進出口 customs import export`,
-      max_results: 5,
+      query: `關於「${sellerCompany}」的海關進出口記錄、貿易數據、進出口業務。請用繁體中文回答。`,
+      max_results: 3,
+      include_answer: true,
     });
 
     const legalInfo = await tavily.search({
-      query: `${sellerCompany} 法律 合規 legal compliance`,
-      max_results: 5,
+      query: `關於「${sellerCompany}」的法律合規狀況、訴訟記錄、法規遵循情況。請用繁體中文回答。`,
+      max_results: 3,
+      include_answer: true,
+    });
+
+    // 5. 搜尋公司負責人資訊
+    const responsiblePersonInfo = await tavily.search({
+      query: `「${sellerCompany}」的公司負責人是誰？董事長、總經理、代表人姓名。請用繁體中文回答。`,
+      max_results: 3,
+      include_answer: true,
+    });
+
+    const responsiblePersonLegal = await tavily.search({
+      query: `「${sellerCompany}」公司負責人的法律問題、訴訟記錄、違法紀錄、司法案件。請用繁體中文回答。`,
+      max_results: 3,
+      include_answer: true,
     });
 
     // Clean up uploaded file
@@ -410,6 +426,8 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
         profile: companyProfile,
         customs: customsInfo,
         legal: legalInfo,
+        responsible_person: responsiblePersonInfo,
+        responsible_person_legal: responsiblePersonLegal,
       },
     };
 
@@ -430,6 +448,8 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
         profile: companyProfile,
         customs: customsInfo,
         legal: legalInfo,
+        responsible_person: responsiblePersonInfo,
+        responsible_person_legal: responsiblePersonLegal,
       },
     });
   } catch (err) {
