@@ -265,6 +265,27 @@
             color: #a0aec0;
         }
 
+        /* Dimension Explanations */
+        .dimension-explanation {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #e2e8f0;
+        }
+
+        .explanation-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .explanation-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #4a5568;
+        }
+
         @media (max-width: 768px) {
             .header-main {
                 grid-template-columns: 1fr;
@@ -572,6 +593,34 @@
                             <div class="dimension-label" id="mapLabel">--</div>
                         </div>
                     </div>
+
+                    <!-- Dimension Explanations -->
+                    <div id="dimensionExplanationsContainer" style="display:none; margin-top: 20px;">
+                        <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #2d3748;">📝 詳細說明</div>
+
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div id="madExplanation" class="dimension-explanation" style="display:none;">
+                                <div class="explanation-header">🔴 MAD 生存風險</div>
+                                <div class="explanation-text"></div>
+                            </div>
+
+                            <div id="maoExplanation" class="dimension-explanation" style="display:none;">
+                                <div class="explanation-header">🟢 MAO 互利營收</div>
+                                <div class="explanation-text"></div>
+                            </div>
+
+                            <div id="maaExplanation" class="dimension-explanation" style="display:none;">
+                                <div class="explanation-header">🟠 MAA 行政內耗</div>
+                                <div class="explanation-text"></div>
+                            </div>
+
+                            <div id="mapExplanation" class="dimension-explanation" style="display:none;">
+                                <div class="explanation-header">🚀 MAP 戰略潛力</div>
+                                <div class="explanation-text"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; font-size: 14px; color: #4a5568;">
                         <strong>計算公式：</strong> 淨值 = MAO - MAA，最終分數 = 淨值 × (1 - MAD/100) × (1 + MAP/200)
                     </div>
@@ -709,11 +758,8 @@
 
             // Dimensional breakdown
             if (contract.health_dimensions) {
-                displayDimensionalBreakdown(contract.health_dimensions);
+                displayDimensionalBreakdown(contract.health_dimensions, contract.dimension_explanations);
             }
-
-            // Analysis cards
-            displayAnalysisCards(contract.contract_analysis);
 
             // Company background
             if (contract.company_data) {
@@ -721,7 +767,7 @@
             }
         }
 
-        function displayDimensionalBreakdown(dimensions) {
+        function displayDimensionalBreakdown(dimensions, explanations) {
             const breakdownDiv = document.getElementById('dimensionsBreakdown');
             breakdownDiv.style.display = 'block';
 
@@ -800,6 +846,40 @@
             }
             mapElement.className = `dimension-score ${mapClass}`;
             document.getElementById('mapLabel').textContent = mapLabel;
+
+            // Display explanations if available
+            if (explanations && Object.keys(explanations).length > 0) {
+                const container = document.getElementById('dimensionExplanationsContainer');
+                container.style.display = 'block';
+
+                // MAD explanation
+                if (explanations.mad) {
+                    const madExp = document.getElementById('madExplanation');
+                    madExp.style.display = 'block';
+                    madExp.querySelector('.explanation-text').textContent = explanations.mad;
+                }
+
+                // MAO explanation
+                if (explanations.mao) {
+                    const maoExp = document.getElementById('maoExplanation');
+                    maoExp.style.display = 'block';
+                    maoExp.querySelector('.explanation-text').textContent = explanations.mao;
+                }
+
+                // MAA explanation
+                if (explanations.maa) {
+                    const maaExp = document.getElementById('maaExplanation');
+                    maaExp.style.display = 'block';
+                    maaExp.querySelector('.explanation-text').textContent = explanations.maa;
+                }
+
+                // MAP explanation
+                if (explanations.map) {
+                    const mapExp = document.getElementById('mapExplanation');
+                    mapExp.style.display = 'block';
+                    mapExp.querySelector('.explanation-text').textContent = explanations.map;
+                }
+            }
         }
 
         function displayAnalysisCards(analysis) {

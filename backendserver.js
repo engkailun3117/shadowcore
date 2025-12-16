@@ -302,7 +302,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
           content: [
             {
               type: "input_text",
-              text: `你是一個資深合約談判專家和法律顧問。請仔細分析這份合約文件，識別並分析所有重要的合約條款。
+              text: `你是一個資深合約談判專家和法律顧問。請仔細分析這份合約文件，進行整體評估。
 
 CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明或 markdown 格式。
 
@@ -312,33 +312,9 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
    - 文件類型（合約/報價單）
    - 乙方公司名稱
 
-2. **識別所有關鍵條款**：
-   請找出合約中的所有重要條款，包括但不限於：
-   - 付款條件 (Payment Terms)
-   - 責任上限 (Liability Cap)
-   - 合約總價 (Total Price)
-   - 交付期限 (Delivery Terms)
-   - 終止條款 (Termination Clause)
-   - 智慧財產權 (IP Rights)
-   - 保密條款 (Confidentiality)
-   - 保固/維護 (Warranty/Maintenance)
-   - 違約罰則 (Penalties)
-   - 爭議解決 (Dispute Resolution)
-   - 其他任何重要的商業條款
+2. **整體合約四維度評估**：
 
-3. **每個條款的專業風險評估**：
-   - clause_name: 條款名稱（例如：付款條件、責任上限等）
-   - clause_icon: 適合的 emoji 圖示（例如：💰、⚖️、📅、🔒等）
-   - raw_text: 原文摘錄
-   - contract_value: 合約中的具體內容（簡潔描述）
-   - reference_value: 行業標準或參考值（如適用）
-   - status: "DISPUTE"（高風險，建議重新協商）/ "WARNING"（需注意）/ "OPPORTUNITY"（有利條款）/ "MATCH"（符合最佳實踐）/ "UNKNOWN"（無法判斷）
-   - risk_score: 0-100 分（0=極高風險，100=無風險/有利）
-   - message: 專業建議（50-150字，說明為什麼這個條款有利/不利，以及建議如何處理）
-
-4. **整體合約的四個維度評估**：
-
-   請綜合評估整份合約，提供四個維度的整體分數：
+   請綜合評估整份合約，提供四個維度的整體分數和詳細說明：
 
    🔴 **MAD (生存風險指標)** - "這份合約會不會殺死公司？" (0-100，越高越危險)
    - 0-20 分 (綠區-安全): 標準商業條款，無重大風險
@@ -364,59 +340,31 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
    - 41-70 分 (反覆常態交易): 穩定生意。合約架構支持重複性下單與常態化驗收
    - 71-100 分 (緊密合作夥伴): 共生生意。合約包含數據共享機制（API 對接/即時庫存可視）、強化合規性要求（符合 TGSA 憲章/ESG 標準）
 
+3. **每個維度的詳細說明**：
+   為每個維度提供 100-200 字的專業分析，說明為什麼給這個分數，引用合約中的具體條款作為依據。
+
 回傳格式（純 JSON）：
 {
   "document_type": "合約",
   "seller_company": "公司名稱",
-  "overall_dimensions": {
+  "dimensions": {
     "mad": 25,
     "mao": 55,
     "maa": 30,
     "map": 45
   },
-  "clauses": [
-    {
-      "clause_name": "付款條件",
-      "clause_icon": "💰",
-      "raw_text": "Net 30 days from invoice date",
-      "contract_value": "Net 30 天",
-      "reference_value": "一般建議 Net 45-60 天",
-      "status": "DISPUTE",
-      "risk_score": 40,
-      "message": "付款期限 Net 30 天相對較短，可能對買方現金流造成壓力。建議協商延長至 Net 60 天，這是行業標準，可以提供更靈活的資金調度空間。"
-    },
-    {
-      "clause_name": "責任上限",
-      "clause_icon": "⚖️",
-      "raw_text": "Seller's liability shall not exceed 100% of fees paid",
-      "contract_value": "合約金額的 100%",
-      "reference_value": "建議 150-200% 或 $2-3M",
-      "status": "WARNING",
-      "risk_score": 45,
-      "message": "責任上限僅為合約金額的 100%，低於行業標準的 150-200%。如果發生重大問題，賠償可能不足以覆蓋實際損失。建議要求提高至至少 200% 或 $3M。"
-    },
-    {
-      "clause_name": "合約總價",
-      "clause_icon": "💵",
-      "raw_text": "NT$52,500 元整（含稅）",
-      "contract_value": "NT$52,500",
-      "reference_value": "一般政府部門助理薪資範圍合理定價",
-      "status": "MATCH",
-      "risk_score": 100,
-      "message": "價格在合理範圍內，與市場行情相符。合約含稅，條款清晰明確。"
-    }
-  ]
+  "dimension_explanations": {
+    "mad": "本合約的生存風險屬於黃區（25分）。主要風險來自付款條件為 Net 30 天，略短於行業標準的 Net 60 天，可能對現金流造成壓力。責任上限設定為合約金額的 100%，低於建議的 150-200%。但合約未包含致命條款如無限連帶責任或放棄管轄權，因此整體風險可控。",
+    "mao": "本合約的營收指標屬於中標（55分）。合約總價 NT$52,500 符合市場行情，定價合理。付款條件雖然較緊但仍在可接受範圍。未包含獨家供應、保證採購量等高價值條款，但也沒有明顯不利的價格條款，屬於標準商業交易。",
+    "maa": "本合約的行政內耗屬於標準行政（30分）。合約條款清晰明確，未要求複雜的合規證明或頻繁的人工審批。預期需要正常的驗收流程和月報，人力成本在可控範圍內。未見需要專人伺候或跨國實體會議等高內耗要求。",
+    "map": "本合約的戰略潛力屬於純交易里程碑（45分）。合約具備基本的商業條款框架，包含明確的交付條件和付款方式，可以建立供應商關係並開展業務。但未包含支持重複性下單的架構、數據共享機制或 ESG 合規要求，不具備發展為長期戰略夥伴的基礎。"
+  }
 }
 
 注意事項：
-- 請識別並列出合約中的所有重要條款，不要遺漏任何關鍵內容
-- 每個條款都必須包含風險評估和專業建議
-- status 必須是: DISPUTE, WARNING, OPPORTUNITY, MATCH, UNKNOWN 之一
-- risk_score 必須是 0-100 的整數
-- overall_dimensions 必須包含四個整數分數（mad, mao, maa, map），代表整份合約的綜合評估
-- message 要具體、專業、可執行
-- clause_icon 請選擇合適的 emoji 來代表該條款類型
-- 保持原始貨幣和單位，不要轉換
+- dimensions 必須包含四個整數分數（mad, mao, maa, map），代表整份合約的綜合評估
+- dimension_explanations 必須包含四個詳細說明，每個 100-200 字
+- 說明要具體、專業、引用合約中的實際條款
 - 不要使用尾隨逗號
 - 只回傳 JSON，不要 markdown code blocks`,
             },
@@ -458,9 +406,10 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
     }
 
     // 3. 計算健康評分（基於四個維度的多維度分析）
-    const healthScoreResult = calculateHealthScore(result.overall_dimensions);
+    const healthScoreResult = calculateHealthScore(result.dimensions);
     const healthScore = healthScoreResult.score;
     const healthDimensions = healthScoreResult.dimensions;
+    const dimensionExplanations = result.dimension_explanations || {};
 
     // 4. 用 Tavily 搜尋公司資料（使用 answer 功能獲取繁體中文回應）
     const companyProfile = await tavily.search({
@@ -506,11 +455,9 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       upload_date: new Date().toISOString(),
       health_score: healthScore,
       health_dimensions: healthDimensions,
+      dimension_explanations: dimensionExplanations,
       document_type: documentType,
       seller_company: sellerCompany,
-      contract_analysis: {
-        clauses: result.clauses || []
-      },
       raw_data: result,
       company_data: {
         profile: companyProfile,
@@ -529,11 +476,9 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       success: true,
       health_score: healthScore,
       health_dimensions: healthDimensions,
+      dimension_explanations: dimensionExplanations,
       document_type: documentType,
       seller_company: sellerCompany,
-      contract_analysis: {
-        clauses: result.clauses || []
-      },
       raw_data: result,
       company_data: {
         profile: companyProfile,
