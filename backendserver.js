@@ -116,18 +116,27 @@ function saveContract(contractData) {
 // =========================
 
 /**
- * 計算健康評分（基於四個維度的多維度分析）
+ * 計算合約健康評分 (TGSA 四維度分析法)
+ *
+ * 這個函數使用 TGSA (The Negotiation Engine) 的四維度模型來評估合約的整體健康度：
  *
  * 四個維度：
- * - MAD (生存風險指標): 0-100, 越高越危險, 最高權重
- * - MAO (互利營收指標): 0-100, 越高越好, 代表收益
- * - MAA (行政內耗指標): 0-100, 越高越差, 代表隱藏成本
- * - MAP (戰略潛力指標): 0-100, 越高越好, 代表長期價值
+ * - MAD (Mutually Assured Destruction - 生存風險指標): 0-100, 越高越危險
+ * - MAO (Mutual Advantage Optimization - 互利營收指標): 0-100, 越高越好
+ * - MAA (Mutually Assured Attrition - 行政內耗指標): 0-100, 越高越差
+ * - MAP (Mutual Assured Potential - 戰略潛力指標): 0-100, 越高越好
  *
- * 計算邏輯：
- * 1. 淨值 = MAO - MAA (收益減去內耗成本)
- * 2. 生存風險調整 (MAD >= 91 觸發熔斷機制)
- * 3. 戰略潛力加成 (MAP 提供長期價值加成)
+ * TGSA 計算公式：
+ * 初始價值 (Y₀) = [(MAO - MAA) + MAP] × 生存係數(S_mad)
+ *
+ * 生存係數：
+ * - 若 MAD < 90: S_mad = 1 - (MAD / 100)
+ * - 若 MAD ≥ 90: S_mad = 0 (熔斷機制，斷路)
+ *
+ * 痛點標記 (Pain Point Flagging):
+ * - 🔴 Blockers: MAD ≥ 90 (死亡區，無法談判)
+ * - 🟠 Friction: MAA ≥ 60 (內部摩擦，需戰略調整)
+ * - 🟡 Ambiguity: 條款模糊 (系統自動調整 MAD 加成)
  *
  * @param {Object} overallDimensions - 整體維度分數 { mad, mao, maa, map }
  * @returns {Object} { score: 健康評分 (0-100), dimensions: { mad, mao, maa, map } }
@@ -143,44 +152,40 @@ function calculateHealthScore(overallDimensions) {
 
   const { mad, mao, maa, map } = dimensions;
 
-  // 🔴 熔斷機制：MAD >= 91 (致命風險區)
-  if (mad >= 91) {
-    const fatalScore = Math.round(5 + (100 - mad)); // 0-14 分範圍
+  // 🔴 熔斷機制：MAD >= 90 (死亡區 - Blockers)
+  // 根據 TGSA 公式，生存係數 = 0，因此分數 = 0
+  if (mad >= 90) {
     return {
-      score: fatalScore,
+      score: 0,
       dimensions: dimensions
     };
   }
 
-  // 步驟 1: 計算淨營運價值 (MAO - MAA)
-  // 代表扣除行政內耗後的實際收益
+  // TGSA 公式：Y₀ = [(MAO - MAA) + MAP] × (1 - MAD/100)
+
+  // 步驟 1: 計算淨營運價值
   const netValue = mao - maa; // 範圍: -100 到 100
 
-  // 步驟 2: 標準化淨值到 0-100 區間
-  const normalizedNet = (netValue + 100) / 2; // 範圍: 0 到 100
+  // 步驟 2: 加上戰略潛力
+  const valueWithStrategy = netValue + map; // 範圍: -100 到 200
 
-  // 步驟 3: 應用生存風險係數
-  // MAD 越高，存活係數越低
-  // MAD=0 (安全) -> 係數=1.0
-  // MAD=50 (中度風險) -> 係數=0.5
-  // MAD=90 (重傷) -> 係數=0.1
-  const survivalMultiplier = (100 - mad) / 100;
+  // 步驟 3: 應用生存係數
+  // 生存係數 = 1 - (MAD / 100)
+  // MAD=0 -> 係數=1.0 (完全安全)
+  // MAD=40 -> 係數=0.6
+  // MAD=89 -> 係數=0.11
+  const survivalCoefficient = 1 - (mad / 100);
 
-  // 步驟 4: 計算基礎分數
-  const baseScore = normalizedNet * survivalMultiplier;
+  // 步驟 4: 計算初始價值 Y₀
+  const initialValue = valueWithStrategy * survivalCoefficient;
+  // 範圍: -100 到 200 (理論上)
 
-  // 步驟 5: 應用戰略潛力加成
-  // MAP 為長期關係提供價值加成（最高 20% 加成）
-  // MAP=0 -> 無加成
-  // MAP=50 -> 10% 加成
-  // MAP=100 -> 20% 加成
-  const strategicBonus = (map / 100) * baseScore * 0.2;
-
-  // 步驟 6: 計算最終分數
-  const finalScore = baseScore + strategicBonus;
+  // 步驟 5: 標準化到 0-100 區間
+  // 將 -100~200 的範圍映射到 0~100
+  const normalizedScore = ((initialValue + 100) / 300) * 100;
 
   return {
-    score: Math.round(Math.min(100, Math.max(0, finalScore))),
+    score: Math.round(Math.min(100, Math.max(0, normalizedScore))),
     dimensions: dimensions
   };
 }

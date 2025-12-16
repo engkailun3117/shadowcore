@@ -833,9 +833,10 @@
                 html += '</div></div>';
             }
 
-            // Add calculation formula
+            // Add TGSA calculation formula
             html += '<div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; font-size: 14px; color: #4a5568;">';
-            html += '<strong>計算公式：</strong> 淨值 = MAO - MAA，最終分數 = 淨值 × (1 - MAD/100) × (1 + MAP/200)';
+            html += '<strong>TGSA 計算公式：</strong> Y₀ = [(MAO - MAA) + MAP] × (1 - MAD/100)';
+            html += '<br><span style="font-size: 12px; color: #718096; margin-top: 4px; display: block;">生存係數 = 1 - (MAD/100)，若 MAD ≥ 90 則 Y₀ = 0 (熔斷)</span>';
             html += '</div>';
 
             container.innerHTML = html;
