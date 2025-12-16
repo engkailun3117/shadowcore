@@ -564,68 +564,6 @@
                     </div>
                 </div>
 
-                <!-- Dimensional Breakdown -->
-                <div class="dimensions-breakdown" id="dimensionsBreakdown" style="display:none; margin-top: 20px; padding: 20px; background: #f7fafc; border-radius: 8px;">
-                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #2d3748;">📊 四維度分析</div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                        <div class="dimension-card">
-                            <div class="dimension-icon">🔴</div>
-                            <div class="dimension-name">MAD 生存風險</div>
-                            <div class="dimension-score" id="madScore">--</div>
-                            <div class="dimension-label" id="madLabel">--</div>
-                        </div>
-                        <div class="dimension-card">
-                            <div class="dimension-icon">🟢</div>
-                            <div class="dimension-name">MAO 互利營收</div>
-                            <div class="dimension-score" id="maoScore">--</div>
-                            <div class="dimension-label" id="maoLabel">--</div>
-                        </div>
-                        <div class="dimension-card">
-                            <div class="dimension-icon">🟠</div>
-                            <div class="dimension-name">MAA 行政內耗</div>
-                            <div class="dimension-score" id="maaScore">--</div>
-                            <div class="dimension-label" id="maaLabel">--</div>
-                        </div>
-                        <div class="dimension-card">
-                            <div class="dimension-icon">🚀</div>
-                            <div class="dimension-name">MAP 戰略潛力</div>
-                            <div class="dimension-score" id="mapScore">--</div>
-                            <div class="dimension-label" id="mapLabel">--</div>
-                        </div>
-                    </div>
-
-                    <!-- Dimension Explanations -->
-                    <div id="dimensionExplanationsContainer" style="display:none; margin-top: 20px;">
-                        <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #2d3748;">📝 詳細說明</div>
-
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div id="madExplanation" class="dimension-explanation" style="display:none;">
-                                <div class="explanation-header">🔴 MAD 生存風險</div>
-                                <div class="explanation-text"></div>
-                            </div>
-
-                            <div id="maoExplanation" class="dimension-explanation" style="display:none;">
-                                <div class="explanation-header">🟢 MAO 互利營收</div>
-                                <div class="explanation-text"></div>
-                            </div>
-
-                            <div id="maaExplanation" class="dimension-explanation" style="display:none;">
-                                <div class="explanation-header">🟠 MAA 行政內耗</div>
-                                <div class="explanation-text"></div>
-                            </div>
-
-                            <div id="mapExplanation" class="dimension-explanation" style="display:none;">
-                                <div class="explanation-header">🚀 MAP 戰略潛力</div>
-                                <div class="explanation-text"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; font-size: 14px; color: #4a5568;">
-                        <strong>計算公式：</strong> 淨值 = MAO - MAA，最終分數 = 淨值 × (1 - MAD/100) × (1 + MAP/200)
-                    </div>
-                </div>
-
                 <!-- Bottom: Meta Information -->
                 <div class="contract-meta">
                     <div class="meta-item">
@@ -795,119 +733,112 @@
             const dimensionsSection = document.getElementById('dimensionsSection');
             dimensionsSection.style.display = 'block';
 
-            // Get reference to the original breakdown div in header
-            const breakdownDiv = document.getElementById('dimensionsBreakdown');
-            breakdownDiv.style.display = 'block';
+            // Get the container to populate
+            const container = document.getElementById('dimensionsBreakdownSection');
 
-            // MAD (生存風險) - 越高越危險
+            // Build dimension cards HTML
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
+
+            // MAD (生存風險)
             const madScore = dimensions.mad || 0;
-            const madElement = document.getElementById('madScore');
-            madElement.textContent = madScore;
-            let madClass = 'mad-low';
             let madLabel = '安全';
-            if (madScore >= 91) {
-                madClass = 'mad-high';
-                madLabel = '致命風險';
-            } else if (madScore >= 61) {
-                madClass = 'mad-high';
-                madLabel = '重傷';
-            } else if (madScore >= 21) {
-                madClass = 'mad-medium';
-                madLabel = '擦傷';
-            }
-            madElement.className = `dimension-score ${madClass}`;
-            document.getElementById('madLabel').textContent = madLabel;
+            if (madScore >= 91) madLabel = '致命風險';
+            else if (madScore >= 61) madLabel = '重傷';
+            else if (madScore >= 21) madLabel = '擦傷';
 
-            // MAO (互利營收) - 越高越好
+            html += `<div class="dimension-card">
+                <div class="dimension-icon">🔴</div>
+                <div class="dimension-name">MAD 生存風險</div>
+                <div class="dimension-score">${madScore}</div>
+                <div class="dimension-label">${madLabel}</div>
+            </div>`;
+
+            // MAO (互利營收)
             const maoScore = dimensions.mao || 0;
-            const maoElement = document.getElementById('maoScore');
-            maoElement.textContent = maoScore;
-            let maoClass = 'mao-low';
             let maoLabel = '低標';
-            if (maoScore >= 81) {
-                maoClass = 'mao-high';
-                maoLabel = '頂標';
-            } else if (maoScore >= 61) {
-                maoClass = 'mao-high';
-                maoLabel = '高標';
-            } else if (maoScore >= 21) {
-                maoClass = 'mao-medium';
-                maoLabel = '中標';
-            }
-            maoElement.className = `dimension-score ${maoClass}`;
-            document.getElementById('maoLabel').textContent = maoLabel;
+            if (maoScore >= 81) maoLabel = '頂標';
+            else if (maoScore >= 61) maoLabel = '高標';
+            else if (maoScore >= 21) maoLabel = '中標';
 
-            // MAA (行政內耗) - 越高越差
+            html += `<div class="dimension-card">
+                <div class="dimension-icon">🟢</div>
+                <div class="dimension-name">MAO 互利營收</div>
+                <div class="dimension-score">${maoScore}</div>
+                <div class="dimension-label">${maoLabel}</div>
+            </div>`;
+
+            // MAA (行政內耗)
             const maaScore = dimensions.maa || 0;
-            const maaElement = document.getElementById('maaScore');
-            maaElement.textContent = maaScore;
-            let maaClass = 'maa-low';
             let maaLabel = '無感';
-            if (maaScore >= 81) {
-                maaClass = 'maa-high';
-                maaLabel = '癱瘓級';
-            } else if (maaScore >= 51) {
-                maaClass = 'maa-high';
-                maaLabel = '官僚地獄';
-            } else if (maaScore >= 21) {
-                maaClass = 'maa-medium';
-                maaLabel = '標準行政';
-            }
-            maaElement.className = `dimension-score ${maaClass}`;
-            document.getElementById('maaLabel').textContent = maaLabel;
+            if (maaScore >= 81) maaLabel = '癱瘓級';
+            else if (maaScore >= 51) maaLabel = '官僚地獄';
+            else if (maaScore >= 21) maaLabel = '標準行政';
 
-            // MAP (戰略潛力) - 越高越好
+            html += `<div class="dimension-card">
+                <div class="dimension-icon">🟠</div>
+                <div class="dimension-name">MAA 行政內耗</div>
+                <div class="dimension-score">${maaScore}</div>
+                <div class="dimension-label">${maaLabel}</div>
+            </div>`;
+
+            // MAP (戰略潛力)
             const mapScore = dimensions.map || 0;
-            const mapElement = document.getElementById('mapScore');
-            mapElement.textContent = mapScore;
-            let mapClass = 'map-low';
             let mapLabel = '無法執行';
-            if (mapScore >= 71) {
-                mapClass = 'map-high';
-                mapLabel = '緊密合作';
-            } else if (mapScore >= 41) {
-                mapClass = 'map-medium';
-                mapLabel = '穩定生意';
-            } else if (mapScore >= 1) {
-                mapClass = 'map-medium';
-                mapLabel = '能做生意';
-            }
-            mapElement.className = `dimension-score ${mapClass}`;
-            document.getElementById('mapLabel').textContent = mapLabel;
+            if (mapScore >= 71) mapLabel = '緊密合作';
+            else if (mapScore >= 41) mapLabel = '穩定生意';
+            else if (mapScore >= 1) mapLabel = '能做生意';
 
-            // Display explanations if available
+            html += `<div class="dimension-card">
+                <div class="dimension-icon">🚀</div>
+                <div class="dimension-name">MAP 戰略潛力</div>
+                <div class="dimension-score">${mapScore}</div>
+                <div class="dimension-label">${mapLabel}</div>
+            </div>`;
+
+            html += '</div>';
+
+            // Add explanations section if available
             if (explanations && Object.keys(explanations).length > 0) {
-                const container = document.getElementById('dimensionExplanationsContainer');
-                container.style.display = 'block';
+                html += '<div style="margin-top: 20px;"><div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #2d3748;">📝 詳細說明</div>';
+                html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
 
-                // MAD explanation
                 if (explanations.mad) {
-                    const madExp = document.getElementById('madExplanation');
-                    madExp.style.display = 'block';
-                    madExp.querySelector('.explanation-text').textContent = explanations.mad;
+                    html += `<div class="dimension-explanation">
+                        <div class="explanation-header">🔴 MAD 生存風險</div>
+                        <div class="explanation-text">${explanations.mad}</div>
+                    </div>`;
                 }
 
-                // MAO explanation
                 if (explanations.mao) {
-                    const maoExp = document.getElementById('maoExplanation');
-                    maoExp.style.display = 'block';
-                    maoExp.querySelector('.explanation-text').textContent = explanations.mao;
+                    html += `<div class="dimension-explanation">
+                        <div class="explanation-header">🟢 MAO 互利營收</div>
+                        <div class="explanation-text">${explanations.mao}</div>
+                    </div>`;
                 }
 
-                // MAA explanation
                 if (explanations.maa) {
-                    const maaExp = document.getElementById('maaExplanation');
-                    maaExp.style.display = 'block';
-                    maaExp.querySelector('.explanation-text').textContent = explanations.maa;
+                    html += `<div class="dimension-explanation">
+                        <div class="explanation-header">🟠 MAA 行政內耗</div>
+                        <div class="explanation-text">${explanations.maa}</div>
+                    </div>`;
                 }
 
-                // MAP explanation
                 if (explanations.map) {
-                    const mapExp = document.getElementById('mapExplanation');
-                    mapExp.style.display = 'block';
-                    mapExp.querySelector('.explanation-text').textContent = explanations.map;
+                    html += `<div class="dimension-explanation">
+                        <div class="explanation-header">🚀 MAP 戰略潛力</div>
+                        <div class="explanation-text">${explanations.map}</div>
+                    </div>`;
                 }
+
+                html += '</div></div>';
             }
+
+            // Add calculation formula
+            html += '<div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; font-size: 14px; color: #4a5568;">';
+            html += '<strong>計算公式：</strong> 淨值 = MAO - MAA，最終分數 = 淨值 × (1 - MAD/100) × (1 + MAP/200)';
+            html += '</div>';
+
+            container.innerHTML = html;
         }
 
         function displayAnalysisCards(analysis) {
