@@ -343,6 +343,12 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
 3. **每個維度的詳細說明**：
    為每個維度提供 100-200 字的專業分析，說明為什麼給這個分數，引用合約中的具體條款作為依據。
 
+4. **整體建議**：
+   基於四個維度的綜合評估，提供 150-250 字的專業建議，包括：
+   - 是否建議簽署此合約
+   - 主要關注點和風險
+   - 具體的改善建議或協商重點
+
 回傳格式（純 JSON）：
 {
   "document_type": "合約",
@@ -358,12 +364,14 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
     "mao": "本合約的營收指標屬於中標（55分）。合約總價 NT$52,500 符合市場行情，定價合理。付款條件雖然較緊但仍在可接受範圍。未包含獨家供應、保證採購量等高價值條款，但也沒有明顯不利的價格條款，屬於標準商業交易。",
     "maa": "本合約的行政內耗屬於標準行政（30分）。合約條款清晰明確，未要求複雜的合規證明或頻繁的人工審批。預期需要正常的驗收流程和月報，人力成本在可控範圍內。未見需要專人伺候或跨國實體會議等高內耗要求。",
     "map": "本合約的戰略潛力屬於純交易里程碑（45分）。合約具備基本的商業條款框架，包含明確的交付條件和付款方式，可以建立供應商關係並開展業務。但未包含支持重複性下單的架構、數據共享機制或 ESG 合規要求，不具備發展為長期戰略夥伴的基礎。"
-  }
+  },
+  "overall_recommendation": "綜合評估：本合約屬於可接受的標準商業合約（健康評分 65 分）。生存風險處於可控範圍，無致命條款，但建議在簽署前協商以下事項：1) 爭取將付款期限從 Net 30 延長至 Net 60 天，改善現金流壓力；2) 要求提高責任上限至合約金額的 150-200%，增加保障。營收條件符合市場標準，行政成本可控。若能成功協商上述兩點，建議簽署。此為短期交易型合約，不建議作為長期戰略合作夥伴。"
 }
 
 注意事項：
 - dimensions 必須包含四個整數分數（mad, mao, maa, map），代表整份合約的綜合評估
 - dimension_explanations 必須包含四個詳細說明，每個 100-200 字
+- overall_recommendation 必須包含具體的行動建議，150-250 字
 - 說明要具體、專業、引用合約中的實際條款
 - 不要使用尾隨逗號
 - 只回傳 JSON，不要 markdown code blocks`,
@@ -410,6 +418,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
     const healthScore = healthScoreResult.score;
     const healthDimensions = healthScoreResult.dimensions;
     const dimensionExplanations = result.dimension_explanations || {};
+    const overallRecommendation = result.overall_recommendation || '';
 
     // 4. 用 Tavily 搜尋公司資料（使用 answer 功能獲取繁體中文回應）
     const companyProfile = await tavily.search({
@@ -456,6 +465,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       health_score: healthScore,
       health_dimensions: healthDimensions,
       dimension_explanations: dimensionExplanations,
+      overall_recommendation: overallRecommendation,
       document_type: documentType,
       seller_company: sellerCompany,
       raw_data: result,
@@ -477,6 +487,7 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
       health_score: healthScore,
       health_dimensions: healthDimensions,
       dimension_explanations: dimensionExplanations,
+      overall_recommendation: overallRecommendation,
       document_type: documentType,
       seller_company: sellerCompany,
       raw_data: result,

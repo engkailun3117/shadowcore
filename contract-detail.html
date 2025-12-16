@@ -643,7 +643,7 @@
                 </div>
             </div>
 
-            <!-- Company Background -->
+            <!-- Company Background (moved above dimensions) -->
             <div class="analysis-section" id="companySection" style="display:none;">
                 <div class="section-title">🏢 公司背景調查</div>
                 <div class="company-section">
@@ -670,10 +670,18 @@
                 </div>
             </div>
 
-            <!-- Contract Analysis -->
-            <div class="analysis-section">
-                <div class="section-title">📋 合約條款分析</div>
-                <div class="analysis-grid" id="analysisGrid"></div>
+            <!-- Dimensional Analysis (moved below company background) -->
+            <div class="analysis-section" id="dimensionsSection" style="display:none;">
+                <div class="section-title">📊 四維度分析</div>
+                <div class="dimensions-breakdown-section" id="dimensionsBreakdownSection"></div>
+            </div>
+
+            <!-- Overall Recommendation -->
+            <div class="analysis-section" id="recommendationSection" style="display:none;">
+                <div class="section-title">💡 專業建議</div>
+                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+                    <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -756,18 +764,38 @@
             scoreElement.className = `score-value-large ${scoreClass}`;
             document.getElementById('scoreDescription').textContent = scoreDesc;
 
-            // Dimensional breakdown
+            // Company background (displayed first)
+            if (contract.company_data) {
+                displayCompanyData(contract.company_data);
+            }
+
+            // Dimensional breakdown (displayed after company background)
             if (contract.health_dimensions) {
                 displayDimensionalBreakdown(contract.health_dimensions, contract.dimension_explanations);
             }
 
-            // Company background
-            if (contract.company_data) {
-                displayCompanyData(contract.company_data);
+            // Overall recommendation
+            if (contract.overall_recommendation) {
+                displayRecommendation(contract.overall_recommendation);
+            }
+        }
+
+        function displayRecommendation(recommendation) {
+            const recommendationSection = document.getElementById('recommendationSection');
+            const recommendationText = document.getElementById('overallRecommendation');
+
+            if (recommendation) {
+                recommendationText.textContent = recommendation;
+                recommendationSection.style.display = 'block';
             }
         }
 
         function displayDimensionalBreakdown(dimensions, explanations) {
+            // Show the dimensions section
+            const dimensionsSection = document.getElementById('dimensionsSection');
+            dimensionsSection.style.display = 'block';
+
+            // Get reference to the original breakdown div in header
             const breakdownDiv = document.getElementById('dimensionsBreakdown');
             breakdownDiv.style.display = 'block';
 
