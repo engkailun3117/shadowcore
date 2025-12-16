@@ -386,20 +386,26 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
     });
 
     // 記錄原始回應以供調試
-    console.log("OpenAI 原始回應:", response.output_text.substring(0, 500) + "...");
+    console.log("OpenAI 完整回應結構:", JSON.stringify(response, null, 2));
+    console.log("OpenAI 原始回應:", response.output_text ? response.output_text.substring(0, 500) + "..." : "無 output_text");
 
     // 使用強健的 JSON 提取函數，處理可能包含 markdown 或額外文字的回應
     let result;
     try {
+      if (!response.output_text) {
+        throw new Error("回應中沒有 output_text 欄位");
+      }
       result = extractJSON(response.output_text);
       console.log("成功解析 JSON，提取的資料:", JSON.stringify(result, null, 2));
     } catch (parseError) {
       console.error("JSON 解析失敗:", parseError.message);
-      console.error("完整回應:", response.output_text);
+      console.error("完整回應:", response.output_text || "無回應內容");
+      console.error("回應物件:", JSON.stringify(response, null, 2));
       return res.status(500).json({
         success: false,
         error: "AI 回應格式錯誤",
         details: parseError.message,
+        response_structure: Object.keys(response),
       });
     }
 
