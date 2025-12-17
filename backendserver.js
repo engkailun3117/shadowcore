@@ -348,7 +348,11 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     console.log("階段 1: 提取基本資訊...");
     const basicInfoResponse = await openai.responses.create({
       model: "gpt-4.1",
-      response_format: { type: "json_object" },
+      text: {
+        format: {
+          type: "json_object"
+        }
+      },
       input: [
         {
           role: "user",
@@ -473,7 +477,11 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     // 3. 呼叫 Responses API 進行完整評分 (with JSON mode enforced)
     const response = await openai.responses.create({
       model: "gpt-4.1",
-      response_format: { type: "json_object" },
+      text: {
+        format: {
+          type: "json_object"
+        }
+      },
       input: [
         {
           role: "user",
