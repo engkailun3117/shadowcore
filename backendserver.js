@@ -293,9 +293,10 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       purpose: "assistants",
     });
 
-    // 2. 呼叫 Responses API
+    // 2. 呼叫 Responses API (with JSON mode enforced)
     const response = await openai.responses.create({
       model: "gpt-4.1",
+      response_format: { type: "json_object" },
       input: [
         {
           role: "user",
@@ -304,7 +305,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
               type: "input_text",
               text: `你是一個資深合約談判專家和法律顧問。請仔細分析這份合約文件，進行整體評估。
 
-CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明或 markdown 格式。
+你必須只回傳純 JSON 格式的結果。
 
 分析任務：
 
@@ -417,6 +418,32 @@ CRITICAL: 你必須只回傳純 JSON，不要包含任何其他文字、說明�
         success: false,
         message: "無法確定文件類型或找不到乙方公司名稱",
       });
+    }
+
+    // Validate dimensions object
+    if (!result.dimensions || typeof result.dimensions !== 'object') {
+      console.error("維度資料缺失或格式錯誤:", result.dimensions);
+      return res.status(500).json({
+        success: false,
+        error: "AI 回應缺少維度評估資料",
+        details: "dimensions 欄位缺失或格式不正確",
+      });
+    }
+
+    // Ensure all dimension scores are valid numbers
+    const requiredDimensions = ['mad', 'mao', 'maa', 'map'];
+    for (const dim of requiredDimensions) {
+      if (typeof result.dimensions[dim] !== 'number' ||
+          isNaN(result.dimensions[dim]) ||
+          result.dimensions[dim] < 0 ||
+          result.dimensions[dim] > 100) {
+        console.error(`維度 ${dim} 的值無效:`, result.dimensions[dim]);
+        return res.status(500).json({
+          success: false,
+          error: "AI 回應的維度評分無效",
+          details: `${dim} 的值必須是 0-100 之間的數字`,
+        });
+      }
     }
 
     // 3. 計算健康評分（基於四個維度的多維度分析）
