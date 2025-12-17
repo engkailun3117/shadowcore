@@ -767,16 +767,16 @@
                 <div class="dimension-label">${maoLabel}</div>
             </div>`;
 
-            // MAA (行政內耗)
+            // MAA (互相保證消耗 - 承諾深度)
             const maaScore = dimensions.maa || 0;
-            let maaLabel = '無感';
-            if (maaScore >= 81) maaLabel = '癱瘓級';
-            else if (maaScore >= 51) maaLabel = '官僚地獄';
-            else if (maaScore >= 21) maaLabel = '標準行政';
+            let maaLabel = '流動交易';
+            if (maaScore >= 81) maaLabel = '共生/排他';
+            else if (maaScore >= 51) maaLabel = '硬性鎖定';
+            else if (maaScore >= 21) maaLabel = '預約維護';
 
             html += `<div class="dimension-card">
                 <div class="dimension-icon">🟠</div>
-                <div class="dimension-name">MAA 行政內耗</div>
+                <div class="dimension-name">MAA 承諾深度</div>
                 <div class="dimension-score">${maaScore}</div>
                 <div class="dimension-label">${maaLabel}</div>
             </div>`;
@@ -784,9 +784,10 @@
             // MAP (戰略潛力)
             const mapScore = dimensions.map || 0;
             let mapLabel = '無法執行';
-            if (mapScore >= 71) mapLabel = '緊密合作';
-            else if (mapScore >= 41) mapLabel = '穩定生意';
-            else if (mapScore >= 1) mapLabel = '能做生意';
+            if (mapScore >= 81) mapLabel = '生態共生';
+            else if (mapScore >= 51) mapLabel = '戰略槓桿';
+            else if (mapScore >= 21) mapLabel = '功能賦能';
+            else if (mapScore >= 1) mapLabel = '交易里程碑';
 
             html += `<div class="dimension-card">
                 <div class="dimension-icon">🚀</div>
@@ -818,7 +819,7 @@
 
                 if (explanations.maa) {
                     html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🟠 MAA 行政內耗</div>
+                        <div class="explanation-header">🟠 MAA 承諾深度</div>
                         <div class="explanation-text">${explanations.maa}</div>
                     </div>`;
                 }
@@ -833,10 +834,10 @@
                 html += '</div></div>';
             }
 
-            // Add TGSA calculation formula
+            // Add TGSA V3.1 calculation formula
             html += '<div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; font-size: 14px; color: #4a5568;">';
-            html += '<strong>TGSA 計算公式：</strong> Y₀ = [(MAO - MAA) + MAP] × (1 - MAD/100)';
-            html += '<br><span style="font-size: 12px; color: #718096; margin-top: 4px; display: block;">生存係數 = 1 - (MAD/100)，若 MAD ≥ 90 則 Y₀ = 0 (熔斷)</span>';
+            html += '<strong>TGSA V3.1 計算公式：</strong> 總分 = (MAO × 1.0) + (MAA × 0.5) + (MAP × 0.8) - MAD';
+            html += '<br><span style="font-size: 12px; color: #718096; margin-top: 4px; display: block;">註：MAA 現為承諾深度（加分項），若 MAD ≥ 90 則總分 = 0 (熔斷)</span>';
             html += '</div>';
 
             container.innerHTML = html;
