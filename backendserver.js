@@ -116,7 +116,7 @@ function saveContract(contractData) {
 // =========================
 
 /**
- * 計算合約健康評分 (TGSA V3.1 四維度分析法)
+ * 計算合約健康評分 (TGSA V3.1 加權平衡版)
  *
  * 這個函數使用 TGSA V3.1 (The Negotiation Engine) 的四維度模型來評估合約的整體健康度：
  *
@@ -126,26 +126,16 @@ function saveContract(contractData) {
  * - MAA (Mutual Assured Attrition → 互相保證消耗): 0-100, 越高代表綁定越深/越穩定
  * - MAP (Mutual Assured Potential - 戰略潛力指標): 0-100, 越高越好
  *
- * TGSA V3.1 計算公式：
- * 總分 = (MAO × 1.0) + (MAA × 0.5) + (MAP × 0.8) - MAD
+ * TGSA V3.1 加權平衡公式：
+ * 總分 = 基礎分 + (MAO × 1.0) + (MAA × 1.2) - (MAD可控 × 0.8) - (MAP超標部分)
  *
- * 範式轉變：
- * - MAA 不再是"行政內耗"（越高越差），而是"互相保證消耗"（承諾深度，越高越穩定）
- * - MAA 從減項變為加項，反映了"雙方願意投入多少資源"是合作穩固度的指標
+ * 關鍵調整說明：
+ * 1. 基礎分 (Base Score): 60 分 - 只要沒有重大過失，台資就是及格的
+ * 2. MAA 權重 x 1.2 - 放大戰略價值的影響力，反映「未雨綢繆」的驅動力
+ * 3. MAD 可控 x 0.8 - 對於非致命的風險（可控風險），降低其扣分權重，反映商業家本身就是冒險家
  *
  * 熔斷機制：
  * - 若 MAD ≥ 90: 直接返回 0 分（死亡區 - Blockers）
- *
- * 痛點標記 (Pain Point Flagging):
- * - 🔴 Blockers: MAD ≥ 90 (死亡區，無法談判)
- * - 🟠 Friction: MAA ≥ 60 (深度綁定，轉換成本高)
- * - 🟡 Ambiguity: 條款模糊 (系統自動調整 MAD 加成)
- *
- * MAA 評分區間（新定義）：
- * - 0-20分：流動式交易（隨用隨棄，低承諾）
- * - 21-50分：預約制維護（有基本資源預留）
- * - 51-80分：硬性鎖定（違約成本高，穩定性極高）
- * - 81-100分：共生/排他（命運共同體，具排他性）
  *
  * @param {Object} overallDimensions - 整體維度分數 { mad, mao, maa, map }
  * @returns {Object} { score: 健康評分 (0-100), dimensions: { mad, mao, maa, map } }
@@ -164,41 +154,50 @@ function calculateHealthScore(overallDimensions) {
   // 🔴 熔斷機制：MAD >= 90 (死亡區 - Blockers)
   // 致命傷包括：破產記錄、詐欺前科、負責人限制出境、欠稅大戶
   if (mad >= 90) {
+    console.log(`🔴 熔斷觸發！MAD = ${mad} >= 90，健康評分 = 0`);
     return {
       score: 0,
       dimensions: dimensions
     };
   }
 
-  // TGSA V3.1 公式：總分 = (MAO × 1.0) + (MAA × 0.5) + (MAP × 0.8) - MAD
-  //
-  // 權重說明：
-  // - MAO (利潤): 1.0 - 仍然是核心，直接收益最重要
-  // - MAA (承諾深度): 0.5 - 現在是加分項，高 MAA 代表穩定的護城河
-  // - MAP (戰略): 0.8 - 長期價值很重要，但略低於直接收益
-  // - MAD (風險): -1.0 - 唯一的扣分項，直接扣除
+  // TGSA V3.1 加權平衡公式
+  // 總分 = 基礎分 + (MAO × 1.0) + (MAA × 1.2) - (MAD × 0.8) - (MAP超標部分)
 
-  const rawScore = (mao * 1.0) + (maa * 0.5) + (map * 0.8) - mad;
+  const baseScore = 60; // 基礎分：台資及格線
 
-  // 標準化到 0-100 區間
-  // 理論最大值：(100 × 1.0) + (100 × 0.5) + (100 × 0.8) - 0 = 230
-  // 理論最小值：(0 × 1.0) + (0 × 0.5) + (0 × 0.8) - 89 = -89
-  // 實際範圍：-89 到 230，映射到 0-100
+  // MAD 可控風險折扣（非致命風險的降權處理）
+  const madPenalty = mad * 0.8;
 
-  const normalizedScore = ((rawScore + 89) / (230 + 89)) * 100;
+  // MAP 超標部分的處理（MAP > 60 時的超額部分降權）
+  // 這裡暫時不實現超標邏輯，因為圖片中未完整說明
+  // 如需實現，可以在後續版本添加
+  const mapBonus = map * 1.0; // 暫時全額計算
+
+  // 計算總分
+  const rawScore = baseScore + (mao * 1.0) + (maa * 1.2) + mapBonus - madPenalty;
+
+  // 限制在 0-100 範圍內
+  const finalScore = Math.round(Math.min(100, Math.max(0, rawScore)));
+
+  console.log(`計算詳情: 基礎${baseScore} + MAO(${mao}×1.0) + MAA(${maa}×1.2) + MAP(${map}) - MAD(${mad}×0.8) = ${finalScore}`);
 
   return {
-    score: Math.round(Math.min(100, Math.max(0, normalizedScore))),
+    score: finalScore,
     dimensions: dimensions
   };
 }
 
 /**
  * 分析公司背景调查结果，检测致命风险
+ * 使用智能检测避免否定词误判（如"無限制出境"被误判为"限制出境"）
  * @param {Object} companyData - Tavily 搜索结果
  * @returns {Object} { hasFatalRisk: boolean, riskLevel: string, riskDetails: string[], madAdjustment: number }
  */
 function analyzeCompanyRisks(companyData) {
+  // 否定词列表 - 用于检测"无XX"、"没有XX"等否定表述
+  const negationWords = ['無', '没有', '沒有', '未', '無明確', '未發現', '不存在', '無記錄'];
+
   const fatalKeywords = [
     '破產', '倒閉', '清算', '重整',
     '詐欺', '詐騙', '洗錢', '貪污',
@@ -227,13 +226,42 @@ function analyzeCompanyRisks(companyData) {
     JSON.stringify(companyData.responsible_person_legal?.results || [])
   ].join(' ');
 
+  /**
+   * 智能关键词检测 - 避免否定词误判
+   * @param {string} text - 要检测的文本
+   * @param {string} keyword - 关键词
+   * @returns {boolean} - 是否真的存在该风险（排除否定表述）
+   */
+  function hasRiskKeyword(text, keyword) {
+    // 找出所有包含关键词的位置
+    let index = text.indexOf(keyword);
+    while (index !== -1) {
+      // 检查关键词前面10个字符，看是否有否定词
+      const before = text.substring(Math.max(0, index - 10), index);
+
+      // 如果前面有否定词，这不是真正的风险
+      const hasNegation = negationWords.some(neg => before.includes(neg));
+
+      if (!hasNegation) {
+        // 真正的风险关键词（前面没有否定词）
+        return true;
+      }
+
+      // 继续查找下一个出现位置
+      index = text.indexOf(keyword, index + 1);
+    }
+
+    return false; // 所有出现都是被否定的
+  }
+
   // 檢測致命風險
   for (const keyword of fatalKeywords) {
-    if (allText.includes(keyword)) {
+    if (hasRiskKeyword(allText, keyword)) {
       hasFatalRisk = true;
       riskLevel = 'fatal';
-      riskDetails.push(`檢測到致命風險關鍵詞: ${keyword}`);
+      riskDetails.push(`檢測到致命風險: ${keyword}`);
       madAdjustment = 90; // 直接觸發熔斷
+      console.log(`⚠️ 致命風險檢測: 發現「${keyword}」且非否定表述`);
       break;
     }
   }
@@ -241,31 +269,37 @@ function analyzeCompanyRisks(companyData) {
   // 如果沒有致命風險，檢查警告級別
   if (!hasFatalRisk) {
     for (const keyword of warningKeywords) {
-      if (allText.includes(keyword)) {
+      if (hasRiskKeyword(allText, keyword)) {
         riskLevel = 'warning';
-        riskDetails.push(`檢測到警告級別關鍵詞: ${keyword}`);
+        riskDetails.push(`檢測到警告級別風險: ${keyword}`);
 
         // 檢查是否為背景雜訊（5年前的勞資糾紛等）
-        const isOldCase = allText.match(/\d{4}年/) &&
-                         parseInt(allText.match(/\d{4}年/)?.[0]) < new Date().getFullYear() - 5;
+        const yearMatch = allText.match(/(\d{4})年/);
+        const isOldCase = yearMatch && parseInt(yearMatch[1]) < new Date().getFullYear() - 5;
 
         if (isOldCase) {
           madAdjustment = Math.max(madAdjustment, 5); // 背景雜訊只扣5-10分
+          console.log(`📝 背景雜訊: 發現${yearMatch[1]}年的「${keyword}」，輕微調整`);
         } else {
           madAdjustment = Math.max(madAdjustment, 15); // 近期問題扣15-20分
+          console.log(`⚠️ 近期風險: 發現「${keyword}」，中度調整`);
         }
       }
     }
   }
+
+  const summary = riskDetails.length > 0
+    ? riskDetails.join('; ')
+    : '未檢測到重大風險';
+
+  console.log(`風險分析完成: ${summary} (MAD調整: ${madAdjustment > 0 ? '+' + madAdjustment : '0'})`);
 
   return {
     hasFatalRisk,
     riskLevel,
     riskDetails,
     madAdjustment,
-    summary: riskDetails.length > 0
-      ? riskDetails.join('; ')
-      : '未檢測到重大風險'
+    summary
   };
 }
 
