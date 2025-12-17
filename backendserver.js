@@ -187,27 +187,72 @@ function calculateHealthScore(overallDimensions) {
 }
 
 /**
- * 修復常見的 JSON 格式問題
+ * 修復常見的 JSON 格式問題（增強版）
  * @param {string} jsonStr - JSON 字串
  * @returns {string} 修復後的 JSON 字串
  */
 function fixCommonJSONIssues(jsonStr) {
-  // 移除尾隨逗號（trailing commas）
-  let fixed = jsonStr.replace(/,(\s*[}\]])/g, "$1");
-
-  // 處理單引號（替換為雙引號）
-  // 注意：這是簡化處理，可能不適用所有情況
-  // fixed = fixed.replace(/'/g, '"');
+  let fixed = jsonStr;
 
   // 移除 JSON 中的註解（// 和 /* */）
   fixed = fixed.replace(/\/\/.*$/gm, "");
   fixed = fixed.replace(/\/\*[\s\S]*?\*\//g, "");
 
+  // 移除尾隨逗號（trailing commas）- 多次運行以處理嵌套情況
+  for (let i = 0; i < 3; i++) {
+    fixed = fixed.replace(/,(\s*[}\]])/g, "$1");
+  }
+
   return fixed;
 }
 
 /**
- * 從 OpenAI 回應中提取 JSON
+ * 嘗試修復 OpenAI 常見的 JSON 結構錯誤
+ * 特別處理 overall_recommendation 被錯誤嵌套在 dimension_explanations 中的情況
+ * @param {string} jsonStr - 可能有結構問題的 JSON 字串
+ * @returns {string} 修復後的 JSON 字串
+ */
+function fixJSONStructure(jsonStr) {
+  // 檢測 overall_recommendation 是否緊跟在 "map" 後面（說明嵌套錯誤）
+  const overallRecommendationIndex = jsonStr.indexOf('"overall_recommendation"');
+
+  if (overallRecommendationIndex === -1) {
+    return jsonStr; // 沒有找到 overall_recommendation，不需要修復
+  }
+
+  // 查找 overall_recommendation 之前最後一個 "map" 的位置
+  const mapIndex = jsonStr.lastIndexOf('"map"', overallRecommendationIndex);
+
+  if (mapIndex === -1) {
+    return jsonStr; // 沒有找到 map，不需要修復
+  }
+
+  // 檢查 map 和 overall_recommendation 之間是否缺少 dimension_explanations 的閉合括號
+  const betweenText = jsonStr.substring(mapIndex, overallRecommendationIndex);
+
+  // 如果兩者之間只有一個引號結束、逗號和空白，說明結構有問題
+  if (betweenText.match(/"[^"]*",\s*$/) && !betweenText.includes('},')) {
+    console.log("檢測到 overall_recommendation 嵌套錯誤，正在修復...");
+
+    // 在 overall_recommendation 之前插入缺少的閉合括號
+    // 找到 overall_recommendation 前面的逗號
+    const commaBeforeOverall = jsonStr.lastIndexOf(',', overallRecommendationIndex);
+
+    if (commaBeforeOverall > mapIndex) {
+      // 在逗號之後、overall_recommendation 之前插入 }\n
+      const before = jsonStr.substring(0, commaBeforeOverall);
+      const after = jsonStr.substring(commaBeforeOverall);
+
+      // 移除那個多餘的逗號，並插入閉合括號
+      jsonStr = before + '\n  },\n  ' + after.substring(1).trim();
+    }
+  }
+
+  return jsonStr;
+}
+
+/**
+ * 從 OpenAI 回應中提取 JSON（增強版，支援結構修復）
  * 處理可能包含 markdown code blocks 或額外文字的情況
  * @param {string} text - OpenAI 回應文字
  * @returns {Object} 解析後的 JSON 物件
@@ -227,7 +272,8 @@ function extractJSON(text) {
       } catch (e2) {
         console.log("從 markdown 提取失敗，嘗試修復 JSON...");
         try {
-          const fixed = fixCommonJSONIssues(jsonMatch[1]);
+          let fixed = fixJSONStructure(jsonMatch[1]);
+          fixed = fixCommonJSONIssues(fixed);
           return JSON.parse(fixed);
         } catch (e3) {
           console.error("修復失敗:", e3.message);
@@ -247,13 +293,15 @@ function extractJSON(text) {
         return JSON.parse(jsonStr);
       } catch (e2) {
         console.log("提取的 JSON 解析失敗，嘗試修復...");
-        // 嘗試修復常見問題後再解析
+        // 嘗試修復結構和常見問題後再解析
         try {
-          const fixed = fixCommonJSONIssues(jsonStr);
+          let fixed = fixJSONStructure(jsonStr);
+          fixed = fixCommonJSONIssues(fixed);
           console.log("修復後的 JSON:", fixed.substring(0, 200) + "...");
           return JSON.parse(fixed);
         } catch (e3) {
           console.error("修復後仍失敗:", e3.message);
+          console.error("嘗試的修復 JSON:", fixed.substring(0, 1000));
           throw new Error(`無法解析 JSON，即使修復後仍失敗。原始錯誤: ${e3.message}\n提取的 JSON: ${jsonStr.substring(0, 500)}`);
         }
       }
