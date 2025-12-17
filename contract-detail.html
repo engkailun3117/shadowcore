@@ -585,6 +585,11 @@
             <div class="analysis-section" id="companySection" style="display:none;">
                 <div class="section-title">🏢 公司背景調查</div>
                 <div class="company-section">
+                    <!-- Risk Analysis Section -->
+                    <div class="company-subsection" id="riskAnalysisSection" style="display:none;">
+                        <div class="subsection-title">🔍 風險評估</div>
+                        <div class="company-content" id="riskAnalysisContent"></div>
+                    </div>
                     <div class="company-subsection" id="companyProfileSection" style="display:none;">
                         <div class="subsection-title">📊 公司簡介</div>
                         <div class="company-content" id="companyProfile"></div>
@@ -701,6 +706,11 @@
 
             scoreElement.className = `score-value-large ${scoreClass}`;
             document.getElementById('scoreDescription').textContent = scoreDesc;
+
+            // Risk analysis (displayed first in company section if available)
+            if (contract.risk_analysis) {
+                displayRiskAnalysis(contract.risk_analysis);
+            }
 
             // Company background (displayed first)
             if (contract.company_data) {
@@ -913,6 +923,65 @@
             `;
 
             return card;
+        }
+
+        function displayRiskAnalysis(riskAnalysis) {
+            const section = document.getElementById('riskAnalysisSection');
+            const content = document.getElementById('riskAnalysisContent');
+
+            if (!riskAnalysis) {
+                section.style.display = 'none';
+                return;
+            }
+
+            // 根據風險等級設置樣式
+            let riskColor = '';
+            let riskIcon = '';
+            let riskLevelText = '';
+
+            switch (riskAnalysis.riskLevel) {
+                case 'fatal':
+                    riskColor = '#e53e3e'; // 紅色
+                    riskIcon = '🔴';
+                    riskLevelText = '致命風險';
+                    break;
+                case 'warning':
+                    riskColor = '#dd6b20'; // 橙色
+                    riskIcon = '🟡';
+                    riskLevelText = '警告';
+                    break;
+                default:
+                    riskColor = '#38a169'; // 綠色
+                    riskIcon = '🟢';
+                    riskLevelText = '安全';
+            }
+
+            let html = `
+                <div style="padding: 15px; background: white; border-left: 4px solid ${riskColor}; border-radius: 4px; margin-bottom: 12px;">
+                    <div style="font-size: 16px; font-weight: 600; color: ${riskColor}; margin-bottom: 10px;">
+                        ${riskIcon} 風險等級: ${riskLevelText}
+                    </div>
+                    <div style="font-size: 14px; color: #4a5568; line-height: 1.6; margin-bottom: 8px;">
+                        <strong>評估摘要:</strong> ${riskAnalysis.summary}
+                    </div>
+                    ${riskAnalysis.madAdjustment > 0 ? `
+                        <div style="font-size: 14px; color: #4a5568;">
+                            <strong>MAD 調整:</strong> +${riskAnalysis.madAdjustment} 分
+                        </div>
+                    ` : ''}
+                    ${riskAnalysis.riskDetails && riskAnalysis.riskDetails.length > 0 ? `
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0;">
+                            <strong style="font-size: 14px; color: #2d3748;">檢測詳情:</strong>
+                            <ul style="margin: 8px 0 0 20px; padding: 0; font-size: 13px; color: #4a5568;">
+                                ${riskAnalysis.riskDetails.map(detail => `<li>${detail}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            content.innerHTML = html;
+            section.style.display = 'block';
         }
 
         function displayCompanyData(companyData) {
