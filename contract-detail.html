@@ -707,11 +707,6 @@
             scoreElement.className = `score-value-large ${scoreClass}`;
             document.getElementById('scoreDescription').textContent = scoreDesc;
 
-            // Risk analysis (displayed first in company section if available)
-            if (contract.risk_analysis) {
-                displayRiskAnalysis(contract.risk_analysis);
-            }
-
             // Company background (displayed first)
             if (contract.company_data) {
                 displayCompanyData(contract.company_data);
