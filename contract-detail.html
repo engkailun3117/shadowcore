@@ -1000,19 +1000,19 @@
             // Set tier descriptions based on tier level
             if (tier === 'S') {
                 scoreClass = 'high';
-                scoreDesc = '王者 - 完美合約：風險極低 (MAD<5) + 利潤極高';
+                scoreDesc = '王者';
             } else if (tier === 'A') {
                 scoreClass = 'high';
-                scoreDesc = '優質 - 高價值合約：風險低，利潤不錯';
+                scoreDesc = '優質';
             } else if (tier === 'B') {
                 scoreClass = 'medium';
-                scoreDesc = '標準 - 穩健合約：填產能、養員工的基本盤';
+                scoreDesc = '標準';
             } else if (tier === 'C') {
                 scoreClass = 'low';
-                scoreDesc = '觀察 - 雞肋合約：必須透過交換條款加價或減責';
+                scoreDesc = '觀察';
             } else if (tier === 'D') {
                 scoreClass = 'low';
-                scoreDesc = '淘汰 - 劇毒合約：系統鎖死，禁止簽核';
+                scoreDesc = '淘汰';
             }
 
             scoreElement.className = `score-value-large ${scoreClass}`;
