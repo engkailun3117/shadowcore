@@ -603,9 +603,35 @@
         });
 
         function displayAnalysis(data) {
-            // Display grade tier instead of score
-            const tier = data.health_tier || 'D';
-            const tierLabel = data.health_tier_label || '劇毒';
+            // Display grade tier instead of score (with fallback for old contracts)
+            let tier = data.health_tier;
+            let tierLabel = data.health_tier_label;
+
+            // Fallback: calculate tier from health_score if not present
+            if (!tier && data.health_score !== undefined) {
+                const score = data.health_score;
+                if (score >= 90) {
+                    tier = 'S';
+                    tierLabel = '完美';
+                } else if (score >= 80) {
+                    tier = 'A';
+                    tierLabel = '優質';
+                } else if (score >= 70) {
+                    tier = 'B';
+                    tierLabel = '標準';
+                } else if (score >= 60) {
+                    tier = 'C';
+                    tierLabel = '雞肋';
+                } else {
+                    tier = 'D';
+                    tierLabel = '劇毒';
+                }
+            }
+
+            // Final fallback
+            tier = tier || 'D';
+            tierLabel = tierLabel || '劇毒';
+
             const scoreElement = document.getElementById('healthScore');
             scoreElement.textContent = `${tier}級 - ${tierLabel}`;
 

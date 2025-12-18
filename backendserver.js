@@ -771,6 +771,8 @@ app.get("/contracts", (req, res) => {
       filename: c.filename,
       seller_company: c.seller_company,
       health_score: c.health_score,
+      health_tier: c.health_tier,
+      health_tier_label: c.health_tier_label,
       upload_date: c.upload_date,
       document_type: c.document_type,
     }));
