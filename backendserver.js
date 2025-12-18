@@ -116,29 +116,35 @@ function saveContract(contractData) {
 // =========================
 
 /**
- * 計算合約健康評分 (TGSA V3.1 加權平衡版)
+ * 計算合約健康評分 (Safety-First Weighted Scoring)
  *
- * 這個函數使用 TGSA V3.1 (The Negotiation Engine) 的四維度模型來評估合約的整體健康度：
+ * 這個函數使用 M.A.X. 的四維度模型來評估合約的整體健康度：
  *
  * 四個維度：
  * - MAD (Mutually Assured Destruction - 生存風險指標): 0-100, 越高越危險
  * - MAO (Mutual Advantage Optimization - 互利營收指標): 0-100, 越高越好
- * - MAA (Mutual Assured Attrition → 互相保證消耗): 0-100, 越高代表綁定越深/越穩定
+ * - MAA (Mutual Assured Attrition - 互相保證消耗): 0-100, 越高代表綁定越深/越穩定
  * - MAP (Mutual Assured Potential - 戰略潛力指標): 0-100, 越高越好
  *
- * TGSA V3.1 加權平衡公式：
- * 總分 = 基礎分 + (MAO × 1.0) + (MAA × 1.2) - (MAD可控 × 0.8) - (MAP超標部分)
+ * Safety-First Weighted Scoring 公式：
+ * 總分 = [(100 - MAD) × 60%] + [(MAO + MAA + MAP)/3 × 40%]
  *
- * 關鍵調整說明：
- * 1. 基礎分 (Base Score): 60 分 - 只要沒有重大過失，台資就是及格的
- * 2. MAA 權重 x 1.2 - 放大戰略價值的影響力，反映「未雨綢繆」的驅動力
- * 3. MAD 可控 x 0.8 - 對於非致命的風險（可控風險），降低其扣分權重，反映商業家本身就是冒險家
+ * 我們將分為兩個部分：
+ * - 安全性得分 (Safety Score): (100 - MAD) × 60% - 佔 60% 權重
+ * - 價值性得分 (Value Score): (MAO + MAA + MAP)/3 × 40% - 佔 40% 權重
  *
  * 熔斷機制：
- * - 若 MAD ≥ 90: 直接返回 0 分（死亡區 - Blockers）
+ * - 若 MAD > 35: 總分強制不得超過 59 分（不及格）
+ *
+ * 等級劃分：
+ * - S 級 (90-100): 完美合約 - MAD<5, Value>85
+ * - A 級 (80-89): 高價值合約
+ * - B 級 (70-79): 穩健合約
+ * - C 級 (60-69): 雞肋合約 - 需要交換條款
+ * - D 級 (<60): 劇毒合約 - 系統鎖死，禁止簽核
  *
  * @param {Object} overallDimensions - 整體維度分數 { mad, mao, maa, map }
- * @returns {Object} { score: 健康評分 (0-100), dimensions: { mad, mao, maa, map } }
+ * @returns {Object} { score: 健康評分 (0-100), dimensions: { mad, mao, maa, map }, tier: 等級 }
  */
 function calculateHealthScore(overallDimensions) {
   // 預設值
@@ -151,38 +157,55 @@ function calculateHealthScore(overallDimensions) {
 
   const { mad, mao, maa, map } = dimensions;
 
-  // 🔴 熔斷機制：MAD >= 90 (死亡區 - Blockers)
-  // 致命傷包括：破產記錄、詐欺前科、負責人限制出境、欠稅大戶
-  if (mad >= 90) {
-    console.log(`🔴 熔斷觸發！MAD = ${mad} >= 90，健康評分 = 0`);
-    return {
-      score: 0,
-      dimensions: dimensions
-    };
+  // 計算安全性得分 (Safety Score) - 60% 權重
+  const safetyScore = (100 - mad) * 0.6;
+
+  // 計算價值性得分 (Value Score) - 40% 權重
+  // 取 MAO、MAA、MAP 的平均值
+  const valueAverage = (mao + maa + map) / 3;
+  const valueScore = valueAverage * 0.4;
+
+  // 計算原始總分
+  let rawScore = safetyScore + valueScore;
+
+  // 🔴 熔斷機制：MAD > 35 (風險過高區)
+  // 只要生存風險超過 35 分，無論利潤多高，總分強制不得超過 59 分（不及格）
+  if (mad > 35) {
+    rawScore = Math.min(rawScore, 59);
+    console.log(`⚠️ 風險熔斷觸發！MAD = ${mad} > 35，健康評分上限鎖定為 59 分`);
   }
-
-  // TGSA V3.1 加權平衡公式
-  // 總分 = 基礎分 + (MAO × 1.0) + (MAA × 1.2) - (MAD × 0.8) - (MAP超標部分)
-
-  // MAD 可控風險折扣（非致命風險的降權處理）
-  const madPenalty = mad;
-
-  // MAP 超標部分的處理（MAP > 60 時的超額部分降權）
-  // 這裡暫時不實現超標邏輯，因為圖片中未完整說明
-  // 如需實現，可以在後續版本添加
-  const mapBonus = map * 0.8; // 暫時全額計算
-
-  // 計算總分
-  const rawScore = (mao * 1.0) + (maa * 0.5) + mapBonus - madPenalty;
 
   // 限制在 0-100 範圍內
   const finalScore = Math.round(Math.min(100, Math.max(0, rawScore)));
 
-  console.log(`計算詳情: MAO(${mao}×1.0) + MAA(${maa}×0.5) + MAP(${map}x0.8) - MAD(${mad}) = ${finalScore}`);
+  // 判斷等級
+  let tier = 'D';
+  let tierLabel = '劇毒';
+  if (finalScore >= 90) {
+    tier = 'S';
+    tierLabel = '完美';
+  } else if (finalScore >= 80) {
+    tier = 'A';
+    tierLabel = '優質';
+  } else if (finalScore >= 70) {
+    tier = 'B';
+    tierLabel = '標準';
+  } else if (finalScore >= 60) {
+    tier = 'C';
+    tierLabel = '雞肋';
+  }
+
+  console.log(`計算詳情: 安全分(${safetyScore.toFixed(1)}) + 價值分(${valueScore.toFixed(1)}) = ${finalScore} 分 [${tier}級-${tierLabel}]`);
 
   return {
     score: finalScore,
-    dimensions: dimensions
+    dimensions: dimensions,
+    tier: tier,
+    tierLabel: tierLabel,
+    breakdown: {
+      safetyScore: Math.round(safetyScore * 10) / 10,
+      valueScore: Math.round(valueScore * 10) / 10
+    }
   };
 }
 
@@ -679,6 +702,9 @@ CRITICAL:
     const healthScoreResult = calculateHealthScore(result.dimensions);
     const healthScore = healthScoreResult.score;
     const healthDimensions = healthScoreResult.dimensions;
+    const healthTier = healthScoreResult.tier;
+    const healthTierLabel = healthScoreResult.tierLabel;
+    const scoreBreakdown = healthScoreResult.breakdown;
     const dimensionExplanations = result.dimension_explanations || {};
     const overallRecommendation = result.overall_recommendation || '';
 
@@ -693,6 +719,9 @@ CRITICAL:
       filename: originalFilename,
       upload_date: new Date().toISOString(),
       health_score: healthScore,
+      health_tier: healthTier,
+      health_tier_label: healthTierLabel,
+      score_breakdown: scoreBreakdown,
       health_dimensions: healthDimensions,
       dimension_explanations: dimensionExplanations,
       overall_recommendation: overallRecommendation,
@@ -704,13 +733,16 @@ CRITICAL:
 
     saveContract(savedContractData);
 
-    console.log(`✅ 合約分析完成！ID: ${contractId}, 健康評分: ${healthScore}`);
+    console.log(`✅ 合約分析完成！ID: ${contractId}, 健康評分: ${healthScore} 分 [${healthTier}級-${healthTierLabel}]`);
 
     // 返回完整分析結果
     res.json({
       contract_id: contractId,
       success: true,
       health_score: healthScore,
+      health_tier: healthTier,
+      health_tier_label: healthTierLabel,
+      score_breakdown: scoreBreakdown,
       health_dimensions: healthDimensions,
       dimension_explanations: dimensionExplanations,
       overall_recommendation: overallRecommendation,
