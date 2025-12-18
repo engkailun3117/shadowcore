@@ -184,6 +184,107 @@
             background: #f7fafc;
             border-radius: 12px;
             min-width: 200px;
+            position: relative;
+        }
+
+        .help-icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: help;
+            transition: all 0.2s;
+        }
+
+        .help-icon:hover {
+            background: #5a67d8;
+            transform: scale(1.1);
+        }
+
+        .grade-tooltip {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            width: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            text-align: left;
+        }
+
+        .help-icon:hover + .grade-tooltip,
+        .grade-tooltip:hover {
+            display: block;
+        }
+
+        .tooltip-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .grade-item {
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f7fafc;
+        }
+
+        .grade-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .grade-header {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grade-header.tier-s { color: #48bb78; }
+        .grade-header.tier-a { color: #48bb78; }
+        .grade-header.tier-b { color: #ed8936; }
+        .grade-header.tier-c { color: #f56565; }
+        .grade-header.tier-d { color: #e53e3e; }
+
+        .grade-range {
+            display: inline-block;
+            padding: 2px 8px;
+            background: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .grade-desc {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4a5568;
+        }
+
+        .grade-mode {
+            font-weight: 600;
+            color: #2d3748;
         }
 
         .score-label {
@@ -558,6 +659,71 @@
 
                     <!-- Right: Contract Grade -->
                     <div class="health-score-large">
+                        <div class="help-icon">?</div>
+                        <div class="grade-tooltip">
+                            <div class="tooltip-title">合約等級說明</div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-s">
+                                    S 級 (王者)
+                                    <span class="grade-range">90 - 100</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>完美合約 (Perfect)</strong><br>
+                                    <span class="grade-mode">Mode O (極速簽核)</span><br>
+                                    風險極低 (MAD&lt;5) + 利潤極高 (Value&gt;85)。這種單通常是「天上掉下來的禮物」。
+                                </div>
+                            </div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-a">
+                                    A 級 (優質)
+                                    <span class="grade-range">80 - 89</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>高價值合約 (Excellent)</strong><br>
+                                    <span class="grade-mode">Mode O (優先排程)</span><br>
+                                    風險低，利潤不錯；或者利潤極高但有一點點可控的小風險。這是業務的主力目標。
+                                </div>
+                            </div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-b">
+                                    B 級 (標準)
+                                    <span class="grade-range">70 - 79</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>穩健合約 (Standard)</strong><br>
+                                    <span class="grade-mode">Mode A (標準執行)</span><br>
+                                    非常安全，但利潤平平。用來「填產能、養員工」的基本盤。
+                                </div>
+                            </div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-c">
+                                    C 級 (觀察)
+                                    <span class="grade-range">60 - 69</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>雞肋合約 (Marginal)</strong><br>
+                                    <span class="grade-mode">Mode A (強制交換)</span><br>
+                                    食之無味，棄之可惜。風險偏高或利潤太薄。系統建議：必須透過「交換條款」加價或減責，否則不接。
+                                </div>
+                            </div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-d">
+                                    D 級 (淘汰)
+                                    <span class="grade-range">&lt; 60</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>劇毒合約 (Toxic)</strong><br>
+                                    <span class="grade-mode">Mode D (熔斷/拒絕)</span><br>
+                                    生存風險超標 (MAD &gt; 35) 或 賠錢生意。系統鎖死，禁止簽核。
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="score-label">合約等級</div>
                         <div class="score-value-large" id="healthScoreLarge">--</div>
                         <div class="score-description" id="scoreDescription">評估中</div>
