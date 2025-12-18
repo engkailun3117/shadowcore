@@ -131,6 +131,103 @@
             color: #1a202c;
             line-height: 1.2;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .company-name-text {
+            flex: 1;
+        }
+
+        .edit-company-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .edit-company-btn:hover {
+            background: #5a67d8;
+        }
+
+        .company-name-input {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a202c;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .btn-save {
+            padding: 10px 24px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #38a169;
+        }
+
+        .btn-cancel {
+            padding: 10px 24px;
+            background: #e2e8f0;
+            color: #2d3748;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+
+        .updating-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .updating-message {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .updating-message .spinner {
+            margin: 0 auto 16px;
         }
 
         .company-badge {
@@ -653,7 +750,22 @@
                         <div>
                             <span class="company-badge" id="documentTypeBadge">合約</span>
                         </div>
-                        <div class="company-name-display" id="companyName">載入中...</div>
+
+                        <!-- Display mode -->
+                        <div class="company-name-display" id="companyNameDisplay">
+                            <span class="company-name-text" id="companyName">載入中...</span>
+                            <button class="edit-company-btn" id="editCompanyBtn" onclick="enableEditMode()">✏️ 編輯</button>
+                        </div>
+
+                        <!-- Edit mode -->
+                        <div id="companyNameEdit" style="display: none;">
+                            <input type="text" class="company-name-input" id="companyNameInput" placeholder="輸入正確的公司名稱">
+                            <div class="edit-actions">
+                                <button class="btn-save" onclick="saveCompanyName()">✓ 儲存並重新評估</button>
+                                <button class="btn-cancel" onclick="cancelEditMode()">✕ 取消</button>
+                            </div>
+                        </div>
+
                         <div class="contract-title" id="contractTitle">合約文件</div>
                     </div>
 
@@ -1221,6 +1333,94 @@
                 alert('刪除失敗: ' + error.message);
             }
         });
+
+        // Edit company name functions
+        function enableEditMode() {
+            const currentName = document.getElementById('companyName').textContent;
+            document.getElementById('companyNameInput').value = currentName;
+            document.getElementById('companyNameDisplay').style.display = 'none';
+            document.getElementById('companyNameEdit').style.display = 'block';
+        }
+
+        function cancelEditMode() {
+            document.getElementById('companyNameDisplay').style.display = 'flex';
+            document.getElementById('companyNameEdit').style.display = 'none';
+        }
+
+        async function saveCompanyName() {
+            const newCompanyName = document.getElementById('companyNameInput').value.trim();
+
+            if (!newCompanyName) {
+                alert('請輸入公司名稱');
+                return;
+            }
+
+            const currentName = document.getElementById('companyName').textContent;
+            if (newCompanyName === currentName) {
+                alert('公司名稱未改變');
+                cancelEditMode();
+                return;
+            }
+
+            // Confirm the change
+            const confirmChange = confirm(`確定要將公司名稱從「${currentName}」改為「${newCompanyName}」嗎？\n\n這將重新執行背景調查，可能需要一些時間。`);
+            if (!confirmChange) {
+                return;
+            }
+
+            // Show updating overlay
+            showUpdatingOverlay();
+
+            try {
+                const response = await fetch(`http://localhost:3000/contracts/${currentContractId}/update-company`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        new_company_name: newCompanyName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update UI with new data
+                    displayContractDetails(data.contract);
+                    cancelEditMode();
+                    hideUpdatingOverlay();
+                    alert('✅ 公司名稱已更新，背景調查已重新執行！');
+                } else {
+                    hideUpdatingOverlay();
+                    alert('更新失敗: ' + (data.error || '未知錯誤'));
+                }
+            } catch (error) {
+                console.error('Error updating company name:', error);
+                hideUpdatingOverlay();
+                alert('更新失敗: ' + error.message);
+            }
+        }
+
+        function showUpdatingOverlay() {
+            const overlay = document.createElement('div');
+            overlay.id = 'updatingOverlay';
+            overlay.className = 'updating-overlay';
+            overlay.innerHTML = `
+                <div class="updating-message">
+                    <div class="spinner"></div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">正在更新合約資料...</div>
+                    <div style="font-size: 14px; color: #718096;">重新執行背景調查，請稍候</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function hideUpdatingOverlay() {
+            const overlay = document.getElementById('updatingOverlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
 
         // Load contract on page load
         loadContractDetails();

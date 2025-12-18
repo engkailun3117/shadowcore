@@ -832,6 +832,107 @@ app.delete("/contracts/:id", (req, res) => {
   }
 });
 
+// 更新公司名稱並重新評估合約
+app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
+  try {
+    const contractId = req.params.id;
+    const { new_company_name } = req.body;
+
+    if (!new_company_name || new_company_name.trim() === "") {
+      return res.status(400).json({ error: "公司名稱不能為空" });
+    }
+
+    const existingContract = findContractById(contractId);
+    if (!existingContract) {
+      return res.status(404).json({ error: "合約不存在" });
+    }
+
+    console.log(`\n🔄 更新合約 ${contractId} 的公司名稱: ${existingContract.seller_company} → ${new_company_name}`);
+
+    // ========================================
+    // 階段 1: Tavily 背景調查（使用新公司名稱）
+    // ========================================
+    console.log(`階段 1: 對「${new_company_name}」進行背景調查...`);
+
+    const [companyProfile, customsInfo, legalInfo, responsiblePersonInfo, responsiblePersonLegal] = await Promise.all([
+      tavily.search({
+        query: `關於「${new_company_name}」的公司簡介、業務概況、公司背景。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
+        max_results: 3,
+        include_answer: true,
+      }),
+      tavily.search({
+        query: `關於「${new_company_name}」的海關進出口記錄、貿易數據、進出口業務。請用繁體中文回答。`,
+        max_results: 3,
+        include_answer: true,
+      }),
+      tavily.search({
+        query: `關於「${new_company_name}」的法律合規狀況、訴訟記錄、破產紀錄、詐欺前科、法規遵循。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
+        max_results: 3,
+        include_answer: true,
+      }),
+      tavily.search({
+        query: `「${new_company_name}」的公司負責人是誰？董事長、總經理、代表人姓名。請用繁體中文回答。`,
+        max_results: 3,
+        include_answer: true,
+      }),
+      tavily.search({
+        query: `「${new_company_name}」公司負責人的法律問題、訴訟記錄、違法紀錄、司法案件、限制出境、欠稅。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
+        max_results: 3,
+        include_answer: true,
+      })
+    ]);
+
+    const companyData = {
+      profile: companyProfile,
+      customs: customsInfo,
+      legal: legalInfo,
+      responsible_person: responsiblePersonInfo,
+      responsible_person_legal: responsiblePersonLegal
+    };
+
+    // ========================================
+    // 階段 2: 重新計算健康評分（使用原有維度數據）
+    // ========================================
+    console.log("階段 2: 重新計算健康評分...");
+
+    // 保留原有的維度分析結果和評分
+    const healthScoreResult = calculateHealthScore(existingContract.health_dimensions);
+    const healthScore = healthScoreResult.score;
+    const healthDimensions = healthScoreResult.dimensions;
+    const healthTier = healthScoreResult.tier;
+    const healthTierLabel = healthScoreResult.tierLabel;
+    const scoreBreakdown = healthScoreResult.breakdown;
+
+    // 更新合約資料
+    const updatedContract = {
+      ...existingContract,
+      seller_company: new_company_name,
+      company_data: companyData,
+      health_score: healthScore,
+      health_tier: healthTier,
+      health_tier_label: healthTierLabel,
+      score_breakdown: scoreBreakdown,
+      health_dimensions: healthDimensions,
+      last_updated: new Date().toISOString(),
+    };
+
+    saveContract(updatedContract);
+
+    console.log(`✅ 合約更新完成！新公司名稱: ${new_company_name}, 健康評分: ${healthScore} 分 [${healthTier}級-${healthTierLabel}]`);
+
+    // 返回更新後的合約資料
+    res.json({
+      success: true,
+      message: "公司名稱已更新，背景調查已重新執行",
+      contract: updatedContract
+    });
+
+  } catch (err) {
+    console.error("更新合約失敗:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
 
