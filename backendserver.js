@@ -433,7 +433,7 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
 
     const [companyProfile, customsInfo, legalInfo, responsiblePersonInfo, responsiblePersonLegal] = await Promise.all([
       tavily.search({
-        query: `關於「${sellerCompany}」的公司簡介、業務概況、公司背景。請用繁體中文回答。`,
+        query: `關於「${sellerCompany}」的公司簡介、業務概況、公司背景。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
         max_results: 3,
         include_answer: true,
       }),
@@ -443,7 +443,7 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
         include_answer: true,
       }),
       tavily.search({
-        query: `關於「${sellerCompany}」的法律合規狀況、訴訟記錄、破產紀錄、詐欺前科、法規遵循。請用繁體中文回答。`,
+        query: `關於「${sellerCompany}」的法律合規狀況、訴訟記錄、破產紀錄、詐欺前科、法規遵循。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
         max_results: 3,
         include_answer: true,
       }),
@@ -453,7 +453,7 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
         include_answer: true,
       }),
       tavily.search({
-        query: `「${sellerCompany}」公司負責人的法律問題、訴訟記錄、違法紀錄、司法案件、限制出境、欠稅。請用繁體中文回答。`,
+        query: `「${sellerCompany}」公司負責人的法律問題、訴訟記錄、違法紀錄、司法案件、限制出境、欠稅。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
         max_results: 3,
         include_answer: true,
       })
@@ -832,3 +832,4 @@ app.delete("/contracts/:id", (req, res) => {
 
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
+
