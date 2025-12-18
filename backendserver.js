@@ -433,7 +433,7 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
 
     const [companyProfile, customsInfo, legalInfo, responsiblePersonInfo, responsiblePersonLegal] = await Promise.all([
       tavily.search({
-        query: `關於「${sellerCompany}」的公司簡介、業務概況、公司背景。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
+        query: `關於「${sellerCompany}」的公司簡介。請用繁體中文回答。`,
         max_results: 3,
         include_answer: true,
       }),
@@ -1137,4 +1137,5 @@ CRITICAL:
 
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
+
 
