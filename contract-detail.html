@@ -1234,15 +1234,14 @@
                     return tavilyData.answer;
                 }
 
-                // Fallback: if no answer but has results, use first result content
-                if (tavilyData.results && Array.isArray(tavilyData.results) && tavilyData.results.length > 0) {
-                    const topResult = tavilyData.results[0];
-                    let text = '';
-                    if (topResult.title) text += topResult.title + '\n\n';
-                    if (topResult.content) text += topResult.content;
-                    return text.trim();
-                }
-
+                // Fallback: if no answer but has results, use first result content - 不要加這個來弄亂結果，有時候第一個result也是不相關的資料，乾脆不用
+                //if (tavilyData.results && Array.isArray(tavilyData.results) && tavilyData.results.length > 0) {
+                //    const topResult = tavilyData.results[0];
+                //    let text = '';
+                //    if (topResult.title) text += topResult.title + '\n\n';
+                //    if (topResult.content) text += topResult.content;
+                //    return text.trim();
+                //}
                 return null;
             }
 
