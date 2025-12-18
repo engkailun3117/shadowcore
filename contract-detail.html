@@ -693,7 +693,7 @@
                 const score = contract.health_score;
                 if (score >= 90) {
                     tier = 'S';
-                    tierLabel = '完美';
+                    tierLabel = '王者';
                 } else if (score >= 80) {
                     tier = 'A';
                     tierLabel = '優質';
@@ -702,16 +702,16 @@
                     tierLabel = '標準';
                 } else if (score >= 60) {
                     tier = 'C';
-                    tierLabel = '雞肋';
+                    tierLabel = '觀察';
                 } else {
                     tier = 'D';
-                    tierLabel = '劇毒';
+                    tierLabel = '淘汰';
                 }
             }
 
             // Final fallback
             tier = tier || 'D';
-            tierLabel = tierLabel || '劇毒';
+            tierLabel = tierLabel || '淘汰';
 
             const scoreElement = document.getElementById('healthScoreLarge');
             scoreElement.textContent = `${tier}級`;
@@ -722,19 +722,19 @@
             // Set tier descriptions based on tier level
             if (tier === 'S') {
                 scoreClass = 'high';
-                scoreDesc = '完美 - 風險極低，利潤極高';
+                scoreDesc = '王者 - 完美合約：風險極低 (MAD<5) + 利潤極高';
             } else if (tier === 'A') {
                 scoreClass = 'high';
-                scoreDesc = '優質 - 高價值合約';
+                scoreDesc = '優質 - 高價值合約：風險低，利潤不錯';
             } else if (tier === 'B') {
                 scoreClass = 'medium';
-                scoreDesc = '標準 - 穩健合約';
+                scoreDesc = '標準 - 穩健合約：填產能、養員工的基本盤';
             } else if (tier === 'C') {
                 scoreClass = 'low';
-                scoreDesc = '雞肋 - 需要交換條款';
+                scoreDesc = '觀察 - 雞肋合約：必須透過交換條款加價或減責';
             } else if (tier === 'D') {
                 scoreClass = 'low';
-                scoreDesc = '劇毒 - 系統鎖死，禁止簽核';
+                scoreDesc = '淘汰 - 劇毒合約：系統鎖死，禁止簽核';
             }
 
             scoreElement.className = `score-value-large ${scoreClass}`;

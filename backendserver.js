@@ -180,10 +180,10 @@ function calculateHealthScore(overallDimensions) {
 
   // 判斷等級
   let tier = 'D';
-  let tierLabel = '劇毒';
+  let tierLabel = '淘汰';
   if (finalScore >= 90) {
     tier = 'S';
-    tierLabel = '完美';
+    tierLabel = '王者';
   } else if (finalScore >= 80) {
     tier = 'A';
     tierLabel = '優質';
@@ -192,7 +192,7 @@ function calculateHealthScore(overallDimensions) {
     tierLabel = '標準';
   } else if (finalScore >= 60) {
     tier = 'C';
-    tierLabel = '雞肋';
+    tierLabel = '觀察';
   }
 
   console.log(`計算詳情: 安全分(${safetyScore.toFixed(1)}) + 價值分(${valueScore.toFixed(1)}) = ${finalScore} 分 [${tier}級-${tierLabel}]`);

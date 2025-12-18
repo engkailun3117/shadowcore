@@ -269,7 +269,7 @@
                 const score = contract.health_score;
                 if (score >= 90) {
                     tier = 'S';
-                    tierLabel = '完美';
+                    tierLabel = '王者';
                 } else if (score >= 80) {
                     tier = 'A';
                     tierLabel = '優質';
@@ -278,16 +278,16 @@
                     tierLabel = '標準';
                 } else if (score >= 60) {
                     tier = 'C';
-                    tierLabel = '雞肋';
+                    tierLabel = '觀察';
                 } else {
                     tier = 'D';
-                    tierLabel = '劇毒';
+                    tierLabel = '淘汰';
                 }
             }
 
             // Final fallback
             tier = tier || 'D';
-            tierLabel = tierLabel || '劇毒';
+            tierLabel = tierLabel || '淘汰';
 
             let scoreClass = 'low';
             if (tier === 'S' || tier === 'A') scoreClass = 'high';
