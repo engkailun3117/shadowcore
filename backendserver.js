@@ -370,7 +370,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     // ========================================
     console.log("階段 1: 提取基本資訊...");
     const basicInfoResponse = await openai.responses.create({
-      model: "gpt-4.1",
+      model: "gpt-5.2",
       text: {
         format: {
           type: "json_object"
@@ -499,7 +499,7 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
 
     // 3. 呼叫 Responses API 進行完整評分 (with JSON mode enforced)
     const response = await openai.responses.create({
-      model: "gpt-4.1",
+      model: "gpt-5.2",
       text: {
         format: {
           type: "json_object"
@@ -612,6 +612,12 @@ CRITICAL:
   - 世界級品牌光環
   - 建立競爭門檻
 
+
+⚠️ 嚴禁：
+- 使用模糊語言
+- 將行政成本誤判為風險
+- 將背景雜訊誤判為致命傷
+- 在 JSON 外輸出任何內容
 ────────────────────
 【輸出格式（嚴格遵守）】
 
@@ -629,13 +635,7 @@ CRITICAL:
     "map": "100–200 字，說明是否構成跳板或戰略資產"
   },
   "overall_recommendation": "150–250 字，明確給出是否建議簽署、風險邊界、談判優化點"
-}
-
-⚠️ 嚴禁：
-- 使用模糊語言
-- 將行政成本誤判為風險
-- 將背景雜訊誤判為致命傷
-- 在 JSON 外輸出任何內容`,
+}`,
             },
             {
               type: "input_file",
@@ -857,7 +857,7 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
 
     const [companyProfile, customsInfo, legalInfo, responsiblePersonInfo, responsiblePersonLegal] = await Promise.all([
       tavily.search({
-        query: `關於「${new_company_name}」的公司簡介、業務概況、公司背景。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
+        query: `關於「${sellerCompany}」的公司簡介。請用繁體中文回答。`,
         max_results: 3,
         include_answer: true,
       }),
@@ -949,7 +949,7 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
 
     // 重新呼叫 OpenAI API 進行維度評估
     const response = await openai.responses.create({
-      model: "gpt-4.1",
+      model: "gpt-5.2",
       text: {
         format: {
           type: "json_object"
@@ -1037,41 +1037,55 @@ CRITICAL:
 - 51–80 硬性鎖定：保證採購、沈沒成本、高額解約金、利潤綁定
 - 81–100 共生／排他：獨家條款、股權互持、核心命脈託管
 
+評估重點是「財務鎖定、時間承諾、成效綁定」，而非麻不麻煩。
+
 ────────────────────
 【MAP：戰略潛力與憲章指標（0–100，越高越好）】
-核心問題：「這份合約未來能否帶來長期戰略價值？」
+核心問題：「這份合約是否成為公司未來的跳板？」
 
-- 0–20：純交易，零潛力
-- 21–40：基礎合作，可能延續
-- 41–70：戰略夥伴，有擴展空間
-- 71–100：憲章級合約（長期獨家、雙方核心利益綁定）
+⚠️ 標準行政作業（人工驗收、文件審查、例行會議）= 0 分（綠區）
+不得因『非數位化』或『有人工作業』而扣分。
 
+- 0 分：無法執行（無法開單、無法履約）
+- 1–20：純交易里程碑（能做生意）
+- 21–50：功能性賦能
+  - 資質取得（ISO、專利、合規）
+  - 效率提升（外包非核心）
+  - 履歷背書（案例、Portfolio）
+- 51–80：戰略槓桿
+  - 政府／政策資源
+  - 金融槓桿（補助、授信、估值）
+  - 知識轉移、風險共擔（Success Fee）
+- 81–100：生態系共生
+  - 獨家／排他
+  - 憲章高度對齊、深度資料共享
+  - 世界級品牌光環
+  - 建立競爭門檻
+
+
+⚠️ 嚴禁：
+- 使用模糊語言
+- 將行政成本誤判為風險
+- 將背景雜訊誤判為致命傷
+- 在 JSON 外輸出任何內容
 ────────────────────
-【JSON 格式要求（不可違反）】
-────────────────────
-
-你的輸出必須嚴格遵守以下格式：
+【輸出格式（嚴格遵守）】
 
 {
   "dimensions": {
-    "mad": 整數 0–100,
-    "mao": 整數 0–100,
-    "maa": 整數 0–100,
-    "map": 整數 0–100
+    "mad": 0-100,
+    "mao": 0-100,
+    "maa": 0-100,
+    "map": 0-100
   },
   "dimension_explanations": {
-    "mad": "清晰解釋 MAD 評分的依據",
-    "mao": "清晰解釋 MAO 評分的依據",
-    "maa": "清晰解釋 MAA 評分的依據",
-    "map": "清晰解釋 MAP 評分的依據"
+    "mad": "100–200 字，引用具體條款，說明風險是否為致命或雜訊",
+    "mao": "100–200 字，說明營收結構與槓桿",
+    "maa": "100–200 字，說明雙方承諾與鎖定程度",
+    "map": "100–200 字，說明是否構成跳板或戰略資產"
   },
-  "overall_recommendation": "基於四維度的專業建議（2-3 句話）"
-}
-
-【嚴禁行為】
-────────────────────
-- 將背景雜訊誤判為致命傷
-- 在 JSON 外輸出任何內容`,
+  "overall_recommendation": "150–250 字，明確給出是否建議簽署、風險邊界、談判優化點"
+}`,
             },
             {
               type: "input_file",
@@ -1137,5 +1151,6 @@ CRITICAL:
 
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
+
 
 
