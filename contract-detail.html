@@ -556,9 +556,9 @@
                         <div class="contract-title" id="contractTitle">合約文件</div>
                     </div>
 
-                    <!-- Right: Health Score -->
+                    <!-- Right: Contract Grade -->
                     <div class="health-score-large">
-                        <div class="score-label">健康評分</div>
+                        <div class="score-label">合約等級</div>
                         <div class="score-value-large" id="healthScoreLarge">--</div>
                         <div class="score-description" id="scoreDescription">評估中</div>
                     </div>
@@ -684,19 +684,31 @@
                 minute: '2-digit'
             });
 
-            // Health score
-            const healthScore = contract.health_score;
+            // Contract Grade Tier
+            const tier = contract.health_tier || 'D';
+            const tierLabel = contract.health_tier_label || '劇毒';
             const scoreElement = document.getElementById('healthScoreLarge');
-            scoreElement.textContent = healthScore;
+            scoreElement.textContent = `${tier}級`;
 
             let scoreClass = 'low';
-            let scoreDesc = '合約存在多項風險，建議重新協商';
-            if (healthScore >= 80) {
+            let scoreDesc = tierLabel;
+
+            // Set tier descriptions based on tier level
+            if (tier === 'S') {
                 scoreClass = 'high';
-                scoreDesc = '合約條款良好，風險較低';
-            } else if (healthScore >= 60) {
+                scoreDesc = '完美 - 風險極低，利潤極高';
+            } else if (tier === 'A') {
+                scoreClass = 'high';
+                scoreDesc = '優質 - 高價值合約';
+            } else if (tier === 'B') {
                 scoreClass = 'medium';
-                scoreDesc = '合約可接受，但存在一些需要注意的風險';
+                scoreDesc = '標準 - 穩健合約';
+            } else if (tier === 'C') {
+                scoreClass = 'low';
+                scoreDesc = '雞肋 - 需要交換條款';
+            } else if (tier === 'D') {
+                scoreClass = 'low';
+                scoreDesc = '劇毒 - 系統鎖死，禁止簽核';
             }
 
             scoreElement.className = `score-value-large ${scoreClass}`;

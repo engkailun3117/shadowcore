@@ -260,9 +260,13 @@
         function createContractCard(contract) {
             const card = document.createElement('div');
 
+            // Get tier information
+            const tier = contract.health_tier || 'D';
+            const tierLabel = contract.health_tier_label || '劇毒';
+
             let scoreClass = 'low';
-            if (contract.health_score >= 80) scoreClass = 'high';
-            else if (contract.health_score >= 60) scoreClass = 'medium';
+            if (tier === 'S' || tier === 'A') scoreClass = 'high';
+            else if (tier === 'B') scoreClass = 'medium';
 
             card.className = `contract-card ${scoreClass}`;
             card.onclick = () => {
@@ -286,7 +290,7 @@
                         <div class="contract-company">${contract.seller_company || '未知公司'}</div>
                         <div class="contract-date">📅 ${formattedDate}</div>
                     </div>
-                    <div class="health-score ${scoreClass}">${contract.health_score}</div>
+                    <div class="health-score ${scoreClass}">${tier}級</div>
                 </div>
             `;
 

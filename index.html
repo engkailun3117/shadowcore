@@ -454,7 +454,7 @@
         <div class="analysis-panel">
             <!-- Health Score -->
             <div class="health-score">
-                <div class="score-label">健康度評分 (Health Score)</div>
+                <div class="score-label">合約等級 (Contract Grade)</div>
                 <div>
                     <span class="score-value" id="healthScore">--</span>
                 </div>
@@ -603,16 +603,17 @@
         });
 
         function displayAnalysis(data) {
-            // Update health score (確保顯示整數，沒有小數點)
-            const healthScore = Math.floor(data.health_score);
+            // Display grade tier instead of score
+            const tier = data.health_tier || 'D';
+            const tierLabel = data.health_tier_label || '劇毒';
             const scoreElement = document.getElementById('healthScore');
-            scoreElement.textContent = healthScore;
+            scoreElement.textContent = `${tier}級 - ${tierLabel}`;
 
-            // 根據分數設定顏色
+            // Set color based on tier
             scoreElement.className = 'score-value';
-            if (healthScore >= 80) {
+            if (tier === 'S' || tier === 'A') {
                 scoreElement.classList.add('high'); // 綠色
-            } else if (healthScore >= 60) {
+            } else if (tier === 'B') {
                 scoreElement.classList.add('medium'); // 橙色
             } else {
                 scoreElement.classList.add('low'); // 紅色
@@ -708,10 +709,14 @@
         }
 
         function handleDuplicate(existingContract) {
+            const tierInfo = existingContract.health_tier && existingContract.health_tier_label
+                ? `${existingContract.health_tier}級 - ${existingContract.health_tier_label}`
+                : `評分：${existingContract.health_score}`;
+
             const message = `此合約已存在於系統中：\n\n` +
                 `文件名：${existingContract.filename}\n` +
                 `公司：${existingContract.seller_company}\n` +
-                `健康評分：${existingContract.health_score}\n` +
+                `合約等級：${tierInfo}\n` +
                 `上傳日期：${new Date(existingContract.upload_date).toLocaleString('zh-TW')}\n\n` +
                 `是否要查看已存在的合約詳情？`;
 
