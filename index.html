@@ -396,6 +396,139 @@
             display: none;
         }
 
+        /* Duplicate Banner */
+        .duplicate-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-width: 600px;
+            width: 90%;
+            display: none;
+        }
+
+        .duplicate-banner.active {
+            display: block;
+            animation: fadeInScale 0.3s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .duplicate-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .duplicate-overlay.active {
+            display: block;
+        }
+
+        .duplicate-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f7fafc;
+        }
+
+        .duplicate-icon {
+            font-size: 32px;
+        }
+
+        .duplicate-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .duplicate-content {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .duplicate-info-item {
+            margin-bottom: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .duplicate-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .duplicate-label {
+            font-weight: 600;
+            color: #4a5568;
+            min-width: 100px;
+        }
+
+        .duplicate-value {
+            color: #2d3748;
+            flex: 1;
+        }
+
+        .duplicate-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-duplicate-view {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-duplicate-view:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-duplicate-cancel {
+            flex: 1;
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 14px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-duplicate-cancel:hover {
+            background: #cbd5e0;
+        }
+
         /* Button */
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -432,6 +565,37 @@
             <div class="nav-item">
                 <span class="badge">🤖 AI POWERED</span>
             </div>
+        </div>
+    </div>
+
+    <!-- Duplicate File Banner -->
+    <div class="duplicate-overlay" id="duplicateOverlay"></div>
+    <div class="duplicate-banner" id="duplicateBanner">
+        <div class="duplicate-header">
+            <div class="duplicate-icon">⚠️</div>
+            <div class="duplicate-title">此合約已存在</div>
+        </div>
+        <div class="duplicate-content">
+            <div class="duplicate-info-item">
+                <div class="duplicate-label">文件名：</div>
+                <div class="duplicate-value" id="dupFilename">--</div>
+            </div>
+            <div class="duplicate-info-item">
+                <div class="duplicate-label">公司名稱：</div>
+                <div class="duplicate-value" id="dupCompany">--</div>
+            </div>
+            <div class="duplicate-info-item">
+                <div class="duplicate-label">合約等級：</div>
+                <div class="duplicate-value" id="dupGrade">--</div>
+            </div>
+            <div class="duplicate-info-item">
+                <div class="duplicate-label">上傳日期：</div>
+                <div class="duplicate-value" id="dupDate">--</div>
+            </div>
+        </div>
+        <div class="duplicate-actions">
+            <button class="btn-duplicate-view" id="btnViewExisting">📊 查看已存在的合約</button>
+            <button class="btn-duplicate-cancel" id="btnCancelDuplicate">✕ 取消</button>
         </div>
     </div>
 
@@ -739,19 +903,35 @@
                 ? `${existingContract.health_tier}級 - ${existingContract.health_tier_label}`
                 : `評分：${existingContract.health_score}`;
 
-            const message = `此合約已存在於系統中：\n\n` +
-                `文件名：${existingContract.filename}\n` +
-                `公司：${existingContract.seller_company}\n` +
-                `合約等級：${tierInfo}\n` +
-                `上傳日期：${new Date(existingContract.upload_date).toLocaleString('zh-TW')}\n\n` +
-                `是否要查看已存在的合約詳情？`;
+            // 填充重複文件資訊
+            document.getElementById('dupFilename').textContent = existingContract.filename;
+            document.getElementById('dupCompany').textContent = existingContract.seller_company;
+            document.getElementById('dupGrade').textContent = tierInfo;
+            document.getElementById('dupDate').textContent = new Date(existingContract.upload_date).toLocaleString('zh-TW');
 
-            if (confirm(message)) {
+            // 顯示重複文件橫幅
+            document.getElementById('duplicateOverlay').classList.add('active');
+            document.getElementById('duplicateBanner').classList.add('active');
+
+            // 設置按鈕事件監聽器
+            document.getElementById('btnViewExisting').onclick = () => {
                 window.location.href = `contract-detail.html?id=${existingContract.contract_id}`;
-            } else {
-                // 用戶選擇取消，重新載入頁面
+            };
+
+            document.getElementById('btnCancelDuplicate').onclick = () => {
+                // 隱藏橫幅
+                document.getElementById('duplicateOverlay').classList.remove('active');
+                document.getElementById('duplicateBanner').classList.remove('active');
+                // 重新載入頁面
                 window.location.reload();
-            }
+            };
+
+            // 點擊遮罩層也可以關閉
+            document.getElementById('duplicateOverlay').onclick = () => {
+                document.getElementById('duplicateOverlay').classList.remove('active');
+                document.getElementById('duplicateBanner').classList.remove('active');
+                window.location.reload();
+            };
         }
 
     </script>
