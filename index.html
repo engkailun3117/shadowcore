@@ -396,6 +396,139 @@
             display: none;
         }
 
+        /* Duplicate Banner */
+        .duplicate-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-width: 600px;
+            width: 90%;
+            display: none;
+        }
+
+        .duplicate-banner.active {
+            display: block;
+            animation: fadeInScale 0.3s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .duplicate-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .duplicate-overlay.active {
+            display: block;
+        }
+
+        .duplicate-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f7fafc;
+        }
+
+        .duplicate-icon {
+            font-size: 32px;
+        }
+
+        .duplicate-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .duplicate-content {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .duplicate-info-item {
+            margin-bottom: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .duplicate-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .duplicate-label {
+            font-weight: 600;
+            color: #4a5568;
+            min-width: 100px;
+        }
+
+        .duplicate-value {
+            color: #2d3748;
+            flex: 1;
+        }
+
+        .duplicate-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-duplicate-view {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-duplicate-view:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-duplicate-cancel {
+            flex: 1;
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 14px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-duplicate-cancel:hover {
+            background: #cbd5e0;
+        }
+
         /* Button */
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -435,6 +568,37 @@
         </div>
     </div>
 
+    <!-- Duplicate File Banner -->
+    <div class="duplicate-overlay" id="duplicateOverlay"></div>
+    <div class="duplicate-banner" id="duplicateBanner">
+        <div class="duplicate-header">
+            <div class="duplicate-icon">⚠️</div>
+            <div class="duplicate-title">此合約已存在</div>
+        </div>
+        <div class="duplicate-content">
+            <div class="duplicate-info-item">
+                <div class="duplicate-label">文件名：</div>
+                <div class="duplicate-value" id="dupFilename">--</div>
+            </div>
+            <div class="duplicate-info-item">
+                <div class="duplicate-label">公司名稱：</div>
+                <div class="duplicate-value" id="dupCompany">--</div>
+            </div>
+            <div class="duplicate-info-item">
+                <div class="duplicate-label">合約等級：</div>
+                <div class="duplicate-value" id="dupGrade">--</div>
+            </div>
+            <div class="duplicate-info-item">
+                <div class="duplicate-label">上傳日期：</div>
+                <div class="duplicate-value" id="dupDate">--</div>
+            </div>
+        </div>
+        <div class="duplicate-actions">
+            <button class="btn-duplicate-view" id="btnViewExisting">📊 查看已存在的合約</button>
+            <button class="btn-duplicate-cancel" id="btnCancelDuplicate">✕ 取消</button>
+        </div>
+    </div>
+
     <!-- Main Container -->
     <div class="main-container">
         <!-- Left Panel - PDF Viewer -->
@@ -442,19 +606,24 @@
             <div class="pdf-viewer">
                 <div id="pdfPlaceholder" class="pdf-placeholder">
                     <div class="upload-icon">📄</div>
-                    <div class="upload-text">點擊上傳合約 PDF</div>
-                    <div class="upload-hint">支援 PDF 格式，最大 10MB</div>
+                    <div class="upload-text">點擊上傳合約文件</div>
+                    <div class="upload-hint">支援 PDF、DOC、DOCX 格式，最大 10MB</div>
                 </div>
                 <iframe id="pdfFrame" style="display:none; width:100%; height:800px; border:none;"></iframe>
+                <div id="docPreview" style="display:none; padding: 40px; text-align: center;">
+                    <div style="font-size: 64px; margin-bottom: 16px;">📄</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 8px;" id="docFilename">文件已上傳</div>
+                    <div style="font-size: 14px; color: #718096;">AI 正在分析文件內容...</div>
+                </div>
             </div>
-            <input type="file" id="fileInput" accept=".pdf" />
+            <input type="file" id="fileInput" accept=".pdf,.doc,.docx" />
         </div>
 
         <!-- Right Panel - Analysis -->
         <div class="analysis-panel">
             <!-- Health Score -->
             <div class="health-score">
-                <div class="score-label">健康度評分 (Health Score)</div>
+                <div class="score-label">合約等級 (Contract Grade)</div>
                 <div>
                     <span class="score-value" id="healthScore">--</span>
                 </div>
@@ -468,77 +637,47 @@
 
             <!-- Analysis Results -->
             <div id="analysisResults" style="display:none;">
-                <!-- Dynamic Clause Card 1 -->
+                <!-- Dimension Card 1 -->
                 <div class="analysis-card" id="clause1Card">
                     <div class="card-header">
-                        <div class="card-title">
+                        <div class="card-title" id="clause1Title">
                             <span class="card-number">1</span>
-                            條款 1
+                            維度分析
                         </div>
-                        <span class="status-badge" id="clause1Status">UNKNOWN</span>
-                    </div>
-                    <div class="comparison">
-                        <div class="comparison-item">
-                            <div class="comparison-label">合約條款</div>
-                            <div class="comparison-value" id="clause1Contract">--</div>
-                        </div>
-                        <div class="comparison-item">
-                            <div class="comparison-label">參考標準</div>
-                            <div class="comparison-value" id="clause1Reference">--</div>
-                        </div>
+                        <span class="status-badge" id="clause1Status">--</span>
                     </div>
                     <div class="ai-suggestion">
-                        <div class="ai-label">💡 AI 專業建議：</div>
+                        <div class="ai-label">💡 評級：</div>
                         <div id="clause1Message">--</div>
                     </div>
                 </div>
 
-                <!-- Dynamic Clause Card 2 -->
+                <!-- Dimension Card 2 -->
                 <div class="analysis-card" id="clause2Card">
                     <div class="card-header">
-                        <div class="card-title">
+                        <div class="card-title" id="clause2Title">
                             <span class="card-number">2</span>
-                            條款 2
+                            維度分析
                         </div>
-                        <span class="status-badge" id="clause2Status">UNKNOWN</span>
-                    </div>
-                    <div class="comparison">
-                        <div class="comparison-item">
-                            <div class="comparison-label">合約條款</div>
-                            <div class="comparison-value" id="clause2Contract">--</div>
-                        </div>
-                        <div class="comparison-item">
-                            <div class="comparison-label">參考標準</div>
-                            <div class="comparison-value" id="clause2Reference">--</div>
-                        </div>
+                        <span class="status-badge" id="clause2Status">--</span>
                     </div>
                     <div class="ai-suggestion">
-                        <div class="ai-label">💡 AI 專業建議：</div>
+                        <div class="ai-label">💡 評級：</div>
                         <div id="clause2Message">--</div>
                     </div>
                 </div>
 
-                <!-- Dynamic Clause Card 3 -->
+                <!-- Dimension Card 3 -->
                 <div class="analysis-card" id="clause3Card">
                     <div class="card-header">
-                        <div class="card-title">
+                        <div class="card-title" id="clause3Title">
                             <span class="card-number">3</span>
-                            條款 3
+                            維度分析
                         </div>
-                        <span class="status-badge" id="clause3Status">UNKNOWN</span>
-                    </div>
-                    <div class="comparison">
-                        <div class="comparison-item">
-                            <div class="comparison-label">合約條款</div>
-                            <div class="comparison-value" id="clause3Contract">--</div>
-                        </div>
-                        <div class="comparison-item">
-                            <div class="comparison-label">參考標準</div>
-                            <div class="comparison-value" id="clause3Reference">--</div>
-                        </div>
+                        <span class="status-badge" id="clause3Status">--</span>
                     </div>
                     <div class="ai-suggestion">
-                        <div class="ai-label">💡 AI 專業建議：</div>
+                        <div class="ai-label">💡 評級：</div>
                         <div id="clause3Message">--</div>
                     </div>
                 </div>
@@ -589,11 +728,27 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            // Show PDF preview
-            const fileURL = URL.createObjectURL(file);
-            pdfFrame.src = fileURL;
+            // Hide placeholder
             pdfPlaceholder.style.display = 'none';
-            pdfFrame.style.display = 'block';
+
+            // Show appropriate preview based on file type
+            const fileName = file.name.toLowerCase();
+            if (fileName.endsWith('.pdf')) {
+                // Show PDF preview in iframe
+                const fileURL = URL.createObjectURL(file);
+                pdfFrame.src = fileURL;
+                pdfFrame.style.display = 'block';
+                document.getElementById('docPreview').style.display = 'none';
+            } else if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
+                // Show document preview message
+                document.getElementById('docFilename').textContent = file.name;
+                document.getElementById('docPreview').style.display = 'block';
+                pdfFrame.style.display = 'none';
+            } else {
+                alert('不支援的文件格式。請上傳 PDF、DOC 或 DOCX 文件。');
+                pdfPlaceholder.style.display = 'block';
+                return;
+            }
 
             // Show loading
             loading.classList.add('active');
@@ -633,33 +788,56 @@
         });
 
         function displayAnalysis(data) {
-            // Update health score (確保顯示整數，沒有小數點)
-            const healthScore = Math.floor(data.health_score);
-            const scoreElement = document.getElementById('healthScore');
-            scoreElement.textContent = healthScore;
+            // Display grade tier instead of score (with fallback for old contracts)
+            let tier = data.health_tier;
+            let tierLabel = data.health_tier_label;
 
-            // 根據分數設定顏色
+            // Fallback: calculate tier from health_score if not present
+            if (!tier && data.health_score !== undefined) {
+                const score = data.health_score;
+                if (score >= 90) {
+                    tier = 'S';
+                    tierLabel = '王者';
+                } else if (score >= 80) {
+                    tier = 'A';
+                    tierLabel = '優質';
+                } else if (score >= 70) {
+                    tier = 'B';
+                    tierLabel = '標準';
+                } else if (score >= 60) {
+                    tier = 'C';
+                    tierLabel = '觀察';
+                } else {
+                    tier = 'D';
+                    tierLabel = '淘汰';
+                }
+            }
+
+            // Final fallback
+            tier = tier || 'D';
+            tierLabel = tierLabel || '淘汰';
+
+            const scoreElement = document.getElementById('healthScore');
+            scoreElement.textContent = `${tier}級 - ${tierLabel}`;
+
+            // Set color based on tier
             scoreElement.className = 'score-value';
-            if (healthScore >= 80) {
+            if (tier === 'S' || tier === 'A') {
                 scoreElement.classList.add('high'); // 綠色
-            } else if (healthScore >= 60) {
+            } else if (tier === 'B') {
                 scoreElement.classList.add('medium'); // 橙色
             } else {
                 scoreElement.classList.add('low'); // 紅色
             }
 
-            // 處理新的 clauses 陣列結構
-            const clauses = data.contract_analysis.clauses || [];
+            // 顯示四個維度信息（如果有的話）
+            if (data.health_dimensions) {
+                const dimensions = data.health_dimensions;
 
-            // 取前三個條款顯示在預設的三個卡片中
-            if (clauses.length > 0) {
-                updateCard('clause1', clauses[0], 1);
-            }
-            if (clauses.length > 1) {
-                updateCard('clause2', clauses[1], 2);
-            }
-            if (clauses.length > 2) {
-                updateCard('clause3', clauses[2], 3);
+                // 更新三個卡片顯示維度信息
+                updateDimensionCard('clause1', 'MAD 生存風險', dimensions.mad, '🔴', getDimensionLabel('mad', dimensions.mad));
+                updateDimensionCard('clause2', 'MAO 互利營收', dimensions.mao, '🟢', getDimensionLabel('mao', dimensions.mao));
+                updateDimensionCard('clause3', 'MAA 行政內耗', dimensions.maa, '🟠', getDimensionLabel('maa', dimensions.maa));
             }
 
             // Show results
@@ -669,6 +847,72 @@
             document.getElementById('viewDetailsBtn').style.display = 'block';
         }
 
+        function getDimensionLabel(dimension, score) {
+            if (dimension === 'mad') {
+                if (score >= 91) return '致命風險';
+                if (score >= 61) return '重傷';
+                if (score >= 21) return '擦傷';
+                return '安全';
+            } else if (dimension === 'mao') {
+                if (score >= 81) return '頂標';
+                if (score >= 61) return '高標';
+                if (score >= 21) return '中標';
+                return '低標';
+            } else if (dimension === 'maa') {
+                if (score >= 81) return '癱瘓級';
+                if (score >= 51) return '官僚地獄';
+                if (score >= 21) return '標準行政';
+                return '數位化';
+            } else if (dimension === 'map') {
+                if (score >= 71) return '緊密合作';
+                if (score >= 41) return '穩定生意';
+                if (score >= 1) return '能做生意';
+                return '無法執行';
+            }
+            return '';
+        }
+
+        function updateDimensionCard(cardId, name, score, icon, label) {
+            const titleElement = document.getElementById(`${cardId}Title`);
+            const statusElement = document.getElementById(`${cardId}Status`);
+            const cardElement = document.getElementById(`${cardId}Card`);
+            const messageElement = document.getElementById(`${cardId}Message`);
+
+            // Update card title
+            if (titleElement) {
+                const cardNumber = titleElement.querySelector('.card-number').textContent;
+                titleElement.innerHTML = `<span class="card-number">${cardNumber}</span> ${icon} ${name}`;
+            }
+
+            // Update status badge to show score
+            if (statusElement) {
+                statusElement.textContent = `${score} 分`;
+            }
+
+            // Update message to show label
+            if (messageElement) {
+                messageElement.textContent = label;
+            }
+
+            if (cardElement) {
+                cardElement.className = 'analysis-card';
+                // 根據維度類型設置顏色
+                if (name.includes('MAD') && score >= 61) {
+                    cardElement.classList.add('dispute');
+                } else if (name.includes('MAD') && score >= 21) {
+                    cardElement.classList.add('warning');
+                } else if ((name.includes('MAO') || name.includes('MAP')) && score >= 61) {
+                    cardElement.classList.add('opportunity');
+                } else if (name.includes('MAA') && score >= 51) {
+                    cardElement.classList.add('dispute');
+                } else if (name.includes('MAA') && score >= 21) {
+                    cardElement.classList.add('warning');
+                } else {
+                    cardElement.classList.add('match');
+                }
+            }
+        }
+
         function viewFullDetails() {
             if (window.currentContractId) {
                 window.location.href = `contract-detail.html?id=${window.currentContractId}`;
@@ -676,57 +920,41 @@
         }
 
         function handleDuplicate(existingContract) {
-            const message = `此合約已存在於系統中：\n\n` +
-                `文件名：${existingContract.filename}\n` +
-                `公司：${existingContract.seller_company}\n` +
-                `健康評分：${existingContract.health_score}\n` +
-                `上傳日期：${new Date(existingContract.upload_date).toLocaleString('zh-TW')}\n\n` +
-                `是否要查看已存在的合約詳情？`;
+            const tierInfo = existingContract.health_tier && existingContract.health_tier_label
+                ? `${existingContract.health_tier}級 - ${existingContract.health_tier_label}`
+                : `評分：${existingContract.health_score}`;
 
-            if (confirm(message)) {
+            // 填充重複文件資訊
+            document.getElementById('dupFilename').textContent = existingContract.filename;
+            document.getElementById('dupCompany').textContent = existingContract.seller_company;
+            document.getElementById('dupGrade').textContent = tierInfo;
+            document.getElementById('dupDate').textContent = new Date(existingContract.upload_date).toLocaleString('zh-TW');
+
+            // 顯示重複文件橫幅
+            document.getElementById('duplicateOverlay').classList.add('active');
+            document.getElementById('duplicateBanner').classList.add('active');
+
+            // 設置按鈕事件監聽器
+            document.getElementById('btnViewExisting').onclick = () => {
                 window.location.href = `contract-detail.html?id=${existingContract.contract_id}`;
-            } else {
-                // 用戶選擇取消，重新載入頁面
+            };
+
+            document.getElementById('btnCancelDuplicate').onclick = () => {
+                // 隱藏橫幅
+                document.getElementById('duplicateOverlay').classList.remove('active');
+                document.getElementById('duplicateBanner').classList.remove('active');
+                // 重新載入頁面
                 window.location.reload();
-            }
+            };
+
+            // 點擊遮罩層也可以關閉
+            document.getElementById('duplicateOverlay').onclick = () => {
+                document.getElementById('duplicateOverlay').classList.remove('active');
+                document.getElementById('duplicateBanner').classList.remove('active');
+                window.location.reload();
+            };
         }
 
-        function updateCard(type, clause, cardNumber) {
-            if (!clause) return;
-
-            const statusElement = document.getElementById(`${type}Status`);
-            const cardElement = document.getElementById(`${type}Card`);
-            const messageElement = document.getElementById(`${type}Message`);
-
-            // Update card title with clause name and icon
-            const titleElement = cardElement.querySelector('.card-title');
-            if (titleElement) {
-                titleElement.innerHTML = `
-                    <span class="card-number">${cardNumber}</span>
-                    ${clause.clause_icon || '📋'} ${clause.clause_name || '未知條款'}
-                `;
-            }
-
-            // Update status
-            const status = (clause.status || 'UNKNOWN').toLowerCase();
-            statusElement.textContent = clause.status || 'UNKNOWN';
-            statusElement.className = `status-badge ${status}`;
-            cardElement.className = `analysis-card ${status}`;
-
-            // Update message
-            messageElement.textContent = clause.message || '無分析資訊';
-
-            // Update values - use generic field names for all cards
-            const contractValueElement = cardElement.querySelector('.comparison-item:first-child .comparison-value');
-            const referenceValueElement = cardElement.querySelector('.comparison-item:last-child .comparison-value');
-
-            if (contractValueElement) {
-                contractValueElement.textContent = clause.contract_value || '未知';
-            }
-            if (referenceValueElement) {
-                referenceValueElement.textContent = clause.reference_value || clause.target_value || '無參考標準';
-            }
-        }
     </script>
 </body>
 </html>

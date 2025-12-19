@@ -131,6 +131,103 @@
             color: #1a202c;
             line-height: 1.2;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .company-name-text {
+            flex: 1;
+        }
+
+        .edit-company-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .edit-company-btn:hover {
+            background: #5a67d8;
+        }
+
+        .company-name-input {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a202c;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .btn-save {
+            padding: 10px 24px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #38a169;
+        }
+
+        .btn-cancel {
+            padding: 10px 24px;
+            background: #e2e8f0;
+            color: #2d3748;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+
+        .updating-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .updating-message {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .updating-message .spinner {
+            margin: 0 auto 16px;
         }
 
         .company-badge {
@@ -184,6 +281,107 @@
             background: #f7fafc;
             border-radius: 12px;
             min-width: 200px;
+            position: relative;
+        }
+
+        .help-icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: help;
+            transition: all 0.2s;
+        }
+
+        .help-icon:hover {
+            background: #5a67d8;
+            transform: scale(1.1);
+        }
+
+        .grade-tooltip {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            width: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            text-align: left;
+        }
+
+        .help-icon:hover + .grade-tooltip,
+        .grade-tooltip:hover {
+            display: block;
+        }
+
+        .tooltip-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .grade-item {
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f7fafc;
+        }
+
+        .grade-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .grade-header {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grade-header.tier-s { color: #48bb78; }
+        .grade-header.tier-a { color: #48bb78; }
+        .grade-header.tier-b { color: #ed8936; }
+        .grade-header.tier-c { color: #f56565; }
+        .grade-header.tier-d { color: #e53e3e; }
+
+        .grade-range {
+            display: inline-block;
+            padding: 2px 8px;
+            background: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .grade-desc {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4a5568;
+        }
+
+        .grade-mode {
+            font-weight: 600;
+            color: #2d3748;
         }
 
         .score-label {
@@ -209,6 +407,81 @@
             color: #718096;
             margin-top: 12px;
             line-height: 1.4;
+        }
+
+        /* Dimension Cards */
+        .dimension-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .dimension-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .dimension-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .dimension-name {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .dimension-score {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .dimension-score.mad-high { color: #f56565; }
+        .dimension-score.mad-medium { color: #ed8936; }
+        .dimension-score.mad-low { color: #48bb78; }
+
+        .dimension-score.mao-high { color: #48bb78; }
+        .dimension-score.mao-medium { color: #ed8936; }
+        .dimension-score.mao-low { color: #f56565; }
+
+        .dimension-score.maa-high { color: #f56565; }
+        .dimension-score.maa-medium { color: #ed8936; }
+        .dimension-score.maa-low { color: #48bb78; }
+
+        .dimension-score.map-high { color: #48bb78; }
+        .dimension-score.map-medium { color: #ed8936; }
+        .dimension-score.map-low { color: #718096; }
+
+        .dimension-label {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        /* Dimension Explanations */
+        .dimension-explanation {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #e2e8f0;
+        }
+
+        .explanation-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .explanation-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #4a5568;
         }
 
         @media (max-width: 768px) {
@@ -477,13 +750,93 @@
                         <div>
                             <span class="company-badge" id="documentTypeBadge">合約</span>
                         </div>
-                        <div class="company-name-display" id="companyName">載入中...</div>
+
+                        <!-- Display mode -->
+                        <div class="company-name-display" id="companyNameDisplay">
+                            <span class="company-name-text" id="companyName">載入中...</span>
+                            <button class="edit-company-btn" id="editCompanyBtn" onclick="enableEditMode()">✏️ 編輯</button>
+                        </div>
+
+                        <!-- Edit mode -->
+                        <div id="companyNameEdit" style="display: none;">
+                            <input type="text" class="company-name-input" id="companyNameInput" placeholder="輸入正確的公司名稱">
+                            <div class="edit-actions">
+                                <button class="btn-save" onclick="saveCompanyName()">✓ 儲存並重新評估</button>
+                                <button class="btn-cancel" onclick="cancelEditMode()">✕ 取消</button>
+                            </div>
+                        </div>
+
                         <div class="contract-title" id="contractTitle">合約文件</div>
                     </div>
 
-                    <!-- Right: Health Score -->
+                    <!-- Right: Contract Grade -->
                     <div class="health-score-large">
-                        <div class="score-label">健康評分</div>
+                        <div class="help-icon">?</div>
+                        <div class="grade-tooltip">
+                            <div class="tooltip-title">合約等級說明</div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-s">
+                                    S 級 (王者)
+                                    <span class="grade-range">90 - 100</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>完美合約 (Perfect)</strong><br>
+                                    <span class="grade-mode">Mode O (極速簽核)</span><br>
+                                    風險極低 (MAD&lt;5) + 利潤極高 (Value&gt;85)。這種單通常是「天上掉下來的禮物」。
+                                </div>
+                            </div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-a">
+                                    A 級 (優質)
+                                    <span class="grade-range">80 - 89</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>高價值合約 (Excellent)</strong><br>
+                                    <span class="grade-mode">Mode O (優先排程)</span><br>
+                                    風險低，利潤不錯；或者利潤極高但有一點點可控的小風險。這是業務的主力目標。
+                                </div>
+                            </div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-b">
+                                    B 級 (標準)
+                                    <span class="grade-range">70 - 79</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>穩健合約 (Standard)</strong><br>
+                                    <span class="grade-mode">Mode A (標準執行)</span><br>
+                                    非常安全，但利潤平平。用來「填產能、養員工」的基本盤。
+                                </div>
+                            </div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-c">
+                                    C 級 (觀察)
+                                    <span class="grade-range">60 - 69</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>雞肋合約 (Marginal)</strong><br>
+                                    <span class="grade-mode">Mode A (強制交換)</span><br>
+                                    食之無味，棄之可惜。風險偏高或利潤太薄。系統建議：必須透過「交換條款」加價或減責，否則不接。
+                                </div>
+                            </div>
+
+                            <div class="grade-item">
+                                <div class="grade-header tier-d">
+                                    D 級 (淘汰)
+                                    <span class="grade-range">&lt; 60</span>
+                                </div>
+                                <div class="grade-desc">
+                                    <strong>劇毒合約 (Toxic)</strong><br>
+                                    <span class="grade-mode">Mode D (熔斷/拒絕)</span><br>
+                                    生存風險超標 (MAD &gt; 35) 或 賠錢生意。系統鎖死，禁止簽核。
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="score-label">合約等級</div>
                         <div class="score-value-large" id="healthScoreLarge">--</div>
                         <div class="score-description" id="scoreDescription">評估中</div>
                     </div>
@@ -506,7 +859,7 @@
                 </div>
             </div>
 
-            <!-- Company Background -->
+            <!-- Company Background (moved above dimensions) -->
             <div class="analysis-section" id="companySection" style="display:none;">
                 <div class="section-title">🏢 公司背景調查</div>
                 <div class="company-section">
@@ -533,10 +886,18 @@
                 </div>
             </div>
 
-            <!-- Contract Analysis -->
-            <div class="analysis-section">
-                <div class="section-title">📋 合約條款分析</div>
-                <div class="analysis-grid" id="analysisGrid"></div>
+            <!-- Dimensional Analysis (moved below company background) -->
+            <div class="analysis-section" id="dimensionsSection" style="display:none;">
+                <div class="section-title">📊 四維度分析</div>
+                <div class="dimensions-breakdown-section" id="dimensionsBreakdownSection"></div>
+            </div>
+
+            <!-- Overall Recommendation -->
+            <div class="analysis-section" id="recommendationSection" style="display:none;">
+                <div class="section-title">💡 專業建議</div>
+                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+                    <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -601,31 +962,194 @@
                 minute: '2-digit'
             });
 
-            // Health score
-            const healthScore = contract.health_score;
+            // Contract Grade Tier (with fallback for old contracts)
+            let tier = contract.health_tier;
+            let tierLabel = contract.health_tier_label;
+
+            // Fallback: calculate tier from health_score if not present
+            if (!tier && contract.health_score !== undefined) {
+                const score = contract.health_score;
+                if (score >= 90) {
+                    tier = 'S';
+                    tierLabel = '王者';
+                } else if (score >= 80) {
+                    tier = 'A';
+                    tierLabel = '優質';
+                } else if (score >= 70) {
+                    tier = 'B';
+                    tierLabel = '標準';
+                } else if (score >= 60) {
+                    tier = 'C';
+                    tierLabel = '觀察';
+                } else {
+                    tier = 'D';
+                    tierLabel = '淘汰';
+                }
+            }
+
+            // Final fallback
+            tier = tier || 'D';
+            tierLabel = tierLabel || '淘汰';
+
             const scoreElement = document.getElementById('healthScoreLarge');
-            scoreElement.textContent = healthScore;
+            scoreElement.textContent = `${tier}級`;
 
             let scoreClass = 'low';
-            let scoreDesc = '合約存在多項風險，建議重新協商';
-            if (healthScore >= 80) {
+            let scoreDesc = tierLabel;
+
+            // Set tier descriptions based on tier level
+            if (tier === 'S') {
                 scoreClass = 'high';
-                scoreDesc = '合約條款良好，風險較低';
-            } else if (healthScore >= 60) {
+                scoreDesc = '王者';
+            } else if (tier === 'A') {
+                scoreClass = 'high';
+                scoreDesc = '優質';
+            } else if (tier === 'B') {
                 scoreClass = 'medium';
-                scoreDesc = '合約可接受，但存在一些需要注意的風險';
+                scoreDesc = '標準';
+            } else if (tier === 'C') {
+                scoreClass = 'low';
+                scoreDesc = '觀察';
+            } else if (tier === 'D') {
+                scoreClass = 'low';
+                scoreDesc = '淘汰';
             }
 
             scoreElement.className = `score-value-large ${scoreClass}`;
             document.getElementById('scoreDescription').textContent = scoreDesc;
 
-            // Analysis cards
-            displayAnalysisCards(contract.contract_analysis);
-
-            // Company background
+            // Company background (displayed first)
             if (contract.company_data) {
                 displayCompanyData(contract.company_data);
             }
+
+            // Dimensional breakdown (displayed after company background)
+            if (contract.health_dimensions) {
+                displayDimensionalBreakdown(contract.health_dimensions, contract.dimension_explanations);
+            }
+
+            // Overall recommendation
+            if (contract.overall_recommendation) {
+                displayRecommendation(contract.overall_recommendation);
+            }
+        }
+
+        function displayRecommendation(recommendation) {
+            const recommendationSection = document.getElementById('recommendationSection');
+            const recommendationText = document.getElementById('overallRecommendation');
+
+            if (recommendation) {
+                recommendationText.textContent = recommendation;
+                recommendationSection.style.display = 'block';
+            }
+        }
+
+        function displayDimensionalBreakdown(dimensions, explanations) {
+            // Show the dimensions section
+            const dimensionsSection = document.getElementById('dimensionsSection');
+            dimensionsSection.style.display = 'block';
+
+            // Get the container to populate
+            const container = document.getElementById('dimensionsBreakdownSection');
+
+            // Build dimension cards HTML
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
+
+            // MAD (生存風險)
+            const madScore = dimensions.mad || 0;
+            let madLabel = '安全';
+            if (madScore >= 91) madLabel = '致命風險';
+            else if (madScore >= 61) madLabel = '重傷';
+            else if (madScore >= 21) madLabel = '擦傷';
+
+            html += `<div class="dimension-card">
+                <div class="dimension-icon">🔴</div>
+                <div class="dimension-name">MAD 生存風險</div>
+                <div class="dimension-score">${madScore}</div>
+                <div class="dimension-label">${madLabel}</div>
+            </div>`;
+
+            // MAO (互利營收)
+            const maoScore = dimensions.mao || 0;
+            let maoLabel = '低標';
+            if (maoScore >= 81) maoLabel = '頂標';
+            else if (maoScore >= 61) maoLabel = '高標';
+            else if (maoScore >= 21) maoLabel = '中標';
+
+            html += `<div class="dimension-card">
+                <div class="dimension-icon">🟢</div>
+                <div class="dimension-name">MAO 互利營收</div>
+                <div class="dimension-score">${maoScore}</div>
+                <div class="dimension-label">${maoLabel}</div>
+            </div>`;
+
+            // MAA (行政內耗)
+            const maaScore = dimensions.maa || 0;
+            let maaLabel = '無感';
+            if (maaScore >= 81) maaLabel = '癱瘓級';
+            else if (maaScore >= 51) maaLabel = '官僚地獄';
+            else if (maaScore >= 21) maaLabel = '標準行政';
+
+            html += `<div class="dimension-card">
+                <div class="dimension-icon">🟠</div>
+                <div class="dimension-name">MAA 行政內耗</div>
+                <div class="dimension-score">${maaScore}</div>
+                <div class="dimension-label">${maaLabel}</div>
+            </div>`;
+
+            // MAP (戰略潛力)
+            const mapScore = dimensions.map || 0;
+            let mapLabel = '無法執行';
+            if (mapScore >= 71) mapLabel = '緊密合作';
+            else if (mapScore >= 41) mapLabel = '穩定生意';
+            else if (mapScore >= 1) mapLabel = '能做生意';
+
+            html += `<div class="dimension-card">
+                <div class="dimension-icon">🚀</div>
+                <div class="dimension-name">MAP 戰略潛力</div>
+                <div class="dimension-score">${mapScore}</div>
+                <div class="dimension-label">${mapLabel}</div>
+            </div>`;
+
+            html += '</div>';
+
+            // Add explanations section if available
+            if (explanations && Object.keys(explanations).length > 0) {
+                html += '<div style="margin-top: 20px;"><div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #2d3748;">📝 詳細說明</div>';
+                html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
+
+                if (explanations.mad) {
+                    html += `<div class="dimension-explanation">
+                        <div class="explanation-header">🔴 MAD 生存風險</div>
+                        <div class="explanation-text">${explanations.mad}</div>
+                    </div>`;
+                }
+
+                if (explanations.mao) {
+                    html += `<div class="dimension-explanation">
+                        <div class="explanation-header">🟢 MAO 互利營收</div>
+                        <div class="explanation-text">${explanations.mao}</div>
+                    </div>`;
+                }
+
+                if (explanations.maa) {
+                    html += `<div class="dimension-explanation">
+                        <div class="explanation-header">🟠 MAA 行政內耗</div>
+                        <div class="explanation-text">${explanations.maa}</div>
+                    </div>`;
+                }
+
+                if (explanations.map) {
+                    html += `<div class="dimension-explanation">
+                        <div class="explanation-header">🚀 MAP 戰略潛力</div>
+                        <div class="explanation-text">${explanations.map}</div>
+                    </div>`;
+                }
+
+                html += '</div></div>';
+            }
+
+            container.innerHTML = html;
         }
 
         function displayAnalysisCards(analysis) {
@@ -710,15 +1234,14 @@
                     return tavilyData.answer;
                 }
 
-                // Fallback: if no answer but has results, use first result content
-                if (tavilyData.results && Array.isArray(tavilyData.results) && tavilyData.results.length > 0) {
-                    const topResult = tavilyData.results[0];
-                    let text = '';
-                    if (topResult.title) text += topResult.title + '\n\n';
-                    if (topResult.content) text += topResult.content;
-                    return text.trim();
-                }
-
+                // Fallback: if no answer but has results, use first result content - 不要加這個來弄亂結果，有時候第一個result也是不相關的資料，乾脆不用
+                //if (tavilyData.results && Array.isArray(tavilyData.results) && tavilyData.results.length > 0) {
+                //    const topResult = tavilyData.results[0];
+                //    let text = '';
+                //    if (topResult.title) text += topResult.title + '\n\n';
+                //    if (topResult.content) text += topResult.content;
+                //    return text.trim();
+                //}
                 return null;
             }
 
@@ -804,6 +1327,94 @@
                 alert('刪除失敗: ' + error.message);
             }
         });
+
+        // Edit company name functions
+        function enableEditMode() {
+            const currentName = document.getElementById('companyName').textContent;
+            document.getElementById('companyNameInput').value = currentName;
+            document.getElementById('companyNameDisplay').style.display = 'none';
+            document.getElementById('companyNameEdit').style.display = 'block';
+        }
+
+        function cancelEditMode() {
+            document.getElementById('companyNameDisplay').style.display = 'flex';
+            document.getElementById('companyNameEdit').style.display = 'none';
+        }
+
+        async function saveCompanyName() {
+            const newCompanyName = document.getElementById('companyNameInput').value.trim();
+
+            if (!newCompanyName) {
+                alert('請輸入公司名稱');
+                return;
+            }
+
+            const currentName = document.getElementById('companyName').textContent;
+            if (newCompanyName === currentName) {
+                alert('公司名稱未改變');
+                cancelEditMode();
+                return;
+            }
+
+            // Confirm the change
+            const confirmChange = confirm(`確定要將公司名稱從「${currentName}」改為「${newCompanyName}」嗎？\n\n這將重新執行背景調查，可能需要一些時間。`);
+            if (!confirmChange) {
+                return;
+            }
+
+            // Show updating overlay
+            showUpdatingOverlay();
+
+            try {
+                const response = await fetch(`http://localhost:3000/contracts/${currentContractId}/update-company`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        new_company_name: newCompanyName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update UI with new data
+                    displayContractDetails(data.contract);
+                    cancelEditMode();
+                    hideUpdatingOverlay();
+                    alert('✅ 公司名稱已更新，背景調查已重新執行！');
+                } else {
+                    hideUpdatingOverlay();
+                    alert('更新失敗: ' + (data.error || '未知錯誤'));
+                }
+            } catch (error) {
+                console.error('Error updating company name:', error);
+                hideUpdatingOverlay();
+                alert('更新失敗: ' + error.message);
+            }
+        }
+
+        function showUpdatingOverlay() {
+            const overlay = document.createElement('div');
+            overlay.id = 'updatingOverlay';
+            overlay.className = 'updating-overlay';
+            overlay.innerHTML = `
+                <div class="updating-message">
+                    <div class="spinner"></div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">正在更新合約資料...</div>
+                    <div style="font-size: 14px; color: #718096;">重新執行背景調查，請稍候</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function hideUpdatingOverlay() {
+            const overlay = document.getElementById('updatingOverlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
 
         // Load contract on page load
         loadContractDetails();

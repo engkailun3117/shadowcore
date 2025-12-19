@@ -260,9 +260,38 @@
         function createContractCard(contract) {
             const card = document.createElement('div');
 
+            // Get tier information (with fallback for old contracts)
+            let tier = contract.health_tier;
+            let tierLabel = contract.health_tier_label;
+
+            // Fallback: calculate tier from health_score if not present
+            if (!tier && contract.health_score !== undefined) {
+                const score = contract.health_score;
+                if (score >= 90) {
+                    tier = 'S';
+                    tierLabel = '王者';
+                } else if (score >= 80) {
+                    tier = 'A';
+                    tierLabel = '優質';
+                } else if (score >= 70) {
+                    tier = 'B';
+                    tierLabel = '標準';
+                } else if (score >= 60) {
+                    tier = 'C';
+                    tierLabel = '觀察';
+                } else {
+                    tier = 'D';
+                    tierLabel = '淘汰';
+                }
+            }
+
+            // Final fallback
+            tier = tier || 'D';
+            tierLabel = tierLabel || '淘汰';
+
             let scoreClass = 'low';
-            if (contract.health_score >= 80) scoreClass = 'high';
-            else if (contract.health_score >= 60) scoreClass = 'medium';
+            if (tier === 'S' || tier === 'A') scoreClass = 'high';
+            else if (tier === 'B') scoreClass = 'medium';
 
             card.className = `contract-card ${scoreClass}`;
             card.onclick = () => {
@@ -286,7 +315,7 @@
                         <div class="contract-company">${contract.seller_company || '未知公司'}</div>
                         <div class="contract-date">📅 ${formattedDate}</div>
                     </div>
-                    <div class="health-score ${scoreClass}">${contract.health_score}</div>
+                    <div class="health-score ${scoreClass}">${tier}級</div>
                 </div>
             `;
 
