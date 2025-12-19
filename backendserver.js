@@ -165,12 +165,12 @@ function calculateHealthScore(overallDimensions) {
   const { mad, mao, maa, map } = dimensions;
 
   // 計算安全性得分 (Safety Score) - 50% 權重 (從 60% 調降)
-  const safetyScore = (100 - mad) * 0.5;
+  const safetyScore = (100 - mad) * 0.6;
 
   // 計算價值性得分 (Value Score) - 50% 權重 (從 40% 提升)
   // MAO 佔 50% 權重，MAA 和 MAP 各佔 25% (強調營收的重要性)
-  const valueWeighted = (mao * 0.5) + (maa * 0.25) + (map * 0.25);
-  const valueScore = valueWeighted * 0.5;
+  const valueWeighted = (mao  + maa + map)/3;
+  const valueScore = valueWeighted * 0.4;
 
   // 計算原始總分
   let rawScore = safetyScore + valueScore;
@@ -523,8 +523,8 @@ CRITICAL:
 【MAO：互利營收指標（0–100，越高越好）】
 核心問題：「這份合約現在能為公司創造多少實質收益？」
 
-- 0–20：基本交易（市價、無優勢）
-- 21–60：優於市場（價格、付款期、穩定性）
+- 0–40：基本交易（市價、無優勢）
+- 41–60：優於市場（價格、付款期、穩定性）
 - 61–80：顯著獲利（獨家、保證量、預付款、槓桿效應）
 - 81–100：壟斷級優勢（免費 IP、對方承擔成本、高度槓桿）
 
@@ -536,10 +536,10 @@ CRITICAL:
 
 ⚠️ MAA 是加分項，不得因行政流程或人工操作而扣分。
 
-- 0–20 流動式交易：無低消、無訂金、隨用隨棄
-- 21–50 預約制維護：訂金、預付款、定期會議、指定窗口
-- 51–80 硬性鎖定：保證採購、沈沒成本、高額解約金、利潤綁定
-- 81–100 共生／排他：獨家條款、股權互持、核心命脈託管
+- 0–40 流動式交易：無低消、無訂金、隨用隨棄
+- 41–65 預約制維護：訂金、預付款、定期會議、指定窗口
+- 66–87 硬性鎖定：保證採購、沈沒成本、高額解約金、利潤綁定
+- 88–100 共生／排他：獨家條款、股權互持、核心命脈託管
 
 評估重點是「財務鎖定、時間承諾、成效綁定」，而非麻不麻煩。
 
@@ -551,12 +551,12 @@ CRITICAL:
 不得因『非數位化』或『有人工作業』而扣分。
 
 - 0 分：無法執行（無法開單、無法履約）
-- 1–20：純交易里程碑（能做生意）
-- 21–50：功能性賦能
+- 1–40：純交易里程碑（能做生意）
+- 41–65：功能性賦能
   - 資質取得（ISO、專利、合規）
   - 效率提升（外包非核心）
   - 履歷背書（案例、Portfolio）
-- 51–80：戰略槓桿
+- 66–80：戰略槓桿
   - 政府／政策資源
   - 金融槓桿（補助、授信、估值）
   - 知識轉移、風險共擔（Success Fee）
@@ -1031,5 +1031,4 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
 
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
-
 
