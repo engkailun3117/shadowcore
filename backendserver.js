@@ -347,26 +347,31 @@ async function performCompanyBackgroundCheck(companyName) {
     tavily.search({
       query: `關於「${companyName}」的公司簡介。請用繁體中文回答。`,
       max_results: 3,
+      search_depth: 'advanced',
       include_answer: true,
     }),
     tavily.search({
       query: `關於「${companyName}」的海關進出口記錄、貿易數據、進出口業務。請用繁體中文回答。`,
       max_results: 3,
+      search_depth: 'advanced',
       include_answer: true,
     }),
     tavily.search({
       query: `關於「${companyName}」的法律合規狀況、訴訟記錄、破產紀錄、詐欺前科、法規遵循。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
       max_results: 3,
+      search_depth: 'advanced',
       include_answer: true,
     }),
     tavily.search({
       query: `「${companyName}」的公司負責人是誰？董事長、總經理、代表人姓名。請用繁體中文回答。`,
       max_results: 3,
+      search_depth: 'advanced',
       include_answer: true,
     }),
     tavily.search({
       query: `「${companyName}」公司負責人的法律問題、訴訟記錄、違法紀錄、司法案件、限制出境、欠稅。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
       max_results: 3,
+      search_depth: 'advanced',
       include_answer: true,
     })
   ]);
@@ -417,7 +422,7 @@ async function analyzeContractWithBackground(fileId, companyName, companyData) {
 
   // 呼叫 OpenAI API
   const response = await openai.responses.create({
-    model: "gpt-5.2",
+    model: "gpt-4.1",
     text: {
       format: {
         type: "json_object"
@@ -616,7 +621,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
           content: [
             {
               type: "input_text",
-              text: `請快速分析這份PDF文件，只提取以下基本資訊：
+               text: `請快速分析這份PDF文件，只提取以下基本資訊：
 
 1. 文件類型（合約/報價單）
 2. **乙方公司名稱**（對方公司的完整名稱）
@@ -968,6 +973,5 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
 
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
-
 
 
