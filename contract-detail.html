@@ -1076,7 +1076,7 @@
 
             <!-- Two Column Layout: Company Background + Detailed Analysis -->
             <div class="two-column-layout">
-                <!-- Left Column: Company Background -->
+                <!-- Left Column: Company Background + Professional Recommendation -->
                 <div class="left-column">
                     <div class="analysis-section" id="companySection" style="display:none;">
                         <div class="section-title-with-icon">
@@ -1106,6 +1106,17 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Professional Recommendation (moved to left column) -->
+                    <div class="analysis-section" id="recommendationSection" style="display:none; margin-top: 24px;">
+                        <div class="section-title-with-icon">
+                            <span class="title-icon">💡</span>
+                            <span>專業建議</span>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+                            <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Right Column: Detailed Analysis -->
@@ -1117,14 +1128,6 @@
                         </div>
                         <div class="dimensions-breakdown-section" id="dimensionsBreakdownSection"></div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Overall Recommendation -->
-            <div class="analysis-section" id="recommendationSection" style="display:none;">
-                <div class="section-title">💡 專業建議</div>
-                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
-                    <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
                 </div>
             </div>
         </div>
@@ -1189,39 +1192,66 @@
             document.getElementById('uploadDateInline').textContent = formattedDate;
             document.getElementById('contractIdInline').textContent = contract.contract_id.substring(0, 24);
 
-            // Circular Health Score
+            // Circular Health Score - Show Grade (S/A/B/C/D)
             const healthScore = Math.round(contract.health_score || 0);
+
+            // Calculate tier from health_score
+            let tier = contract.health_tier;
+            let tierLabel = contract.health_tier_label;
+
+            if (!tier && healthScore !== undefined) {
+                if (healthScore >= 90) {
+                    tier = 'S';
+                    tierLabel = '王者';
+                } else if (healthScore >= 80) {
+                    tier = 'A';
+                    tierLabel = '優質';
+                } else if (healthScore >= 70) {
+                    tier = 'B';
+                    tierLabel = '標準';
+                } else if (healthScore >= 60) {
+                    tier = 'C';
+                    tierLabel = '觀察';
+                } else {
+                    tier = 'D';
+                    tierLabel = '淘汰';
+                }
+            }
+
+            tier = tier || 'D';
+            tierLabel = tierLabel || '淘汰';
+
             const circleScore = document.getElementById('circleScoreValue');
             const scoreCircle = document.getElementById('scoreCircle');
             const scoreStatus = document.getElementById('scoreStatusText');
 
-            circleScore.textContent = healthScore;
+            circleScore.textContent = tier;
 
-            // Calculate circle progress (circumference = 2 * π * r = 2 * 3.14159 * 75 ≈ 471)
+            // Calculate circle progress based on score
             const circumference = 471;
             const progress = (healthScore / 100) * circumference;
             const offset = circumference - progress;
             scoreCircle.style.strokeDashoffset = offset;
 
-            // Set color and status based on score
-            let scoreColor = '#48bb78'; // green
-            let statusText = '合約整體良好，無顧慮點';
+            // Set color and status based on tier
+            let scoreColor = '#48bb78';
+            let statusText = tierLabel;
 
-            if (healthScore >= 90) {
+            if (tier === 'S') {
                 scoreColor = '#48bb78';
-                statusText = '合約整體良好，無顧慮點';
-            } else if (healthScore >= 80) {
+                statusText = '王者 - 完美合約';
+            } else if (tier === 'A') {
                 scoreColor = '#48bb78';
-                statusText = '合約整體良好，可簽署';
-            } else if (healthScore >= 70) {
+                statusText = '優質 - 高價值合約';
+            } else if (tier === 'B') {
                 scoreColor = '#ed8936';
-                statusText = '合約標準，建議審查';
-            } else if (healthScore >= 60) {
+                statusText = '標準 - 穩健合約';
+            } else if (tier === 'C') {
                 scoreColor = '#f56565';
-                statusText = '合約有風險，需要談判';
-            } else {
+                statusText = '觀察 - 雞肋合約';
+            } else if (tier === 'D') {
                 scoreColor = '#e53e3e';
-                statusText = '合約風險高，不建議簽署';
+                statusText = '淘汰 - 劇毒合約';
             }
 
             scoreCircle.setAttribute('stroke', scoreColor);
@@ -1358,101 +1388,40 @@
             // Get the container to populate
             const container = document.getElementById('dimensionsBreakdownSection');
 
-            // Build dimension cards HTML
-            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
-
-            // MAD (生存風險)
-            const madScore = dimensions.mad || 0;
-            let madLabel = '安全';
-            if (madScore >= 91) madLabel = '致命風險';
-            else if (madScore >= 61) madLabel = '重傷';
-            else if (madScore >= 21) madLabel = '擦傷';
-
-            html += `<div class="dimension-card">
-                <div class="dimension-icon">🔴</div>
-                <div class="dimension-name">MAD 生存風險</div>
-                <div class="dimension-score">${madScore}</div>
-                <div class="dimension-label">${madLabel}</div>
-            </div>`;
-
-            // MAO (互利營收)
-            const maoScore = dimensions.mao || 0;
-            let maoLabel = '低標';
-            if (maoScore >= 81) maoLabel = '頂標';
-            else if (maoScore >= 61) maoLabel = '高標';
-            else if (maoScore >= 21) maoLabel = '中標';
-
-            html += `<div class="dimension-card">
-                <div class="dimension-icon">🟢</div>
-                <div class="dimension-name">MAO 互利營收</div>
-                <div class="dimension-score">${maoScore}</div>
-                <div class="dimension-label">${maoLabel}</div>
-            </div>`;
-
-            // MAA (行政內耗)
-            const maaScore = dimensions.maa || 0;
-            let maaLabel = '無感';
-            if (maaScore >= 81) maaLabel = '癱瘓級';
-            else if (maaScore >= 51) maaLabel = '官僚地獄';
-            else if (maaScore >= 21) maaLabel = '標準行政';
-
-            html += `<div class="dimension-card">
-                <div class="dimension-icon">🟠</div>
-                <div class="dimension-name">MAA 行政內耗</div>
-                <div class="dimension-score">${maaScore}</div>
-                <div class="dimension-label">${maaLabel}</div>
-            </div>`;
-
-            // MAP (戰略潛力)
-            const mapScore = dimensions.map || 0;
-            let mapLabel = '無法執行';
-            if (mapScore >= 71) mapLabel = '緊密合作';
-            else if (mapScore >= 41) mapLabel = '穩定生意';
-            else if (mapScore >= 1) mapLabel = '能做生意';
-
-            html += `<div class="dimension-card">
-                <div class="dimension-icon">🚀</div>
-                <div class="dimension-name">MAP 戰略潛力</div>
-                <div class="dimension-score">${mapScore}</div>
-                <div class="dimension-label">${mapLabel}</div>
-            </div>`;
-
-            html += '</div>';
-
-            // Add explanations section if available
+            // Only show explanations (no duplicate dimension cards)
+            let html = '';
             if (explanations && Object.keys(explanations).length > 0) {
-                html += '<div style="margin-top: 20px;"><div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #2d3748;">📝 詳細說明</div>';
-                html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
+                html += '<div style="display: flex; flex-direction: column; gap: 16px;">';
 
                 if (explanations.mad) {
                     html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🔴 MAD 生存風險</div>
+                        <div class="explanation-header">🛡️ MAD 生存風險分析</div>
                         <div class="explanation-text">${explanations.mad}</div>
                     </div>`;
                 }
 
                 if (explanations.mao) {
                     html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🟢 MAO 互利營收</div>
+                        <div class="explanation-header">💰 MAO 互利營收分析</div>
                         <div class="explanation-text">${explanations.mao}</div>
                     </div>`;
                 }
 
                 if (explanations.maa) {
                     html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🟠 MAA 行政內耗</div>
+                        <div class="explanation-header">🤝 MAA 承諾深度分析</div>
                         <div class="explanation-text">${explanations.maa}</div>
                     </div>`;
                 }
 
                 if (explanations.map) {
                     html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🚀 MAP 戰略潛力</div>
+                        <div class="explanation-header">🚀 MAP 戰略潛力分析</div>
                         <div class="explanation-text">${explanations.map}</div>
                     </div>`;
                 }
 
-                html += '</div></div>';
+                html += '</div>';
             }
 
             container.innerHTML = html;
