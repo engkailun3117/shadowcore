@@ -6,6 +6,7 @@ import "dotenv/config";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import mammoth from "mammoth";
 
 const app = express();
 
@@ -579,17 +580,17 @@ CRITICAL:
 // =========================
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    const pdfPath = req.file.path;
+    const filePath = req.file.path;
     // Fix encoding issue for non-ASCII filenames (Chinese characters, etc.)
     const originalFilename = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
 
     // 1. 計算文件 hash 檢測重複
-    const fileHash = calculateFileHash(pdfPath);
+    const fileHash = calculateFileHash(filePath);
     const existingContract = findContractByHash(fileHash);
 
     if (existingContract) {
       // 發現重複文件
-      fs.unlinkSync(pdfPath); // 刪除臨時文件
+      fs.unlinkSync(filePath); // 刪除臨時文件
       return res.json({
         success: true,
         duplicate: true,
@@ -598,9 +599,38 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       });
     }
 
-    // 2. 上傳 PDF 至 Files API
+    // 2. 處理 DOCX 文件：提取文本並轉換為 TXT
+    let fileToUpload = filePath;
+    let tempTxtPath = null;
+    const fileExtension = path.extname(originalFilename).toLowerCase();
+
+    if (fileExtension === '.docx' || fileExtension === '.doc') {
+      console.log(`檢測到 ${fileExtension} 文件，正在提取文本...`);
+      try {
+        const result = await mammoth.extractRawText({ path: filePath });
+        const extractedText = result.value;
+
+        // 創建臨時 TXT 文件
+        tempTxtPath = filePath.replace(/\.[^.]+$/, '.txt');
+        fs.writeFileSync(tempTxtPath, extractedText, 'utf8');
+        fileToUpload = tempTxtPath;
+        console.log('文本提取成功，已轉換為 TXT 格式');
+      } catch (extractError) {
+        console.error('DOCX 文本提取失敗:', extractError);
+        fs.unlinkSync(filePath);
+        if (tempTxtPath && fs.existsSync(tempTxtPath)) {
+          fs.unlinkSync(tempTxtPath);
+        }
+        return res.status(400).json({
+          success: false,
+          error: `無法處理 ${fileExtension} 文件: ${extractError.message}`
+        });
+      }
+    }
+
+    // 3. 上傳文件至 Files API
     const uploaded = await openai.files.create({
-      file: fs.createReadStream(pdfPath),
+      file: fs.createReadStream(fileToUpload),
       purpose: "assistants",
     });
 
@@ -654,7 +684,10 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
       console.log("基本資訊:", basicInfo);
     } catch (e) {
       console.error("無法提取基本資訊:", e);
-      fs.unlinkSync(pdfPath);
+      fs.unlinkSync(filePath);
+      if (tempTxtPath && fs.existsSync(tempTxtPath)) {
+        fs.unlinkSync(tempTxtPath);
+      }
       return res.status(500).json({
         success: false,
         error: "無法提取合約基本資訊"
@@ -665,7 +698,10 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     const sellerCompany = basicInfo.seller_company;
 
     if (!sellerCompany || sellerCompany === "未知") {
-      fs.unlinkSync(pdfPath);
+      fs.unlinkSync(filePath);
+      if (tempTxtPath && fs.existsSync(tempTxtPath)) {
+        fs.unlinkSync(tempTxtPath);
+      }
       return res.json({
         success: false,
         message: "無法確定乙方公司名稱"
@@ -738,8 +774,11 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     const dimensionExplanations = result.dimension_explanations || {};
     const overallRecommendation = result.overall_recommendation || '';
 
-    // Clean up uploaded file
-    fs.unlinkSync(pdfPath);
+    // Clean up uploaded files
+    fs.unlinkSync(filePath);
+    if (tempTxtPath && fs.existsSync(tempTxtPath)) {
+      fs.unlinkSync(tempTxtPath);
+    }
 
     // 保存合約分析結果到數據庫
     const contractId = crypto.randomBytes(16).toString('hex');
