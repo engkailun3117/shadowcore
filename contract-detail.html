@@ -126,7 +126,7 @@
 
         .edit-company-btn {
             padding: 6px 14px;
-            background: #667eea;
+            background: #ed1111;
             color: white;
             border: none;
             border-radius: 6px;
@@ -139,14 +139,14 @@
         }
 
         .edit-company-btn:hover {
-            background: #5a67d8;
+            background: #c70e0e;
         }
 
         .company-name-input {
             font-size: 36px;
             font-weight: 700;
             color: #1a202c;
-            border: 2px solid #667eea;
+            border: 2px solid #e64545;
             border-radius: 8px;
             padding: 8px 12px;
             width: 100%;
@@ -377,7 +377,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #ed1111;
             color: white;
             font-size: 14px;
             font-weight: bold;
@@ -389,7 +389,7 @@
         }
 
         .help-icon:hover {
-            background: #5a67d8;
+            background: #c70e0e;
             transform: scale(1.1);
         }
 
@@ -420,7 +420,7 @@
             font-weight: 700;
             color: #2d3748;
             margin-bottom: 16px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #e64545;
             padding-bottom: 8px;
         }
 
@@ -562,10 +562,10 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 20px;
+            font-size: 17px;
             font-weight: 700;
             color: #1a202c;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .title-icon {
@@ -668,11 +668,35 @@
         }
 
         /* Dimension Explanations */
-        .dimension-explanation {
+        .dimension-explanation-MAD {
             background: white;
             padding: 20px;
             border-radius: 8px;
-            border-left: 4px solid #e2e8f0;
+            border-left: 4px solid #eb6363;
+            margin-bottom: 16px;
+        }
+
+        .dimension-explanation-MAO {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #19c241;
+            margin-bottom: 16px;
+        }
+
+        .dimension-explanation-MAA {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #e68910;
+            margin-bottom: 16px;
+        }
+
+        .dimension-explanation-MAP {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #1070e6;
             margin-bottom: 16px;
         }
 
@@ -886,7 +910,7 @@
 
         .spinner {
             border: 4px solid #e2e8f0;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #e64545;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -1126,7 +1150,7 @@
                             <span class="title-icon">💡</span>
                             <span>專業建議</span>
                         </div>
-                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #eb6363;">
                             <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
                         </div>
                     </div>
@@ -1410,28 +1434,28 @@
                 html += '<div style="display: flex; flex-direction: column; gap: 16px;">';
 
                 if (explanations.mad) {
-                    html += `<div class="dimension-explanation">
+                    html += `<div class="dimension-explanation-MAD">
                         <div class="explanation-header">🛡️ MAD 生存風險分析</div>
                         <div class="explanation-text">${explanations.mad}</div>
                     </div>`;
                 }
 
                 if (explanations.mao) {
-                    html += `<div class="dimension-explanation">
+                    html += `<div class="dimension-explanation-MAO">
                         <div class="explanation-header">💰 MAO 互利營收分析</div>
                         <div class="explanation-text">${explanations.mao}</div>
                     </div>`;
                 }
 
                 if (explanations.maa) {
-                    html += `<div class="dimension-explanation">
+                    html += `<div class="dimension-explanation-MAA">
                         <div class="explanation-header">🤝 MAA 承諾深度分析</div>
                         <div class="explanation-text">${explanations.maa}</div>
                     </div>`;
                 }
 
                 if (explanations.map) {
-                    html += `<div class="dimension-explanation">
+                    html += `<div class="dimension-explanation-MAP">
                         <div class="explanation-header">🚀 MAP 戰略潛力分析</div>
                         <div class="explanation-text">${explanations.map}</div>
                     </div>`;
