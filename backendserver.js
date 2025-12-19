@@ -621,7 +621,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
           content: [
             {
               type: "input_text",
-               text: `請快速分析這份PDF文件，只提取以下基本資訊：
+              text: `請快速分析這份合約文件，只提取以下基本資訊：
 
 1. 文件類型（合約/報價單）
 2. **乙方公司名稱**（對方公司的完整名稱）
