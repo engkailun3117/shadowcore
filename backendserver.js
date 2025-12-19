@@ -388,12 +388,13 @@ async function performCompanyBackgroundCheck(companyName) {
 
 /**
  * 使用 OpenAI 分析合約（包含公司背景）
- * @param {string} fileId - OpenAI 文件 ID
+ * @param {string|null} fileId - OpenAI 文件 ID (PDF 文件)
  * @param {string} companyName - 公司名稱
  * @param {Object} companyData - 公司背景調查結果
+ * @param {string|null} documentText - 文件文本內容 (DOCX 文件)
  * @returns {Promise<Object>} 合約分析結果
  */
-async function analyzeContractWithBackground(fileId, companyName, companyData) {
+async function analyzeContractWithBackground(fileId, companyName, companyData, documentText = null) {
   console.log(`使用公司背景分析合約...`);
 
   // 構建背景調查上下文
@@ -561,10 +562,10 @@ CRITICAL:
 - 將背景雜訊誤判為致命傷
 - 在 JSON 外輸出任何內容`,
           },
-          {
-            type: "input_file",
-            file_id: fileId,
-          },
+          ...(documentText
+            ? [{ type: "input_text", text: `\n\n以下是合約文件內容：\n\n${documentText}` }]
+            : [{ type: "input_file", file_id: fileId }]
+          ),
         ],
       },
     ],
@@ -599,59 +600,39 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       });
     }
 
-    // 2. 處理 DOCX 文件：提取文本並轉換為 TXT
-    let fileToUpload = filePath;
-    let tempTxtPath = null;
+    // 2. 處理 DOCX 文件：提取文本
+    let extractedText = null;
+    let uploaded = null;
     const fileExtension = path.extname(originalFilename).toLowerCase();
 
     if (fileExtension === '.docx' || fileExtension === '.doc') {
       console.log(`檢測到 ${fileExtension} 文件，正在提取文本...`);
       try {
         const result = await mammoth.extractRawText({ path: filePath });
-        const extractedText = result.value;
-
-        // 創建臨時 TXT 文件
-        tempTxtPath = filePath.replace(/\.[^.]+$/, '.txt');
-        fs.writeFileSync(tempTxtPath, extractedText, 'utf8');
-        fileToUpload = tempTxtPath;
-        console.log('文本提取成功，已轉換為 TXT 格式');
+        extractedText = result.value;
+        console.log('文本提取成功');
       } catch (extractError) {
         console.error('DOCX 文本提取失敗:', extractError);
         fs.unlinkSync(filePath);
-        if (tempTxtPath && fs.existsSync(tempTxtPath)) {
-          fs.unlinkSync(tempTxtPath);
-        }
         return res.status(400).json({
           success: false,
           error: `無法處理 ${fileExtension} 文件: ${extractError.message}`
         });
       }
+    } else {
+      // 3. 上傳 PDF 文件至 Files API
+      uploaded = await openai.files.create({
+        file: fs.createReadStream(filePath),
+        purpose: "assistants",
+      });
     }
-
-    // 3. 上傳文件至 Files API
-    const uploaded = await openai.files.create({
-      file: fs.createReadStream(fileToUpload),
-      purpose: "assistants",
-    });
 
     // ========================================
     // 階段 1: 快速提取公司名稱
     // ========================================
     console.log("階段 1: 提取基本資訊...");
-    const basicInfoResponse = await openai.responses.create({
-      model: "gpt-5.2",
-      text: {
-        format: {
-          type: "json_object"
-        }
-      },
-      input: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: `請快速分析這份合約文件，只提取以下基本資訊：
+
+    const basicInfoPrompt = `請快速分析這份合約文件，只提取以下基本資訊：
 
 1. 文件類型（合約/報價單）
 2. **乙方公司名稱**（對方公司的完整名稱）
@@ -667,13 +648,26 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
 {
   "document_type": "合約",
   "seller_company": "乙方公司名稱（只填對方公司，不可填我方公司）"
-}`,
-            },
-            {
-              type: "input_file",
-              file_id: uploaded.id,
-            },
-          ],
+}`;
+
+    const basicInfoContent = extractedText
+      ? [{ type: "input_text", text: `${basicInfoPrompt}\n\n以下是合約文件內容：\n\n${extractedText}` }]
+      : [
+          { type: "input_text", text: basicInfoPrompt },
+          { type: "input_file", file_id: uploaded.id }
+        ];
+
+    const basicInfoResponse = await openai.responses.create({
+      model: "gpt-5.2",
+      text: {
+        format: {
+          type: "json_object"
+        }
+      },
+      input: [
+        {
+          role: "user",
+          content: basicInfoContent,
         },
       ],
     });
@@ -685,9 +679,6 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     } catch (e) {
       console.error("無法提取基本資訊:", e);
       fs.unlinkSync(filePath);
-      if (tempTxtPath && fs.existsSync(tempTxtPath)) {
-        fs.unlinkSync(tempTxtPath);
-      }
       return res.status(500).json({
         success: false,
         error: "無法提取合約基本資訊"
@@ -699,9 +690,6 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
 
     if (!sellerCompany || sellerCompany === "未知") {
       fs.unlinkSync(filePath);
-      if (tempTxtPath && fs.existsSync(tempTxtPath)) {
-        fs.unlinkSync(tempTxtPath);
-      }
       return res.json({
         success: false,
         message: "無法確定乙方公司名稱"
@@ -725,7 +713,12 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     // 使用輔助函數進行合約分析
     let result;
     try {
-      result = await analyzeContractWithBackground(uploaded.id, sellerCompany, companyData);
+      result = await analyzeContractWithBackground(
+        uploaded ? uploaded.id : null,
+        sellerCompany,
+        companyData,
+        extractedText
+      );
       console.log("成功解析 JSON，提取的資料:", JSON.stringify(result, null, 2));
     } catch (parseError) {
       console.error("JSON 解析失敗:", parseError.message);
@@ -776,16 +769,13 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
 
     // Clean up uploaded files
     fs.unlinkSync(filePath);
-    if (tempTxtPath && fs.existsSync(tempTxtPath)) {
-      fs.unlinkSync(tempTxtPath);
-    }
 
     // 保存合約分析結果到數據庫
     const contractId = crypto.randomBytes(16).toString('hex');
     const savedContractData = {
       contract_id: contractId,
       file_hash: fileHash,
-      file_id: uploaded.id,  // 保存 OpenAI file_id 供後續重新評估使用
+      file_id: uploaded ? uploaded.id : null,  // 保存 OpenAI file_id 供後續重新評估使用 (DOCX 文件為 null)
       filename: originalFilename,
       upload_date: new Date().toISOString(),
       health_score: healthScore,
