@@ -1022,65 +1022,65 @@
                     <div class="health-score-circle">
                         <div class="help-icon">?</div>
                         <div class="grade-tooltip">
-                            <div class="tooltip-title">合約等級說明</div>
+                            <div class="tooltip-title">合約等級說明 (Elite Strategy Distribution)</div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-s">
-                                    S 級 (王者)
-                                    <span class="grade-range">90 - 100</span>
+                                    S 級 (獨角獸)
+                                    <span class="grade-range">90 - 100 | 目標: 10%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>完美合約 (Perfect)</strong><br>
-                                    <span class="grade-mode">Mode O (極速簽核)</span><br>
-                                    風險極低 (MAD&lt;5) + 利潤極高 (Value&gt;85)。這種單通常是「天上掉下來的禮物」。
+                                    <strong>Unicorns - 你的公司擁有絕對議價權</strong><br>
+                                    <span class="grade-mode">條件: MAD &lt; 5 且 MAO &gt; 85</span><br>
+                                    客戶求著你做。利潤極高，且條款完全配合我方 M.A.X. 標準。這是公司的「招牌案例」。
                                 </div>
                             </div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-a">
-                                    A 級 (優質)
-                                    <span class="grade-range">80 - 89</span>
+                                    A 級 (核心營收) 【主力部隊】
+                                    <span class="grade-range">80 - 89 | 目標: 40%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>高價值合約 (Excellent)</strong><br>
-                                    <span class="grade-mode">Mode O (優先排程)</span><br>
-                                    風險低，利潤不錯；或者利潤極高但有一點點可控的小風險。這是業務的主力目標。
+                                    <strong>Core Revenue - 優質合約是我們的標準配備</strong><br>
+                                    <span class="grade-mode">條件: MAD &lt; 5 且 MAO &gt; 75</span><br>
+                                    生存底線極低，營收效益高。心態轉變：以前覺得 74 分不錯，現在 74 分會被認為「不夠好」。我們要求業務必須把利潤談高，或者把戰略價值做大，才能達標。
                                 </div>
                             </div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-b">
-                                    B 級 (標準)
-                                    <span class="grade-range">70 - 79</span>
+                                    B 級 (備份選項)
+                                    <span class="grade-range">70 - 79 | 目標: 30%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>穩健合約 (Standard)</strong><br>
-                                    <span class="grade-mode">Mode A (標準執行)</span><br>
-                                    非常安全，但利潤平平。用來「填產能、養員工」的基本盤。
+                                    <strong>Backup Options - 食之無味，棄之可惜</strong><br>
+                                    <span class="grade-mode">安全但平庸</span><br>
+                                    只有在 A 級訂單接不完，或者為了養工廠基本開銷 (Overhead) 時才接。如果產能滿載，優先砍掉 B 級單。
                                 </div>
                             </div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-c">
-                                    C 級 (觀察)
-                                    <span class="grade-range">60 - 69</span>
+                                    C 級 (改進區)
+                                    <span class="grade-range">60 - 69 | 目標: 15%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>雞肋合約 (Marginal)</strong><br>
-                                    <span class="grade-mode">Mode A (強制交換)</span><br>
-                                    食之無味，棄之可惜。風險偏高或利潤太薄。系統建議：必須透過「交換條款」加價或減責，否則不接。
+                                    <strong>Improvement Zone - 不合格的草約</strong><br>
+                                    <span class="grade-mode">需談判</span><br>
+                                    系統標記為「需談判」。業務必須利用 M.A.X. 的建議（例如：拿保固換價格）把它變成 B 級甚至 A 級，否則不簽。
                                 </div>
                             </div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-d">
-                                    D 級 (淘汰)
-                                    <span class="grade-range">&lt; 60</span>
+                                    D 級 (拒絕往來)
+                                    <span class="grade-range">&lt; 60 | 目標: 5%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>劇毒合約 (Toxic)</strong><br>
-                                    <span class="grade-mode">Mode D (熔斷/拒絕)</span><br>
-                                    生存風險超標 (MAD &gt; 35) 或 賠錢生意。系統鎖死，禁止簽核。
+                                    <strong>Rejected - 劇毒合約</strong><br>
+                                    <span class="grade-mode">系統熔斷</span><br>
+                                    生存風險超標 (MAD &gt; 35) 或 賠錢生意。系統直接熔斷，禁止簽核。
                                 </div>
                             </div>
                         </div>
@@ -1279,19 +1279,19 @@
 
             if (tier === 'S') {
                 scoreColor = '#48bb78';
-                statusText = '王者 - 完美合約';
+                statusText = '獨角獸 - Unicorns';
             } else if (tier === 'A') {
                 scoreColor = '#48bb78';
-                statusText = '優質 - 高價值合約';
+                statusText = '核心營收 - Core Revenue';
             } else if (tier === 'B') {
                 scoreColor = '#ed8936';
-                statusText = '標準 - 穩健合約';
+                statusText = '備份選項 - Backup';
             } else if (tier === 'C') {
                 scoreColor = '#f56565';
-                statusText = '觀察 - 雞肋合約';
+                statusText = '改進區 - Needs Work';
             } else if (tier === 'D') {
                 scoreColor = '#e53e3e';
-                statusText = '淘汰 - 劇毒合約';
+                statusText = '拒絕往來 - Rejected';
             }
 
             scoreCircle.setAttribute('stroke', scoreColor);

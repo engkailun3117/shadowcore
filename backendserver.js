@@ -117,7 +117,7 @@ function saveContract(contractData) {
 // =========================
 
 /**
- * 計算合約健康評分 (Safety-First Weighted Scoring)
+ * 計算合約健康評分 (Elite Strategy Distribution - A 級主力化)
  *
  * 這個函數使用 M.A.X. 的四維度模型來評估合約的整體健康度：
  *
@@ -127,22 +127,28 @@ function saveContract(contractData) {
  * - MAA (Mutual Assured Attrition - 互相保證消耗): 0-100, 越高代表綁定越深/越穩定
  * - MAP (Mutual Assured Potential - 戰略潛力指標): 0-100, 越高越好
  *
- * Safety-First Weighted Scoring 公式：
- * 總分 = [(100 - MAD) × 60%] + [(MAO + MAA + MAP)/3 × 40%]
+ * 更新後的 Aggressive Scoring 公式 (讓 A 級成為主力 - 40%):
+ * 總分 = [(100 - MAD) × 50%] + [(MAO × 50% + MAA × 25% + MAP × 25%) × 50%] + 獎勵分
  *
- * 我們將分為兩個部分：
- * - 安全性得分 (Safety Score): (100 - MAD) × 60% - 佔 60% 權重
- * - 價值性得分 (Value Score): (MAO + MAA + MAP)/3 × 40% - 佔 40% 權重
+ * 我們將分為三個部分：
+ * - 安全性得分 (Safety Score): (100 - MAD) × 50% - 佔 50% 權重 (從 60% 調降，更重視營收)
+ * - 價值性得分 (Value Score): (MAO×0.5 + MAA×0.25 + MAP×0.25) × 50% - 佔 50% 權重 (從 40% 提升)
+ *   * MAO 在價值中佔 50% 權重 (強調互利營收的重要性)
+ * - 獎勵加分 (Bonus): 符合 Elite 標準時額外加分
+ *
+ * 獎勵機制 (推動 A 級主力化):
+ * - A 級加速: MAD < 5 且 MAO > 75 → +5 分 (推升至 A 級)
+ * - S 級加速: MAD < 5 且 MAO > 85 → 額外 +3 分 (共 +8 分，推升至 S 級)
  *
  * 熔斷機制：
  * - 若 MAD > 35: 總分強制不得超過 59 分（不及格）
  *
- * 等級劃分：
- * - S 級 (90-100): 完美合約 - MAD<5, Value>85
- * - A 級 (80-89): 高價值合約
- * - B 級 (70-79): 穩健合約
- * - C 級 (60-69): 雞肋合約 - 需要交換條款
- * - D 級 (<60): 劇毒合約 - 系統鎖死，禁止簽核
+ * 等級劃分 (目標分佈):
+ * - S 級 (90-100): 獨角獸 - 10% | MAD<5, MAO>85 | 你的公司擁有絕對議價權
+ * - A 級 (80-89): 核心營收 - 40% 【主力部隊】 | MAD<5, MAO>75 | 優質合約是標準配備
+ * - B 級 (70-79): 備份選項 - 30% | 安全但平庸 | 食之無味，棄之可惜
+ * - C 級 (60-69): 改進區 - 15% | 不合格草約 | 需要談判改進
+ * - D 級 (<60): 拒絕往來 - 5% | 劇毒合約 | 系統熔斷
  *
  * @param {Object} overallDimensions - 整體維度分數 { mad, mao, maa, map }
  * @returns {Object} { score: 健康評分 (0-100), dimensions: { mad, mao, maa, map }, tier: 等級 }
@@ -158,16 +164,38 @@ function calculateHealthScore(overallDimensions) {
 
   const { mad, mao, maa, map } = dimensions;
 
-  // 計算安全性得分 (Safety Score) - 60% 權重
-  const safetyScore = (100 - mad) * 0.6;
+  // 計算安全性得分 (Safety Score) - 50% 權重 (從 60% 調降)
+  const safetyScore = (100 - mad) * 0.5;
 
-  // 計算價值性得分 (Value Score) - 40% 權重
-  // 取 MAO、MAA、MAP 的平均值
-  const valueAverage = (mao + maa + map) / 3;
-  const valueScore = valueAverage * 0.4;
+  // 計算價值性得分 (Value Score) - 50% 權重 (從 40% 提升)
+  // MAO 佔 50% 權重，MAA 和 MAP 各佔 25% (強調營收的重要性)
+  const valueWeighted = (mao * 0.5) + (maa * 0.25) + (map * 0.25);
+  const valueScore = valueWeighted * 0.5;
 
   // 計算原始總分
   let rawScore = safetyScore + valueScore;
+
+  // 🎯 獎勵機制：推動 A 級主力化
+  let bonusPoints = 0;
+  let bonusReason = '';
+
+  // A 級加速器：MAD < 5 且 MAO > 75 → +5 分
+  if (mad < 5 && mao > 75) {
+    bonusPoints += 5;
+    bonusReason += 'A級加速(+5) ';
+  }
+
+  // S 級加速器：MAD < 5 且 MAO > 85 → 額外 +3 分 (總共 +8)
+  if (mad < 5 && mao > 85) {
+    bonusPoints += 3;
+    bonusReason += 'S級加速(+3) ';
+  }
+
+  rawScore += bonusPoints;
+
+  if (bonusPoints > 0) {
+    console.log(`✨ 獎勵加分: ${bonusReason}(總計 +${bonusPoints} 分)`);
+  }
 
   // 🔴 熔斷機制：MAD > 35 (風險過高區)
   // 只要生存風險超過 35 分，無論利潤多高，總分強制不得超過 59 分（不及格）
@@ -196,7 +224,7 @@ function calculateHealthScore(overallDimensions) {
     tierLabel = '觀察';
   }
 
-  console.log(`計算詳情: 安全分(${safetyScore.toFixed(1)}) + 價值分(${valueScore.toFixed(1)}) = ${finalScore} 分 [${tier}級-${tierLabel}]`);
+  console.log(`計算詳情: 安全分(${safetyScore.toFixed(1)}) + 價值分(${valueScore.toFixed(1)}) + 獎勵(${bonusPoints}) = ${finalScore} 分 [${tier}級-${tierLabel}]`);
 
   return {
     score: finalScore,
@@ -205,7 +233,8 @@ function calculateHealthScore(overallDimensions) {
     tierLabel: tierLabel,
     breakdown: {
       safetyScore: Math.round(safetyScore * 10) / 10,
-      valueScore: Math.round(valueScore * 10) / 10
+      valueScore: Math.round(valueScore * 10) / 10,
+      bonusPoints: bonusPoints
     }
   };
 }
