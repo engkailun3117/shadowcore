@@ -258,7 +258,7 @@
         }
 
         .company-name-display {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 12px;
             margin-bottom: 12px;
@@ -269,6 +269,7 @@
             font-weight: 700;
             color: #1a202c;
             line-height: 1.2;
+            display: inline;
         }
 
         .filename-display {
@@ -974,9 +975,7 @@
 
                         <!-- Display mode -->
                         <div class="company-name-display" id="companyNameDisplay">
-                            <div style="flex: 1;">
-                                <span class="company-name-text" id="companyName">載入中...</span>
-                            </div>
+                            <span class="company-name-text" id="companyName">載入中...</span>
                             <button class="edit-company-btn" id="editCompanyBtn" onclick="enableEditMode()">✏️ 編輯</button>
                         </div>
 
