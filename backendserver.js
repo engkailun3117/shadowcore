@@ -6,6 +6,7 @@ import "dotenv/config";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import mammoth from "mammoth";
 
 const app = express();
 
@@ -116,7 +117,7 @@ function saveContract(contractData) {
 // =========================
 
 /**
- * 計算合約健康評分 (Safety-First Weighted Scoring)
+ * 計算合約健康評分 (Elite Strategy Distribution - A 級主力化)
  *
  * 這個函數使用 M.A.X. 的四維度模型來評估合約的整體健康度：
  *
@@ -126,22 +127,28 @@ function saveContract(contractData) {
  * - MAA (Mutual Assured Attrition - 互相保證消耗): 0-100, 越高代表綁定越深/越穩定
  * - MAP (Mutual Assured Potential - 戰略潛力指標): 0-100, 越高越好
  *
- * Safety-First Weighted Scoring 公式：
- * 總分 = [(100 - MAD) × 60%] + [(MAO + MAA + MAP)/3 × 40%]
+ * 更新後的 Aggressive Scoring 公式 (讓 A 級成為主力 - 40%):
+ * 總分 = [(100 - MAD) × 50%] + [(MAO × 50% + MAA × 25% + MAP × 25%) × 50%] + 獎勵分
  *
- * 我們將分為兩個部分：
- * - 安全性得分 (Safety Score): (100 - MAD) × 60% - 佔 60% 權重
- * - 價值性得分 (Value Score): (MAO + MAA + MAP)/3 × 40% - 佔 40% 權重
+ * 我們將分為三個部分：
+ * - 安全性得分 (Safety Score): (100 - MAD) × 50% - 佔 50% 權重 (從 60% 調降，更重視營收)
+ * - 價值性得分 (Value Score): (MAO×0.5 + MAA×0.25 + MAP×0.25) × 50% - 佔 50% 權重 (從 40% 提升)
+ *   * MAO 在價值中佔 50% 權重 (強調互利營收的重要性)
+ * - 獎勵加分 (Bonus): 符合 Elite 標準時額外加分
+ *
+ * 獎勵機制 (推動 A 級主力化):
+ * - A 級加速: MAD < 5 且 MAO > 75 → +5 分 (推升至 A 級)
+ * - S 級加速: MAD < 5 且 MAO > 85 → 額外 +3 分 (共 +8 分，推升至 S 級)
  *
  * 熔斷機制：
  * - 若 MAD > 35: 總分強制不得超過 59 分（不及格）
  *
- * 等級劃分：
- * - S 級 (90-100): 完美合約 - MAD<5, Value>85
- * - A 級 (80-89): 高價值合約
- * - B 級 (70-79): 穩健合約
- * - C 級 (60-69): 雞肋合約 - 需要交換條款
- * - D 級 (<60): 劇毒合約 - 系統鎖死，禁止簽核
+ * 等級劃分 (目標分佈):
+ * - S 級 (90-100): 獨角獸 - 10% | MAD<5, MAO>85 | 你的公司擁有絕對議價權
+ * - A 級 (80-89): 核心營收 - 40% 【主力部隊】 | MAD<5, MAO>75 | 優質合約是標準配備
+ * - B 級 (70-79): 備份選項 - 30% | 安全但平庸 | 食之無味，棄之可惜
+ * - C 級 (60-69): 改進區 - 15% | 不合格草約 | 需要談判改進
+ * - D 級 (<60): 拒絕往來 - 5% | 劇毒合約 | 系統熔斷
  *
  * @param {Object} overallDimensions - 整體維度分數 { mad, mao, maa, map }
  * @returns {Object} { score: 健康評分 (0-100), dimensions: { mad, mao, maa, map }, tier: 等級 }
@@ -157,16 +164,38 @@ function calculateHealthScore(overallDimensions) {
 
   const { mad, mao, maa, map } = dimensions;
 
-  // 計算安全性得分 (Safety Score) - 60% 權重
+  // 計算安全性得分 (Safety Score) - 50% 權重 (從 60% 調降)
   const safetyScore = (100 - mad) * 0.6;
 
-  // 計算價值性得分 (Value Score) - 40% 權重
-  // 取 MAO、MAA、MAP 的平均值
-  const valueAverage = (mao + maa + map) / 3;
-  const valueScore = valueAverage * 0.4;
+  // 計算價值性得分 (Value Score) - 50% 權重 (從 40% 提升)
+  // MAO 佔 50% 權重，MAA 和 MAP 各佔 25% (強調營收的重要性)
+  const valueWeighted = (mao  + maa + map)/3;
+  const valueScore = valueWeighted * 0.4;
 
   // 計算原始總分
   let rawScore = safetyScore + valueScore;
+
+  // 🎯 獎勵機制：推動 A 級主力化
+  let bonusPoints = 0;
+  let bonusReason = '';
+
+  // A 級加速器：MAD < 5 且 MAO > 75 → +5 分
+  if (mad < 5 && mao > 75) {
+    bonusPoints += 5;
+    bonusReason += 'A級加速(+5) ';
+  }
+
+  // S 級加速器：MAD < 5 且 MAO > 85 → 額外 +3 分 (總共 +8)
+  if (mad < 5 && mao > 85) {
+    bonusPoints += 3;
+    bonusReason += 'S級加速(+3) ';
+  }
+
+  rawScore += bonusPoints;
+
+  if (bonusPoints > 0) {
+    console.log(`✨ 獎勵加分: ${bonusReason}(總計 +${bonusPoints} 分)`);
+  }
 
   // 🔴 熔斷機制：MAD > 35 (風險過高區)
   // 只要生存風險超過 35 分，無論利潤多高，總分強制不得超過 59 分（不及格）
@@ -195,7 +224,7 @@ function calculateHealthScore(overallDimensions) {
     tierLabel = '觀察';
   }
 
-  console.log(`計算詳情: 安全分(${safetyScore.toFixed(1)}) + 價值分(${valueScore.toFixed(1)}) = ${finalScore} 分 [${tier}級-${tierLabel}]`);
+  console.log(`計算詳情: 安全分(${safetyScore.toFixed(1)}) + 價值分(${valueScore.toFixed(1)}) + 獎勵(${bonusPoints}) = ${finalScore} 分 [${tier}級-${tierLabel}]`);
 
   return {
     score: finalScore,
@@ -204,7 +233,8 @@ function calculateHealthScore(overallDimensions) {
     tierLabel: tierLabel,
     breakdown: {
       safetyScore: Math.round(safetyScore * 10) / 10,
-      valueScore: Math.round(valueScore * 10) / 10
+      valueScore: Math.round(valueScore * 10) / 10,
+      bonusPoints: bonusPoints
     }
   };
 }
@@ -387,12 +417,13 @@ async function performCompanyBackgroundCheck(companyName) {
 
 /**
  * 使用 OpenAI 分析合約（包含公司背景）
- * @param {string} fileId - OpenAI 文件 ID
+ * @param {string|null} fileId - OpenAI 文件 ID (PDF 文件)
  * @param {string} companyName - 公司名稱
  * @param {Object} companyData - 公司背景調查結果
+ * @param {string|null} documentText - 文件文本內容 (DOCX 文件)
  * @returns {Promise<Object>} 合約分析結果
  */
-async function analyzeContractWithBackground(fileId, companyName, companyData) {
+async function analyzeContractWithBackground(fileId, companyName, companyData, documentText = null) {
   console.log(`使用公司背景分析合約...`);
 
   // 構建背景調查上下文
@@ -492,8 +523,8 @@ CRITICAL:
 【MAO：互利營收指標（0–100，越高越好）】
 核心問題：「這份合約現在能為公司創造多少實質收益？」
 
-- 0–20：基本交易（市價、無優勢）
-- 21–60：優於市場（價格、付款期、穩定性）
+- 0–40：基本交易（市價、無優勢）
+- 41–60：優於市場（價格、付款期、穩定性）
 - 61–80：顯著獲利（獨家、保證量、預付款、槓桿效應）
 - 81–100：壟斷級優勢（免費 IP、對方承擔成本、高度槓桿）
 
@@ -505,10 +536,10 @@ CRITICAL:
 
 ⚠️ MAA 是加分項，不得因行政流程或人工操作而扣分。
 
-- 0–20 流動式交易：無低消、無訂金、隨用隨棄
-- 21–50 預約制維護：訂金、預付款、定期會議、指定窗口
-- 51–80 硬性鎖定：保證採購、沈沒成本、高額解約金、利潤綁定
-- 81–100 共生／排他：獨家條款、股權互持、核心命脈託管
+- 0–40 流動式交易：無低消、無訂金、隨用隨棄
+- 41–65 預約制維護：訂金、預付款、定期會議、指定窗口
+- 66–87 硬性鎖定：保證採購、沈沒成本、高額解約金、利潤綁定
+- 88–100 共生／排他：獨家條款、股權互持、核心命脈託管
 
 評估重點是「財務鎖定、時間承諾、成效綁定」，而非麻不麻煩。
 
@@ -520,12 +551,12 @@ CRITICAL:
 不得因『非數位化』或『有人工作業』而扣分。
 
 - 0 分：無法執行（無法開單、無法履約）
-- 1–20：純交易里程碑（能做生意）
-- 21–50：功能性賦能
+- 1–40：純交易里程碑（能做生意）
+- 41–65：功能性賦能
   - 資質取得（ISO、專利、合規）
   - 效率提升（外包非核心）
   - 履歷背書（案例、Portfolio）
-- 51–80：戰略槓桿
+- 66–80：戰略槓桿
   - 政府／政策資源
   - 金融槓桿（補助、授信、估值）
   - 知識轉移、風險共擔（Success Fee）
@@ -560,10 +591,10 @@ CRITICAL:
 - 將背景雜訊誤判為致命傷
 - 在 JSON 外輸出任何內容`,
           },
-          {
-            type: "input_file",
-            file_id: fileId,
-          },
+          ...(documentText
+            ? [{ type: "input_text", text: `\n\n以下是合約文件內容：\n\n${documentText}` }]
+            : [{ type: "input_file", file_id: fileId }]
+          ),
         ],
       },
     ],
@@ -579,17 +610,17 @@ CRITICAL:
 // =========================
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    const pdfPath = req.file.path;
+    const filePath = req.file.path;
     // Fix encoding issue for non-ASCII filenames (Chinese characters, etc.)
     const originalFilename = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
 
     // 1. 計算文件 hash 檢測重複
-    const fileHash = calculateFileHash(pdfPath);
+    const fileHash = calculateFileHash(filePath);
     const existingContract = findContractByHash(fileHash);
 
     if (existingContract) {
       // 發現重複文件
-      fs.unlinkSync(pdfPath); // 刪除臨時文件
+      fs.unlinkSync(filePath); // 刪除臨時文件
       return res.json({
         success: true,
         duplicate: true,
@@ -598,30 +629,39 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       });
     }
 
-    // 2. 上傳 PDF 至 Files API
-    const uploaded = await openai.files.create({
-      file: fs.createReadStream(pdfPath),
-      purpose: "assistants",
-    });
+    // 2. 處理 DOCX 文件：提取文本
+    let extractedText = null;
+    let uploaded = null;
+    const fileExtension = path.extname(originalFilename).toLowerCase();
+
+    if (fileExtension === '.docx' || fileExtension === '.doc') {
+      console.log(`檢測到 ${fileExtension} 文件，正在提取文本...`);
+      try {
+        const result = await mammoth.extractRawText({ path: filePath });
+        extractedText = result.value;
+        console.log('文本提取成功');
+      } catch (extractError) {
+        console.error('DOCX 文本提取失敗:', extractError);
+        fs.unlinkSync(filePath);
+        return res.status(400).json({
+          success: false,
+          error: `無法處理 ${fileExtension} 文件: ${extractError.message}`
+        });
+      }
+    } else {
+      // 3. 上傳 PDF 文件至 Files API
+      uploaded = await openai.files.create({
+        file: fs.createReadStream(filePath),
+        purpose: "assistants",
+      });
+    }
 
     // ========================================
     // 階段 1: 快速提取公司名稱
     // ========================================
     console.log("階段 1: 提取基本資訊...");
-    const basicInfoResponse = await openai.responses.create({
-      model: "gpt-5.2",
-      text: {
-        format: {
-          type: "json_object"
-        }
-      },
-      input: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: `請快速分析這份合約文件，只提取以下基本資訊：
+
+    const basicInfoPrompt = `請快速分析這份合約文件，只提取以下基本資訊：
 
 1. 文件類型（合約/報價單）
 2. **乙方公司名稱**（對方公司的完整名稱）
@@ -637,13 +677,26 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
 {
   "document_type": "合約",
   "seller_company": "乙方公司名稱（只填對方公司，不可填我方公司）"
-}`,
-            },
-            {
-              type: "input_file",
-              file_id: uploaded.id,
-            },
-          ],
+}`;
+
+    const basicInfoContent = extractedText
+      ? [{ type: "input_text", text: `${basicInfoPrompt}\n\n以下是合約文件內容：\n\n${extractedText}` }]
+      : [
+          { type: "input_text", text: basicInfoPrompt },
+          { type: "input_file", file_id: uploaded.id }
+        ];
+
+    const basicInfoResponse = await openai.responses.create({
+      model: "gpt-5.2",
+      text: {
+        format: {
+          type: "json_object"
+        }
+      },
+      input: [
+        {
+          role: "user",
+          content: basicInfoContent,
         },
       ],
     });
@@ -654,7 +707,7 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
       console.log("基本資訊:", basicInfo);
     } catch (e) {
       console.error("無法提取基本資訊:", e);
-      fs.unlinkSync(pdfPath);
+      fs.unlinkSync(filePath);
       return res.status(500).json({
         success: false,
         error: "無法提取合約基本資訊"
@@ -665,7 +718,7 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     const sellerCompany = basicInfo.seller_company;
 
     if (!sellerCompany || sellerCompany === "未知") {
-      fs.unlinkSync(pdfPath);
+      fs.unlinkSync(filePath);
       return res.json({
         success: false,
         message: "無法確定乙方公司名稱"
@@ -689,7 +742,12 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     // 使用輔助函數進行合約分析
     let result;
     try {
-      result = await analyzeContractWithBackground(uploaded.id, sellerCompany, companyData);
+      result = await analyzeContractWithBackground(
+        uploaded ? uploaded.id : null,
+        sellerCompany,
+        companyData,
+        extractedText
+      );
       console.log("成功解析 JSON，提取的資料:", JSON.stringify(result, null, 2));
     } catch (parseError) {
       console.error("JSON 解析失敗:", parseError.message);
@@ -738,15 +796,15 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     const dimensionExplanations = result.dimension_explanations || {};
     const overallRecommendation = result.overall_recommendation || '';
 
-    // Clean up uploaded file
-    fs.unlinkSync(pdfPath);
+    // Clean up uploaded files
+    fs.unlinkSync(filePath);
 
     // 保存合約分析結果到數據庫
     const contractId = crypto.randomBytes(16).toString('hex');
     const savedContractData = {
       contract_id: contractId,
       file_hash: fileHash,
-      file_id: uploaded.id,  // 保存 OpenAI file_id 供後續重新評估使用
+      file_id: uploaded ? uploaded.id : null,  // 保存 OpenAI file_id 供後續重新評估使用 (DOCX 文件為 null)
       filename: originalFilename,
       upload_date: new Date().toISOString(),
       health_score: healthScore,
@@ -973,5 +1031,4 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
 
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
-
 

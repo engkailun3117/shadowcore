@@ -106,7 +106,7 @@
         .contract-header {
             background: white;
             border-radius: 12px;
-            padding: 32px;
+            padding: 28px 32px;
             margin-bottom: 24px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
@@ -114,53 +114,40 @@
         .header-main {
             display: grid;
             grid-template-columns: 1fr auto;
-            gap: 40px;
-            margin-bottom: 32px;
+            gap: 32px;
             align-items: start;
         }
 
         .company-info {
             display: flex;
             flex-direction: column;
-            gap: 16px;
-        }
-
-        .company-name-display {
-            font-size: 36px;
-            font-weight: 700;
-            color: #1a202c;
-            line-height: 1.2;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .company-name-text {
-            flex: 1;
+            gap: 0;
+            align-items: flex-start;
         }
 
         .edit-company-btn {
-            padding: 8px 16px;
-            background: #667eea;
+            padding: 6px 14px;
+            background: #ed1111;
             color: white;
             border: none;
             border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 400;
             cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .edit-company-btn:hover {
-            background: #5a67d8;
+            background: #c70e0e;
         }
 
         .company-name-input {
             font-size: 36px;
             font-weight: 700;
             color: #1a202c;
-            border: 2px solid #667eea;
+            border: 2px solid #e64545;
             border-radius: 8px;
             padding: 8px 12px;
             width: 100%;
@@ -230,22 +217,90 @@
             margin: 0 auto 16px;
         }
 
-        .company-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: #f3e8ff;
+            color: #7c3aed;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             margin-bottom: 12px;
         }
 
-        .contract-title {
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #7c3aed;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .company-name-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .company-name-text {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1.2;
+        }
+
+        .filename-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+
+        .file-icon {
             font-size: 16px;
+        }
+
+        .filename-text {
+            font-size: 14px;
+            color: #4a5568;
             font-weight: 500;
+        }
+
+        .contract-meta-inline {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            font-size: 13px;
             color: #718096;
-            margin-top: 8px;
+        }
+
+        .meta-item-inline {
+            display: flex;
+            gap: 8px;
+        }
+
+        .meta-label-inline {
+            color: #a0aec0;
+            font-weight: 500;
+        }
+
+        .meta-value-inline {
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .contract-id-inline {
+            font-family: monospace;
+            font-size: 11px;
         }
 
         .contract-meta {
@@ -275,13 +330,45 @@
             font-weight: 500;
         }
 
-        .health-score-large {
+        .health-score-circle {
             text-align: center;
-            padding: 24px;
+            padding: 20px;
             background: #f7fafc;
             border-radius: 12px;
             min-width: 200px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-score-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 12px 0;
+        }
+
+        .circle-progress {
+            transform: scaleX(-1);
+        }
+
+        .circle-score-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: 700;
+            color: #48bb78;
+        }
+
+        .score-status-text {
+            font-size: 12px;
+            color: #48bb78;
+            font-weight: 600;
+            margin-top: 6px;
         }
 
         .help-icon {
@@ -291,7 +378,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #ed1111;
             color: white;
             font-size: 14px;
             font-weight: bold;
@@ -303,7 +390,7 @@
         }
 
         .help-icon:hover {
-            background: #5a67d8;
+            background: #c70e0e;
             transform: scale(1.1);
         }
 
@@ -334,7 +421,7 @@
             font-weight: 700;
             color: #2d3748;
             margin-bottom: 16px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #e64545;
             padding-bottom: 8px;
         }
 
@@ -463,12 +550,155 @@
             color: #a0aec0;
         }
 
-        /* Dimension Explanations */
-        .dimension-explanation {
+        /* Dimensions Overview Section */
+        .dimensions-overview-section {
             background: white;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title-with-icon {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 20px;
+        }
+
+        .title-icon {
+            font-size: 24px;
+        }
+
+        .dimensions-cards-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .dimensions-cards-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .dimensions-cards-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dimension-card-overview {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .dimension-card-overview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dimension-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .dimension-header-icon {
+            font-size: 24px;
+        }
+
+        .dimension-header-text {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 600;
+        }
+
+        .dimension-score-large {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+
+        .dimension-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .dimension-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .dimension-status-label {
+            font-size: 12px;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        /* Two Column Layout */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 1024px) {
+            .two-column-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-column, .right-column {
+            min-width: 0;
+        }
+
+        /* Dimension Explanations */
+        .dimension-explanation-MAD {
+            background: white;
+            padding: 20px;
             border-radius: 8px;
-            border-left: 4px solid #e2e8f0;
+            border-left: 4px solid #eb6363;
+            margin-bottom: 16px;
+        }
+
+        .dimension-explanation-MAO {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #19c241;
+            margin-bottom: 16px;
+        }
+
+        .dimension-explanation-MAA {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #e68910;
+            margin-bottom: 16px;
+        }
+
+        .dimension-explanation-MAP {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #1070e6;
+            margin-bottom: 16px;
         }
 
         .explanation-header {
@@ -681,7 +911,7 @@
 
         .spinner {
             border: 4px solid #e2e8f0;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #e64545;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -747,14 +977,21 @@
                 <div class="header-main">
                     <!-- Left: Company Information -->
                     <div class="company-info">
-                        <div>
-                            <span class="company-badge" id="documentTypeBadge">合約</span>
+                        <div class="status-badge">
+                            <span class="status-dot"></span>
+                            <span>合約已分析</span>
                         </div>
 
                         <!-- Display mode -->
                         <div class="company-name-display" id="companyNameDisplay">
                             <span class="company-name-text" id="companyName">載入中...</span>
-                            <button class="edit-company-btn" id="editCompanyBtn" onclick="enableEditMode()">✏️ 編輯</button>
+                            <button class="edit-company-btn" id="editCompanyBtn" onclick="enableEditMode()">編輯</button>
+                        </div>
+
+                        <!-- Filename display -->
+                        <div class="filename-display">
+                            <span class="file-icon">📄</span>
+                            <span class="filename-text" id="filenameDisplay">--</span>
                         </div>
 
                         <!-- Edit mode -->
@@ -766,137 +1003,169 @@
                             </div>
                         </div>
 
-                        <div class="contract-title" id="contractTitle">合約文件</div>
+                        <div class="contract-meta-inline">
+                            <div class="meta-item-inline">
+                                <span class="meta-label-inline">文件類型</span>
+                                <span class="meta-value-inline" id="documentTypeBadge">合約</span>
+                            </div>
+                            <div class="meta-item-inline">
+                                <span class="meta-label-inline">上傳日期</span>
+                                <span class="meta-value-inline" id="uploadDateInline">--</span>
+                            </div>
+                            <div class="meta-item-inline">
+                                <span class="meta-label-inline">合約 ID</span>
+                                <span class="meta-value-inline contract-id-inline" id="contractIdInline">--</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Right: Contract Grade -->
-                    <div class="health-score-large">
+                    <!-- Right: Circular Health Score -->
+                    <div class="health-score-circle">
                         <div class="help-icon">?</div>
                         <div class="grade-tooltip">
-                            <div class="tooltip-title">合約等級說明</div>
+                            <div class="tooltip-title">合約等級說明 (Elite Strategy Distribution)</div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-s">
-                                    S 級 (王者)
-                                    <span class="grade-range">90 - 100</span>
+                                    S 級 (獨角獸)
+                                    <span class="grade-range">90 - 100 | 目標: 10%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>完美合約 (Perfect)</strong><br>
-                                    <span class="grade-mode">Mode O (極速簽核)</span><br>
-                                    風險極低 (MAD&lt;5) + 利潤極高 (Value&gt;85)。這種單通常是「天上掉下來的禮物」。
+                                    <strong>Unicorns - 你的公司擁有絕對議價權</strong><br>
+                                    <span class="grade-mode">條件: MAD &lt; 5 且 MAO &gt; 85</span><br>
+                                    客戶求著你做。利潤極高，且條款完全配合我方 M.A.X. 標準。這是公司的「招牌案例」。
                                 </div>
                             </div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-a">
-                                    A 級 (優質)
-                                    <span class="grade-range">80 - 89</span>
+                                    A 級 (核心營收) 【主力部隊】
+                                    <span class="grade-range">80 - 89 | 目標: 40%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>高價值合約 (Excellent)</strong><br>
-                                    <span class="grade-mode">Mode O (優先排程)</span><br>
-                                    風險低，利潤不錯；或者利潤極高但有一點點可控的小風險。這是業務的主力目標。
+                                    <strong>Core Revenue - 優質合約是我們的標準配備</strong><br>
+                                    <span class="grade-mode">條件: MAD &lt; 5 且 MAO &gt; 75</span><br>
+                                    生存底線極低，營收效益高。心態轉變：以前覺得 74 分不錯，現在 74 分會被認為「不夠好」。我們要求業務必須把利潤談高，或者把戰略價值做大，才能達標。
                                 </div>
                             </div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-b">
-                                    B 級 (標準)
-                                    <span class="grade-range">70 - 79</span>
+                                    B 級 (備份選項)
+                                    <span class="grade-range">70 - 79 | 目標: 30%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>穩健合約 (Standard)</strong><br>
-                                    <span class="grade-mode">Mode A (標準執行)</span><br>
-                                    非常安全，但利潤平平。用來「填產能、養員工」的基本盤。
+                                    <strong>Backup Options - 食之無味，棄之可惜</strong><br>
+                                    <span class="grade-mode">安全但平庸</span><br>
+                                    只有在 A 級訂單接不完，或者為了養工廠基本開銷 (Overhead) 時才接。如果產能滿載，優先砍掉 B 級單。
                                 </div>
                             </div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-c">
-                                    C 級 (觀察)
-                                    <span class="grade-range">60 - 69</span>
+                                    C 級 (改進區)
+                                    <span class="grade-range">60 - 69 | 目標: 15%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>雞肋合約 (Marginal)</strong><br>
-                                    <span class="grade-mode">Mode A (強制交換)</span><br>
-                                    食之無味，棄之可惜。風險偏高或利潤太薄。系統建議：必須透過「交換條款」加價或減責，否則不接。
+                                    <strong>Improvement Zone - 不合格的草約</strong><br>
+                                    <span class="grade-mode">需談判</span><br>
+                                    系統標記為「需談判」。業務必須利用 M.A.X. 的建議（例如：拿保固換價格）把它變成 B 級甚至 A 級，否則不簽。
                                 </div>
                             </div>
 
                             <div class="grade-item">
                                 <div class="grade-header tier-d">
-                                    D 級 (淘汰)
-                                    <span class="grade-range">&lt; 60</span>
+                                    D 級 (拒絕往來)
+                                    <span class="grade-range">&lt; 60 | 目標: 5%</span>
                                 </div>
                                 <div class="grade-desc">
-                                    <strong>劇毒合約 (Toxic)</strong><br>
-                                    <span class="grade-mode">Mode D (熔斷/拒絕)</span><br>
-                                    生存風險超標 (MAD &gt; 35) 或 賠錢生意。系統鎖死，禁止簽核。
+                                    <strong>Rejected - 劇毒合約</strong><br>
+                                    <span class="grade-mode">系統熔斷</span><br>
+                                    生存風險超標 (MAD &gt; 35) 或 賠錢生意。系統直接熔斷，禁止簽核。
                                 </div>
                             </div>
                         </div>
 
-                        <div class="score-label">合約等級</div>
-                        <div class="score-value-large" id="healthScoreLarge">--</div>
-                        <div class="score-description" id="scoreDescription">評估中</div>
-                    </div>
-                </div>
-
-                <!-- Bottom: Meta Information -->
-                <div class="contract-meta">
-                    <div class="meta-item">
-                        <div class="meta-label">文件類型</div>
-                        <div class="meta-value" id="documentType">--</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">上傳日期</div>
-                        <div class="meta-value" id="uploadDate">--</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">合約 ID</div>
-                        <div class="meta-value" id="contractId" style="font-size:12px;font-family:monospace;">--</div>
+                        <div class="score-label">健康評分</div>
+                        <div class="circle-score-wrapper">
+                            <svg class="circle-progress" width="140" height="140">
+                                <circle cx="70" cy="70" r="58" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+                                <circle id="scoreCircle" cx="70" cy="70" r="58" fill="none" stroke="#48bb78" stroke-width="10"
+                                    stroke-dasharray="364" stroke-dashoffset="364"
+                                    transform="rotate(-90 70 70)" stroke-linecap="round"/>
+                            </svg>
+                            <div class="circle-score-value" id="circleScoreValue">--</div>
+                        </div>
+                        <div class="score-status-text" id="scoreStatusText">評估中</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Company Background (moved above dimensions) -->
-            <div class="analysis-section" id="companySection" style="display:none;">
-                <div class="section-title">🏢 公司背景調查</div>
-                <div class="company-section">
-                    <div class="company-subsection" id="companyProfileSection" style="display:none;">
-                        <div class="subsection-title">📊 公司簡介</div>
-                        <div class="company-content" id="companyProfile"></div>
-                    </div>
-                    <div class="company-subsection" id="responsiblePersonSection" style="display:none;">
-                        <div class="subsection-title">👤 公司負責人</div>
-                        <div class="company-content" id="responsiblePerson"></div>
-                    </div>
-                    <div class="company-subsection" id="responsiblePersonLegalSection" style="display:none;">
-                        <div class="subsection-title">⚠️ 負責人法律狀況</div>
-                        <div class="company-content" id="responsiblePersonLegal"></div>
-                    </div>
-                    <div class="company-subsection" id="companyCustomsSection" style="display:none;">
-                        <div class="subsection-title">🚢 海關進出口記錄</div>
-                        <div class="company-content" id="companyCustoms"></div>
-                    </div>
-                    <div class="company-subsection" id="companyLegalSection" style="display:none;">
-                        <div class="subsection-title">⚖️ 法律合規</div>
-                        <div class="company-content" id="companyLegal"></div>
-                    </div>
+            <!-- Four Dimensions Overview -->
+            <div class="dimensions-overview-section">
+                <div class="section-title-with-icon">
+                    <span class="title-icon">📊</span>
+                    <span>四維度分析概覽</span>
+                </div>
+                <div class="dimensions-cards-row" id="dimensionsCardsRow">
+                    <!-- Dimension cards will be inserted here -->
                 </div>
             </div>
 
-            <!-- Dimensional Analysis (moved below company background) -->
-            <div class="analysis-section" id="dimensionsSection" style="display:none;">
-                <div class="section-title">📊 四維度分析</div>
-                <div class="dimensions-breakdown-section" id="dimensionsBreakdownSection"></div>
-            </div>
+            <!-- Two Column Layout: Company Background + Detailed Analysis -->
+            <div class="two-column-layout">
+                <!-- Left Column: Company Background + Professional Recommendation -->
+                <div class="left-column">
+                    <div class="analysis-section" id="companySection" style="display:none;">
+                        <div class="section-title-with-icon">
+                            <span class="title-icon">📄</span>
+                            <span>公司背景調查</span>
+                        </div>
+                        <div class="company-section">
+                            <div class="company-subsection" id="companyProfileSection" style="display:none;">
+                                <div class="subsection-title">📊 公司簡介</div>
+                                <div class="company-content" id="companyProfile"></div>
+                            </div>
+                            <div class="company-subsection" id="responsiblePersonSection" style="display:none;">
+                                <div class="subsection-title">👤 公司負責人</div>
+                                <div class="company-content" id="responsiblePerson"></div>
+                            </div>
+                            <div class="company-subsection" id="responsiblePersonLegalSection" style="display:none;">
+                                <div class="subsection-title">⚠️ 負責人法律狀況</div>
+                                <div class="company-content" id="responsiblePersonLegal"></div>
+                            </div>
+                            <div class="company-subsection" id="companyCustomsSection" style="display:none;">
+                                <div class="subsection-title">🚢 海關進出口記錄</div>
+                                <div class="company-content" id="companyCustoms"></div>
+                            </div>
+                            <div class="company-subsection" id="companyLegalSection" style="display:none;">
+                                <div class="subsection-title">⚖️ 法律合規</div>
+                                <div class="company-content" id="companyLegal"></div>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Overall Recommendation -->
-            <div class="analysis-section" id="recommendationSection" style="display:none;">
-                <div class="section-title">💡 專業建議</div>
-                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
-                    <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
+                    <!-- Professional Recommendation (moved to left column) -->
+                    <div class="analysis-section" id="recommendationSection" style="display:none; margin-top: 24px;">
+                        <div class="section-title-with-icon">
+                            <span class="title-icon">💡</span>
+                            <span>專業建議</span>
+                        </div>
+                        <div style="background: #ebf8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+                            <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Detailed Analysis -->
+                <div class="right-column">
+                    <div class="analysis-section" id="dimensionsSection" style="display:none;">
+                        <div class="section-title-with-icon">
+                            <span class="title-icon">📋</span>
+                            <span>詳細分析說明</span>
+                        </div>
+                        <div class="dimensions-breakdown-section" id="dimensionsBreakdownSection"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -942,43 +1211,46 @@
 
             // Header information - Company name (prominent)
             document.getElementById('companyName').textContent = contract.seller_company || '未知公司';
-            document.getElementById('contractTitle').textContent = contract.filename;
-            document.getElementById('breadcrumbTitle').textContent = contract.filename;
+            document.getElementById('breadcrumbTitle').textContent = contract.seller_company || '未知公司';
 
-            // Document type badge
+            // Filename display
+            document.getElementById('filenameDisplay').textContent = contract.filename || '未知文件';
+
+            // Document type badge and inline meta
             const docType = contract.document_type || '合約';
             document.getElementById('documentTypeBadge').textContent = docType;
-            document.getElementById('documentType').textContent = docType;
-
-            // Other meta information
-            document.getElementById('contractId').textContent = contract.contract_id;
 
             const date = new Date(contract.upload_date);
-            document.getElementById('uploadDate').textContent = date.toLocaleDateString('zh-TW', {
+            const formattedDate = date.toLocaleDateString('zh-TW', {
                 year: 'numeric',
                 month: '2-digit',
-                day: '2-digit',
+                day: '2-digit'
+            }) + ' 下午' + date.toLocaleTimeString('zh-TW', {
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                hour12: false
             });
+            document.getElementById('uploadDateInline').textContent = formattedDate;
+            document.getElementById('contractIdInline').textContent = contract.contract_id.substring(0, 24);
 
-            // Contract Grade Tier (with fallback for old contracts)
+            // Circular Health Score - Show Grade (S/A/B/C/D)
+            const healthScore = Math.round(contract.health_score || 0);
+
+            // Calculate tier from health_score
             let tier = contract.health_tier;
             let tierLabel = contract.health_tier_label;
 
-            // Fallback: calculate tier from health_score if not present
-            if (!tier && contract.health_score !== undefined) {
-                const score = contract.health_score;
-                if (score >= 90) {
+            if (!tier && healthScore !== undefined) {
+                if (healthScore >= 90) {
                     tier = 'S';
                     tierLabel = '王者';
-                } else if (score >= 80) {
+                } else if (healthScore >= 80) {
                     tier = 'A';
                     tierLabel = '優質';
-                } else if (score >= 70) {
+                } else if (healthScore >= 70) {
                     tier = 'B';
                     tierLabel = '標準';
-                } else if (score >= 60) {
+                } else if (healthScore >= 60) {
                     tier = 'C';
                     tierLabel = '觀察';
                 } else {
@@ -987,36 +1259,51 @@
                 }
             }
 
-            // Final fallback
             tier = tier || 'D';
             tierLabel = tierLabel || '淘汰';
 
-            const scoreElement = document.getElementById('healthScoreLarge');
-            scoreElement.textContent = `${tier}級`;
+            const circleScore = document.getElementById('circleScoreValue');
+            const scoreCircle = document.getElementById('scoreCircle');
+            const scoreStatus = document.getElementById('scoreStatusText');
 
-            let scoreClass = 'low';
-            let scoreDesc = tierLabel;
+            circleScore.textContent = tier;
 
-            // Set tier descriptions based on tier level
+            // Calculate circle progress based on score (circumference = 2πr = 2 * 3.14159 * 58 ≈ 364)
+            const circumference = 364;
+            const progress = (healthScore / 100) * circumference;
+            const offset = circumference - progress;
+            scoreCircle.style.strokeDashoffset = offset;
+
+            // Set color and status based on tier
+            let scoreColor = '#48bb78';
+            let statusText = tierLabel;
+
             if (tier === 'S') {
-                scoreClass = 'high';
-                scoreDesc = '王者';
+                scoreColor = '#48bb78';
+                statusText = '獨角獸 - Unicorns';
             } else if (tier === 'A') {
-                scoreClass = 'high';
-                scoreDesc = '優質';
+                scoreColor = '#48bb78';
+                statusText = '核心營收 - Core Revenue';
             } else if (tier === 'B') {
-                scoreClass = 'medium';
-                scoreDesc = '標準';
+                scoreColor = '#ed8936';
+                statusText = '備份選項 - Backup';
             } else if (tier === 'C') {
-                scoreClass = 'low';
-                scoreDesc = '觀察';
+                scoreColor = '#f56565';
+                statusText = '改進區 - Needs Work';
             } else if (tier === 'D') {
-                scoreClass = 'low';
-                scoreDesc = '淘汰';
+                scoreColor = '#e53e3e';
+                statusText = '拒絕往來 - Rejected';
             }
 
-            scoreElement.className = `score-value-large ${scoreClass}`;
-            document.getElementById('scoreDescription').textContent = scoreDesc;
+            scoreCircle.setAttribute('stroke', scoreColor);
+            circleScore.style.color = scoreColor;
+            scoreStatus.style.color = scoreColor;
+            scoreStatus.textContent = statusText;
+
+            // Dimension overview cards (displayed prominently)
+            if (contract.health_dimensions) {
+                displayDimensionOverviewCards(contract.health_dimensions);
+            }
 
             // Company background (displayed first)
             if (contract.company_data) {
@@ -1032,6 +1319,96 @@
             if (contract.overall_recommendation) {
                 displayRecommendation(contract.overall_recommendation);
             }
+        }
+
+        function displayDimensionOverviewCards(dimensions) {
+            const cardsRow = document.getElementById('dimensionsCardsRow');
+
+            const dimensionsConfig = [
+                {
+                    key: 'mad',
+                    icon: '🛡️',
+                    name: 'MAD 生存風險',
+                    getLabel: (score) => {
+                        if (score <= 20) return '安全 (Safe)';
+                        if (score <= 40) return '中等 (Moderate)';
+                        return '高風險 (High Risk)';
+                    },
+                    getColor: (score) => {
+                        if (score <= 20) return '#48bb78';
+                        if (score <= 40) return '#ed8936';
+                        return '#f56565';
+                    }
+                },
+                {
+                    key: 'mao',
+                    icon: '💰',
+                    name: 'MAD 互利營收',
+                    getLabel: (score) => {
+                        if (score >= 70) return '優秀 (Excellent)';
+                        if (score >= 50) return '中標 (Moderate)';
+                        return '低 (Low)';
+                    },
+                    getColor: (score) => {
+                        if (score >= 70) return '#48bb78';
+                        if (score >= 50) return '#ed8936';
+                        return '#a0aec0';
+                    }
+                },
+                {
+                    key: 'maa',
+                    icon: '🤝',
+                    name: 'MAA 承諾深度',
+                    getLabel: (score) => {
+                        if (score >= 70) return '強約束';
+                        if (score >= 40) return '弱約束調';
+                        return '低約束';
+                    },
+                    getColor: (score) => {
+                        if (score >= 70) return '#ed8936';
+                        if (score >= 40) return '#ed8936';
+                        return '#a0aec0';
+                    }
+                },
+                {
+                    key: 'map',
+                    icon: '🚀',
+                    name: 'MAP 戰略潛力',
+                    getLabel: (score) => {
+                        if (score >= 70) return '高潛力';
+                        if (score >= 40) return '功能賦能';
+                        return '基礎';
+                    },
+                    getColor: (score) => {
+                        if (score >= 70) return '#4299e1';
+                        if (score >= 40) return '#4299e1';
+                        return '#a0aec0';
+                    }
+                }
+            ];
+
+            let html = '';
+            dimensionsConfig.forEach(config => {
+                const score = Math.round(dimensions[config.key] || 0);
+                const label = config.getLabel(score);
+                const color = config.getColor(score);
+
+                html += `
+                    <div class="dimension-card-overview">
+                        <div class="dimension-header">
+                            <span class="dimension-header-icon">${config.icon}</span>
+                            <span class="dimension-header-text">${config.name}</span>
+                        </div>
+                        <div class="dimension-score-large" style="color: ${color};">${score}</div>
+                        <div class="dimension-progress-bar">
+                            <div class="dimension-progress-fill" style="width: ${score}%; background: ${color};"></div>
+                        </div>
+                        <div class="dimension-status-label">${label}</div>
+                    </div>
+                `;
+            });
+
+            cardsRow.innerHTML = html;
         }
 
         function displayRecommendation(recommendation) {
@@ -1052,101 +1429,40 @@
             // Get the container to populate
             const container = document.getElementById('dimensionsBreakdownSection');
 
-            // Build dimension cards HTML
-            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
-
-            // MAD (生存風險)
-            const madScore = dimensions.mad || 0;
-            let madLabel = '安全';
-            if (madScore >= 91) madLabel = '致命風險';
-            else if (madScore >= 61) madLabel = '重傷';
-            else if (madScore >= 21) madLabel = '擦傷';
-
-            html += `<div class="dimension-card">
-                <div class="dimension-icon">🔴</div>
-                <div class="dimension-name">MAD 生存風險</div>
-                <div class="dimension-score">${madScore}</div>
-                <div class="dimension-label">${madLabel}</div>
-            </div>`;
-
-            // MAO (互利營收)
-            const maoScore = dimensions.mao || 0;
-            let maoLabel = '低標';
-            if (maoScore >= 81) maoLabel = '頂標';
-            else if (maoScore >= 61) maoLabel = '高標';
-            else if (maoScore >= 21) maoLabel = '中標';
-
-            html += `<div class="dimension-card">
-                <div class="dimension-icon">🟢</div>
-                <div class="dimension-name">MAO 互利營收</div>
-                <div class="dimension-score">${maoScore}</div>
-                <div class="dimension-label">${maoLabel}</div>
-            </div>`;
-
-            // MAA (行政內耗)
-            const maaScore = dimensions.maa || 0;
-            let maaLabel = '無感';
-            if (maaScore >= 81) maaLabel = '癱瘓級';
-            else if (maaScore >= 51) maaLabel = '官僚地獄';
-            else if (maaScore >= 21) maaLabel = '標準行政';
-
-            html += `<div class="dimension-card">
-                <div class="dimension-icon">🟠</div>
-                <div class="dimension-name">MAA 行政內耗</div>
-                <div class="dimension-score">${maaScore}</div>
-                <div class="dimension-label">${maaLabel}</div>
-            </div>`;
-
-            // MAP (戰略潛力)
-            const mapScore = dimensions.map || 0;
-            let mapLabel = '無法執行';
-            if (mapScore >= 71) mapLabel = '緊密合作';
-            else if (mapScore >= 41) mapLabel = '穩定生意';
-            else if (mapScore >= 1) mapLabel = '能做生意';
-
-            html += `<div class="dimension-card">
-                <div class="dimension-icon">🚀</div>
-                <div class="dimension-name">MAP 戰略潛力</div>
-                <div class="dimension-score">${mapScore}</div>
-                <div class="dimension-label">${mapLabel}</div>
-            </div>`;
-
-            html += '</div>';
-
-            // Add explanations section if available
+            // Only show explanations (no duplicate dimension cards)
+            let html = '';
             if (explanations && Object.keys(explanations).length > 0) {
-                html += '<div style="margin-top: 20px;"><div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #2d3748;">📝 詳細說明</div>';
-                html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
+                html += '<div style="display: flex; flex-direction: column; gap: 16px;">';
 
                 if (explanations.mad) {
-                    html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🔴 MAD 生存風險</div>
+                    html += `<div class="dimension-explanation-MAD">
+                        <div class="explanation-header">🛡️ MAD 生存風險分析</div>
                         <div class="explanation-text">${explanations.mad}</div>
                     </div>`;
                 }
 
                 if (explanations.mao) {
-                    html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🟢 MAO 互利營收</div>
+                    html += `<div class="dimension-explanation-MAO">
+                        <div class="explanation-header">💰 MAO 互利營收分析</div>
                         <div class="explanation-text">${explanations.mao}</div>
                     </div>`;
                 }
 
                 if (explanations.maa) {
-                    html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🟠 MAA 行政內耗</div>
+                    html += `<div class="dimension-explanation-MAA">
+                        <div class="explanation-header">🤝 MAA 承諾深度分析</div>
                         <div class="explanation-text">${explanations.maa}</div>
                     </div>`;
                 }
 
                 if (explanations.map) {
-                    html += `<div class="dimension-explanation">
-                        <div class="explanation-header">🚀 MAP 戰略潛力</div>
+                    html += `<div class="dimension-explanation-MAP">
+                        <div class="explanation-header">🚀 MAP 戰略潛力分析</div>
                         <div class="explanation-text">${explanations.map}</div>
                     </div>`;
                 }
 
-                html += '</div></div>';
+                html += '</div>';
             }
 
             container.innerHTML = html;
@@ -1337,7 +1653,7 @@
         }
 
         function cancelEditMode() {
-            document.getElementById('companyNameDisplay').style.display = 'flex';
+            document.getElementById('companyNameDisplay').style.display = 'inline-flex';
             document.getElementById('companyNameEdit').style.display = 'none';
         }
 
