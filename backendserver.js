@@ -301,6 +301,34 @@ function fixJSONStructure(jsonStr) {
     }
   }
 
+  // 新增：處理 overall_recommendation 在 dimension_explanations 內的情況
+  try {
+    const parsed = JSON.parse(jsonStr);
+
+    // 檢查是否需要從 dimension_explanations 中提取 overall_recommendation
+    if (parsed.dimension_explanations &&
+        parsed.dimension_explanations.overall_recommendation &&
+        (!parsed.overall_recommendation || parsed.overall_recommendation.trim() === '')) {
+
+      console.log("檢測到 overall_recommendation 在 dimension_explanations 內，正在修復...");
+
+      // 提取 overall_recommendation
+      const overallRec = parsed.dimension_explanations.overall_recommendation;
+
+      // 移動到頂層
+      parsed.overall_recommendation = overallRec;
+
+      // 從 dimension_explanations 中刪除
+      delete parsed.dimension_explanations.overall_recommendation;
+
+      // 轉回 JSON 字串
+      jsonStr = JSON.stringify(parsed, null, 2);
+    }
+  } catch (e) {
+    // 如果解析失敗，返回原始字串（之前的修復可能已經處理了）
+    console.log("JSON 解析失敗，返回當前修復結果:", e.message);
+  }
+
   return jsonStr;
 }
 
