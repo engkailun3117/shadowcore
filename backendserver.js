@@ -273,71 +273,15 @@ function fixJSONStructure(jsonStr) {
 }
 
 /**
- * 轉換新的扁平 JSON 格式為舊的嵌套格式（向後兼容）
- * 新格式: { mad: 0, dimension_explanations_mad: "..." }
- * 舊格式: { dimensions: { mad: 0 }, dimension_explanations: { mad: "..." } }
- * @param {Object} obj - 已解析的 JSON 物件
- * @returns {Object} 轉換後的 JSON 物件
- */
-function normalizeAIResponse(obj) {
-  // 檢查是否為新的扁平格式
-  const isNewFlatFormat = (
-    obj.hasOwnProperty('mad') &&
-    obj.hasOwnProperty('dimension_explanations_mad')
-  );
-
-  if (isNewFlatFormat) {
-    console.log("檢測到新的扁平 JSON 格式，正在轉換為嵌套格式...");
-
-    // 轉換為舊格式（向後兼容）
-    const converted = {
-      dimensions: {
-        mad: obj.mad || 0,
-        mao: obj.mao || 50,
-        maa: obj.maa || 50,
-        map: obj.map || 0
-      },
-      dimension_explanations: {
-        mad: obj.dimension_explanations_mad || '',
-        mao: obj.dimension_explanations_mao || '',
-        maa: obj.dimension_explanations_maa || '',
-        map: obj.dimension_explanations_map || ''
-      },
-      overall_recommendation: obj.overall_recommendation || ''
-    };
-
-    console.log("✅ 成功轉換為嵌套格式");
-    return converted;
-  }
-
-  // 舊格式：處理 overall_recommendation 錯誤嵌套的情況
-  if (obj.dimension_explanations &&
-      obj.dimension_explanations.overall_recommendation &&
-      (!obj.overall_recommendation || obj.overall_recommendation.trim() === '')) {
-
-    console.log("檢測到 overall_recommendation 在 dimension_explanations 內，正在修復...");
-
-    // 提取 overall_recommendation
-    obj.overall_recommendation = obj.dimension_explanations.overall_recommendation;
-
-    // 從 dimension_explanations 中刪除
-    delete obj.dimension_explanations.overall_recommendation;
-  }
-
-  return obj;
-}
-
-/**
- * 從 OpenAI 回應中提取 JSON（增強版，支援結構修復）
+ * 從 OpenAI 回應中提取 JSON
  * 處理可能包含 markdown code blocks 或額外文字的情況
  * @param {string} text - OpenAI 回應文字
- * @returns {Object} 解析後的 JSON 物件
+ * @returns {Object} 解析後的 JSON 物件（扁平格式）
  */
 function extractJSON(text) {
   // 嘗試直接解析
   try {
-    const parsed = JSON.parse(text);
-    return normalizeAIResponse(parsed);
+    return JSON.parse(text);
   } catch (e) {
     console.log("直接解析失敗，嘗試其他方法...");
 
@@ -345,15 +289,13 @@ function extractJSON(text) {
     let jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
     if (jsonMatch) {
       try {
-        const parsed = JSON.parse(jsonMatch[1]);
-        return normalizeAIResponse(parsed);
+        return JSON.parse(jsonMatch[1]);
       } catch (e2) {
         console.log("從 markdown 提取失敗，嘗試修復 JSON...");
         try {
           let fixed = fixJSONStructure(jsonMatch[1]);
           fixed = fixCommonJSONIssues(fixed);
-          const parsed = JSON.parse(fixed);
-          return normalizeAIResponse(parsed);
+          return JSON.parse(fixed);
         } catch (e3) {
           console.error("修復失敗:", e3.message);
         }
@@ -369,8 +311,7 @@ function extractJSON(text) {
 
       // 先嘗試直接解析
       try {
-        const parsed = JSON.parse(jsonStr);
-        return normalizeAIResponse(parsed);
+        return JSON.parse(jsonStr);
       } catch (e2) {
         console.log("提取的 JSON 解析失敗，嘗試修復...");
         // 嘗試修復結構和常見問題後再解析
@@ -378,8 +319,7 @@ function extractJSON(text) {
           let fixed = fixJSONStructure(jsonStr);
           fixed = fixCommonJSONIssues(fixed);
           console.log("修復後的 JSON:", fixed.substring(0, 200) + "...");
-          const parsed = JSON.parse(fixed);
-          return normalizeAIResponse(parsed);
+          return JSON.parse(fixed);
         } catch (e3) {
           console.error("修復後仍失敗:", e3.message);
           console.error("嘗試的修復 JSON:", fixed.substring(0, 1000));
@@ -783,24 +723,14 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
       });
     }
 
-    // Validate dimensions object
-    if (!result.dimensions || typeof result.dimensions !== 'object') {
-      console.error("維度資料缺失或格式錯誤:", result.dimensions);
-      return res.status(500).json({
-        success: false,
-        error: "AI 回應缺少維度評估資料",
-        details: "dimensions 欄位缺失或格式不正確",
-      });
-    }
-
-    // Ensure all dimension scores are valid numbers
+    // Validate flat format dimensions
     const requiredDimensions = ['mad', 'mao', 'maa', 'map'];
     for (const dim of requiredDimensions) {
-      if (typeof result.dimensions[dim] !== 'number' ||
-          isNaN(result.dimensions[dim]) ||
-          result.dimensions[dim] < 0 ||
-          result.dimensions[dim] > 100) {
-        console.error(`維度 ${dim} 的值無效:`, result.dimensions[dim]);
+      if (typeof result[dim] !== 'number' ||
+          isNaN(result[dim]) ||
+          result[dim] < 0 ||
+          result[dim] > 100) {
+        console.error(`維度 ${dim} 的值無效:`, result[dim]);
         return res.status(500).json({
           success: false,
           error: "AI 回應的維度評分無效",
@@ -812,13 +742,27 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     // ========================================
     // 階段 4: 計算健康評分並保存結果
     // ========================================
-    const healthScoreResult = calculateHealthScore(result.dimensions);
+    const dimensions = {
+      mad: result.mad,
+      mao: result.mao,
+      maa: result.maa,
+      map: result.map
+    };
+
+    const healthScoreResult = calculateHealthScore(dimensions);
     const healthScore = healthScoreResult.score;
     const healthDimensions = healthScoreResult.dimensions;
     const healthTier = healthScoreResult.tier;
     const healthTierLabel = healthScoreResult.tierLabel;
     const scoreBreakdown = healthScoreResult.breakdown;
-    const dimensionExplanations = result.dimension_explanations || {};
+
+    const dimensionExplanations = {
+      mad: result.dimension_explanations_mad || '',
+      mao: result.dimension_explanations_mao || '',
+      maa: result.dimension_explanations_maa || '',
+      map: result.dimension_explanations_map || ''
+    };
+
     const overallRecommendation = result.overall_recommendation || '';
 
     // Clean up uploaded files
@@ -1062,13 +1006,27 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
     }
 
     // 計算新的健康評分
-    const healthScoreResult = calculateHealthScore(result.dimensions);
+    const dimensions = {
+      mad: result.mad,
+      mao: result.mao,
+      maa: result.maa,
+      map: result.map
+    };
+
+    const healthScoreResult = calculateHealthScore(dimensions);
     const healthScore = healthScoreResult.score;
     const healthDimensions = healthScoreResult.dimensions;
     const healthTier = healthScoreResult.tier;
     const healthTierLabel = healthScoreResult.tierLabel;
     const scoreBreakdown = healthScoreResult.breakdown;
-    const dimensionExplanations = result.dimension_explanations || {};
+
+    const dimensionExplanations = {
+      mad: result.dimension_explanations_mad || '',
+      mao: result.dimension_explanations_mao || '',
+      maa: result.dimension_explanations_maa || '',
+      map: result.dimension_explanations_map || ''
+    };
+
     const overallRecommendation = result.overall_recommendation || '';
 
     // 更新合約資料
