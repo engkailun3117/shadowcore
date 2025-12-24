@@ -333,6 +333,30 @@ function fixJSONStructure(jsonStr) {
 }
 
 /**
+ * 修復已解析的 JSON 物件結構
+ * 處理 overall_recommendation 被錯誤放置在 dimension_explanations 內的情況
+ * @param {Object} obj - 已解析的 JSON 物件
+ * @returns {Object} 修復後的 JSON 物件
+ */
+function fixParsedJSONStructure(obj) {
+  // 檢查是否需要從 dimension_explanations 中提取 overall_recommendation
+  if (obj.dimension_explanations &&
+      obj.dimension_explanations.overall_recommendation &&
+      (!obj.overall_recommendation || obj.overall_recommendation.trim() === '')) {
+
+    console.log("檢測到 overall_recommendation 在 dimension_explanations 內，正在修復...");
+
+    // 提取 overall_recommendation
+    obj.overall_recommendation = obj.dimension_explanations.overall_recommendation;
+
+    // 從 dimension_explanations 中刪除
+    delete obj.dimension_explanations.overall_recommendation;
+  }
+
+  return obj;
+}
+
+/**
  * 從 OpenAI 回應中提取 JSON（增強版，支援結構修復）
  * 處理可能包含 markdown code blocks 或額外文字的情況
  * @param {string} text - OpenAI 回應文字
@@ -341,7 +365,8 @@ function fixJSONStructure(jsonStr) {
 function extractJSON(text) {
   // 嘗試直接解析
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(text);
+    return fixParsedJSONStructure(parsed);
   } catch (e) {
     console.log("直接解析失敗，嘗試其他方法...");
 
@@ -349,13 +374,15 @@ function extractJSON(text) {
     let jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
     if (jsonMatch) {
       try {
-        return JSON.parse(jsonMatch[1]);
+        const parsed = JSON.parse(jsonMatch[1]);
+        return fixParsedJSONStructure(parsed);
       } catch (e2) {
         console.log("從 markdown 提取失敗，嘗試修復 JSON...");
         try {
           let fixed = fixJSONStructure(jsonMatch[1]);
           fixed = fixCommonJSONIssues(fixed);
-          return JSON.parse(fixed);
+          const parsed = JSON.parse(fixed);
+          return fixParsedJSONStructure(parsed);
         } catch (e3) {
           console.error("修復失敗:", e3.message);
         }
@@ -371,7 +398,8 @@ function extractJSON(text) {
 
       // 先嘗試直接解析
       try {
-        return JSON.parse(jsonStr);
+        const parsed = JSON.parse(jsonStr);
+        return fixParsedJSONStructure(parsed);
       } catch (e2) {
         console.log("提取的 JSON 解析失敗，嘗試修復...");
         // 嘗試修復結構和常見問題後再解析
@@ -379,7 +407,8 @@ function extractJSON(text) {
           let fixed = fixJSONStructure(jsonStr);
           fixed = fixCommonJSONIssues(fixed);
           console.log("修復後的 JSON:", fixed.substring(0, 200) + "...");
-          return JSON.parse(fixed);
+          const parsed = JSON.parse(fixed);
+          return fixParsedJSONStructure(parsed);
         } catch (e3) {
           console.error("修復後仍失敗:", e3.message);
           console.error("嘗試的修復 JSON:", fixed.substring(0, 1000));
