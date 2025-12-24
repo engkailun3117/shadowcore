@@ -961,6 +961,57 @@ app.post("/contracts/:id/replace", upload.single("file"), async (req, res) => {
   }
 });
 
+// 修復所有現有合約的 overall_recommendation 結構
+app.post("/contracts/fix-structure", (req, res) => {
+  try {
+    const contracts = getAllContracts();
+    let fixedCount = 0;
+
+    const fixedContracts = contracts.map(contract => {
+      // 檢查是否需要修復
+      if (contract.dimension_explanations &&
+          contract.dimension_explanations.overall_recommendation &&
+          (!contract.overall_recommendation || contract.overall_recommendation.trim() === '')) {
+
+        console.log(`修復合約 ${contract.contract_id} 的 overall_recommendation 結構`);
+
+        // 移動 overall_recommendation 到頂層
+        contract.overall_recommendation = contract.dimension_explanations.overall_recommendation;
+
+        // 從 dimension_explanations 中刪除
+        delete contract.dimension_explanations.overall_recommendation;
+
+        // 同時修復 raw_data 中的結構（如果存在）
+        if (contract.raw_data &&
+            contract.raw_data.dimension_explanations &&
+            contract.raw_data.dimension_explanations.overall_recommendation) {
+          contract.raw_data.overall_recommendation = contract.raw_data.dimension_explanations.overall_recommendation;
+          delete contract.raw_data.dimension_explanations.overall_recommendation;
+        }
+
+        fixedCount++;
+      }
+
+      return contract;
+    });
+
+    // 保存修復後的合約
+    if (fixedCount > 0) {
+      saveAllContracts(fixedContracts);
+    }
+
+    res.json({
+      success: true,
+      message: `成功修復 ${fixedCount} 個合約的結構`,
+      fixed_count: fixedCount,
+      total_contracts: contracts.length
+    });
+  } catch (err) {
+    console.error("修復合約結構失敗:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 刪除合約
 app.delete("/contracts/:id", (req, res) => {
   try {
