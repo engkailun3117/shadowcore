@@ -128,13 +128,8 @@ function saveContract(contractData) {
  * - MAP (Mutual Assured Potential - 戰略潛力指標): 0-100, 越高越好
  *
  * 更新後的 Aggressive Scoring 公式 (讓 A 級成為主力 - 40%):
- * 總分 = [(100 - MAD) × 50%] + [(MAO × 50% + MAA × 25% + MAP × 25%) × 50%] + 獎勵分
+ * 總分 = [(100 - MAD) × 60%] + [(MAO + MAA + MAP)/3 × 40%] + 獎勵分
  *
- * 我們將分為三個部分：
- * - 安全性得分 (Safety Score): (100 - MAD) × 50% - 佔 50% 權重 (從 60% 調降，更重視營收)
- * - 價值性得分 (Value Score): (MAO×0.5 + MAA×0.25 + MAP×0.25) × 50% - 佔 50% 權重 (從 40% 提升)
- *   * MAO 在價值中佔 50% 權重 (強調互利營收的重要性)
- * - 獎勵加分 (Bonus): 符合 Elite 標準時額外加分
  *
  * 獎勵機制 (推動 A 級主力化):
  * - A 級加速: MAD < 5 且 MAO > 75 → +5 分 (推升至 A 級)
@@ -873,56 +868,6 @@ app.post("/contracts/:id/replace", upload.single("file"), async (req, res) => {
   }
 });
 
-// 修復所有現有合約的 overall_recommendation 結構
-app.post("/contracts/fix-structure", (req, res) => {
-  try {
-    const contracts = getAllContracts();
-    let fixedCount = 0;
-
-    const fixedContracts = contracts.map(contract => {
-      // 檢查是否需要修復
-      if (contract.dimension_explanations &&
-          contract.dimension_explanations.overall_recommendation &&
-          (!contract.overall_recommendation || contract.overall_recommendation.trim() === '')) {
-
-        console.log(`修復合約 ${contract.contract_id} 的 overall_recommendation 結構`);
-
-        // 移動 overall_recommendation 到頂層
-        contract.overall_recommendation = contract.dimension_explanations.overall_recommendation;
-
-        // 從 dimension_explanations 中刪除
-        delete contract.dimension_explanations.overall_recommendation;
-
-        // 同時修復 raw_data 中的結構（如果存在）
-        if (contract.raw_data &&
-            contract.raw_data.dimension_explanations &&
-            contract.raw_data.dimension_explanations.overall_recommendation) {
-          contract.raw_data.overall_recommendation = contract.raw_data.dimension_explanations.overall_recommendation;
-          delete contract.raw_data.dimension_explanations.overall_recommendation;
-        }
-
-        fixedCount++;
-      }
-
-      return contract;
-    });
-
-    // 保存修復後的合約
-    if (fixedCount > 0) {
-      saveAllContracts(fixedContracts);
-    }
-
-    res.json({
-      success: true,
-      message: `成功修復 ${fixedCount} 個合約的結構`,
-      fixed_count: fixedCount,
-      total_contracts: contracts.length
-    });
-  } catch (err) {
-    console.error("修復合約結構失敗:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // 刪除合約
 app.delete("/contracts/:id", (req, res) => {
@@ -1065,4 +1010,3 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
 
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
-
