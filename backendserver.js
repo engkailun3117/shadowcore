@@ -333,13 +333,44 @@ function fixJSONStructure(jsonStr) {
 }
 
 /**
- * 修復已解析的 JSON 物件結構
- * 處理 overall_recommendation 被錯誤放置在 dimension_explanations 內的情況
+ * 轉換新的扁平 JSON 格式為舊的嵌套格式（向後兼容）
+ * 新格式: { mad: 0, dimension_explanations_mad: "..." }
+ * 舊格式: { dimensions: { mad: 0 }, dimension_explanations: { mad: "..." } }
  * @param {Object} obj - 已解析的 JSON 物件
- * @returns {Object} 修復後的 JSON 物件
+ * @returns {Object} 轉換後的 JSON 物件
  */
-function fixParsedJSONStructure(obj) {
-  // 檢查是否需要從 dimension_explanations 中提取 overall_recommendation
+function normalizeAIResponse(obj) {
+  // 檢查是否為新的扁平格式
+  const isNewFlatFormat = (
+    obj.hasOwnProperty('mad') &&
+    obj.hasOwnProperty('dimension_explanations_mad')
+  );
+
+  if (isNewFlatFormat) {
+    console.log("檢測到新的扁平 JSON 格式，正在轉換為嵌套格式...");
+
+    // 轉換為舊格式（向後兼容）
+    const converted = {
+      dimensions: {
+        mad: obj.mad || 0,
+        mao: obj.mao || 50,
+        maa: obj.maa || 50,
+        map: obj.map || 0
+      },
+      dimension_explanations: {
+        mad: obj.dimension_explanations_mad || '',
+        mao: obj.dimension_explanations_mao || '',
+        maa: obj.dimension_explanations_maa || '',
+        map: obj.dimension_explanations_map || ''
+      },
+      overall_recommendation: obj.overall_recommendation || ''
+    };
+
+    console.log("✅ 成功轉換為嵌套格式");
+    return converted;
+  }
+
+  // 舊格式：處理 overall_recommendation 錯誤嵌套的情況
   if (obj.dimension_explanations &&
       obj.dimension_explanations.overall_recommendation &&
       (!obj.overall_recommendation || obj.overall_recommendation.trim() === '')) {
@@ -354,6 +385,14 @@ function fixParsedJSONStructure(obj) {
   }
 
   return obj;
+}
+
+/**
+ * 修復已解析的 JSON 物件結構（已廢棄，使用 normalizeAIResponse 代替）
+ * @deprecated Use normalizeAIResponse instead
+ */
+function fixParsedJSONStructure(obj) {
+  return normalizeAIResponse(obj);
 }
 
 /**
@@ -627,18 +666,14 @@ CRITICAL:
 【輸出格式（嚴格遵守）】
 
 {
-  "dimensions": {
-    "mad": 0-100,
-    "mao": 0-100,
-    "maa": 0-100,
-    "map": 0-100
-  },
-  "dimension_explanations": {
-    "mad": "100–200 字，引用具體條款，說明風險是否為致命或雜訊",
-    "mao": "100–200 字，說明營收結構與槓桿",
-    "maa": "100–200 字，說明雙方承諾與鎖定程度",
-    "map": "100–200 字，說明是否構成跳板或戰略資產"
-  },
+  "mad": 0-100,
+  "mao": 0-100,
+  "maa": 0-100,
+  "map": 0-100,
+  "dimension_explanations_mad": "100–200 字，引用具體條款，說明風險是否為致命或雜訊",
+  "dimension_explanations_mao": "100–200 字，說明營收結構與槓桿",
+  "dimension_explanations_maa": "100–200 字，說明雙方承諾與鎖定程度",
+  "dimension_explanations_map": "100–200 字，說明是否構成跳板或戰略資產",
   "overall_recommendation": "150–250 字，明確給出是否建議簽署、風險邊界、談判優化點"
 }
 
@@ -646,7 +681,8 @@ CRITICAL:
 - 使用模糊語言
 - 將行政成本誤判為風險
 - 將背景雜訊誤判為致命傷
-- 在 JSON 外輸出任何內容`,
+- 在 JSON 外輸出任何內容
+- 使用巢狀的 dimensions 或 dimension_explanations 物件`,
           },
           ...(documentText
             ? [{ type: "input_text", text: `\n\n以下是合約文件內容：\n\n${documentText}` }]
