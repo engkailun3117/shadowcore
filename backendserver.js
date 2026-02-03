@@ -128,13 +128,8 @@ function saveContract(contractData) {
  * - MAP (Mutual Assured Potential - 戰略潛力指標): 0-100, 越高越好
  *
  * 更新後的 Aggressive Scoring 公式 (讓 A 級成為主力 - 40%):
- * 總分 = [(100 - MAD) × 50%] + [(MAO × 50% + MAA × 25% + MAP × 25%) × 50%] + 獎勵分
+ * 總分 = [(100 - MAD) × 60%] + [(MAO + MAA + MAP)/3 × 40%] + 獎勵分
  *
- * 我們將分為三個部分：
- * - 安全性得分 (Safety Score): (100 - MAD) × 50% - 佔 50% 權重 (從 60% 調降，更重視營收)
- * - 價值性得分 (Value Score): (MAO×0.5 + MAA×0.25 + MAP×0.25) × 50% - 佔 50% 權重 (從 40% 提升)
- *   * MAO 在價值中佔 50% 權重 (強調互利營收的重要性)
- * - 獎勵加分 (Bonus): 符合 Elite 標準時額外加分
  *
  * 獎勵機制 (推動 A 級主力化):
  * - A 級加速: MAD < 5 且 MAO > 75 → +5 分 (推升至 A 級)
@@ -260,55 +255,23 @@ function fixCommonJSONIssues(jsonStr) {
 }
 
 /**
- * 嘗試修復 OpenAI 常見的 JSON 結構錯誤
- * 特別處理 overall_recommendation 被錯誤嵌套在 dimension_explanations 中的情況
+ * 修復 OpenAI 常見的 JSON 結構錯誤
+ * 注意：隨著扁平 JSON 格式的使用，大部分結構性修復已不再需要
+ * 此函數保留用於向後兼容舊的 JSON 回應
  * @param {string} jsonStr - 可能有結構問題的 JSON 字串
  * @returns {string} 修復後的 JSON 字串
  */
 function fixJSONStructure(jsonStr) {
-  // 檢測 overall_recommendation 是否緊跟在 "map" 後面（說明嵌套錯誤）
-  const overallRecommendationIndex = jsonStr.indexOf('"overall_recommendation"');
-
-  if (overallRecommendationIndex === -1) {
-    return jsonStr; // 沒有找到 overall_recommendation，不需要修復
-  }
-
-  // 查找 overall_recommendation 之前最後一個 "map" 的位置
-  const mapIndex = jsonStr.lastIndexOf('"map"', overallRecommendationIndex);
-
-  if (mapIndex === -1) {
-    return jsonStr; // 沒有找到 map，不需要修復
-  }
-
-  // 檢查 map 和 overall_recommendation 之間是否缺少 dimension_explanations 的閉合括號
-  const betweenText = jsonStr.substring(mapIndex, overallRecommendationIndex);
-
-  // 如果兩者之間只有一個引號結束、逗號和空白，說明結構有問題
-  if (betweenText.match(/"[^"]*",\s*$/) && !betweenText.includes('},')) {
-    console.log("檢測到 overall_recommendation 嵌套錯誤，正在修復...");
-
-    // 在 overall_recommendation 之前插入缺少的閉合括號
-    // 找到 overall_recommendation 前面的逗號
-    const commaBeforeOverall = jsonStr.lastIndexOf(',', overallRecommendationIndex);
-
-    if (commaBeforeOverall > mapIndex) {
-      // 在逗號之後、overall_recommendation 之前插入 }\n
-      const before = jsonStr.substring(0, commaBeforeOverall);
-      const after = jsonStr.substring(commaBeforeOverall);
-
-      // 移除那個多餘的逗號，並插入閉合括號
-      jsonStr = before + '\n  },\n  ' + after.substring(1).trim();
-    }
-  }
-
+  // 使用扁平 JSON 格式後，結構性問題已在 normalizeAIResponse() 中處理
+  // 此函數保留僅用於向後兼容，實際上不再需要複雜的字串操作
   return jsonStr;
 }
 
 /**
- * 從 OpenAI 回應中提取 JSON（增強版，支援結構修復）
+ * 從 OpenAI 回應中提取 JSON
  * 處理可能包含 markdown code blocks 或額外文字的情況
  * @param {string} text - OpenAI 回應文字
- * @returns {Object} 解析後的 JSON 物件
+ * @returns {Object} 解析後的 JSON 物件（扁平格式）
  */
 function extractJSON(text) {
   // 嘗試直接解析
@@ -570,18 +533,14 @@ CRITICAL:
 【輸出格式（嚴格遵守）】
 
 {
-  "dimensions": {
-    "mad": 0-100,
-    "mao": 0-100,
-    "maa": 0-100,
-    "map": 0-100
-  },
-  "dimension_explanations": {
-    "mad": "100–200 字，引用具體條款，說明風險是否為致命或雜訊",
-    "mao": "100–200 字，說明營收結構與槓桿",
-    "maa": "100–200 字，說明雙方承諾與鎖定程度",
-    "map": "100–200 字，說明是否構成跳板或戰略資產"
-  },
+  "mad": 0-100,
+  "mao": 0-100,
+  "maa": 0-100,
+  "map": 0-100,
+  "dimension_explanations_mad": "100–200 字，引用具體條款，說明風險是否為致命或雜訊",
+  "dimension_explanations_mao": "100–200 字，說明營收結構與槓桿",
+  "dimension_explanations_maa": "100–200 字，說明雙方承諾與鎖定程度",
+  "dimension_explanations_map": "100–200 字，說明是否構成跳板或戰略資產",
   "overall_recommendation": "150–250 字，明確給出是否建議簽署、風險邊界、談判優化點"
 }
 
@@ -589,7 +548,8 @@ CRITICAL:
 - 使用模糊語言
 - 將行政成本誤判為風險
 - 將背景雜訊誤判為致命傷
-- 在 JSON 外輸出任何內容`,
+- 在 JSON 外輸出任何內容
+- 使用巢狀的 dimensions 或 dimension_explanations 物件`,
           },
           ...(documentText
             ? [{ type: "input_text", text: `\n\n以下是合約文件內容：\n\n${documentText}` }]
@@ -758,24 +718,14 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
       });
     }
 
-    // Validate dimensions object
-    if (!result.dimensions || typeof result.dimensions !== 'object') {
-      console.error("維度資料缺失或格式錯誤:", result.dimensions);
-      return res.status(500).json({
-        success: false,
-        error: "AI 回應缺少維度評估資料",
-        details: "dimensions 欄位缺失或格式不正確",
-      });
-    }
-
-    // Ensure all dimension scores are valid numbers
+    // Validate flat format dimensions
     const requiredDimensions = ['mad', 'mao', 'maa', 'map'];
     for (const dim of requiredDimensions) {
-      if (typeof result.dimensions[dim] !== 'number' ||
-          isNaN(result.dimensions[dim]) ||
-          result.dimensions[dim] < 0 ||
-          result.dimensions[dim] > 100) {
-        console.error(`維度 ${dim} 的值無效:`, result.dimensions[dim]);
+      if (typeof result[dim] !== 'number' ||
+          isNaN(result[dim]) ||
+          result[dim] < 0 ||
+          result[dim] > 100) {
+        console.error(`維度 ${dim} 的值無效:`, result[dim]);
         return res.status(500).json({
           success: false,
           error: "AI 回應的維度評分無效",
@@ -787,13 +737,27 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
     // ========================================
     // 階段 4: 計算健康評分並保存結果
     // ========================================
-    const healthScoreResult = calculateHealthScore(result.dimensions);
+    const dimensions = {
+      mad: result.mad,
+      mao: result.mao,
+      maa: result.maa,
+      map: result.map
+    };
+
+    const healthScoreResult = calculateHealthScore(dimensions);
     const healthScore = healthScoreResult.score;
     const healthDimensions = healthScoreResult.dimensions;
     const healthTier = healthScoreResult.tier;
     const healthTierLabel = healthScoreResult.tierLabel;
     const scoreBreakdown = healthScoreResult.breakdown;
-    const dimensionExplanations = result.dimension_explanations || {};
+
+    const dimensionExplanations = {
+      mad: result.dimension_explanations_mad || '',
+      mao: result.dimension_explanations_mao || '',
+      maa: result.dimension_explanations_maa || '',
+      map: result.dimension_explanations_map || ''
+    };
+
     const overallRecommendation = result.overall_recommendation || '';
 
     // Clean up uploaded files
@@ -904,6 +868,7 @@ app.post("/contracts/:id/replace", upload.single("file"), async (req, res) => {
   }
 });
 
+
 // 刪除合約
 app.delete("/contracts/:id", (req, res) => {
   try {
@@ -986,13 +951,27 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
     }
 
     // 計算新的健康評分
-    const healthScoreResult = calculateHealthScore(result.dimensions);
+    const dimensions = {
+      mad: result.mad,
+      mao: result.mao,
+      maa: result.maa,
+      map: result.map
+    };
+
+    const healthScoreResult = calculateHealthScore(dimensions);
     const healthScore = healthScoreResult.score;
     const healthDimensions = healthScoreResult.dimensions;
     const healthTier = healthScoreResult.tier;
     const healthTierLabel = healthScoreResult.tierLabel;
     const scoreBreakdown = healthScoreResult.breakdown;
-    const dimensionExplanations = result.dimension_explanations || {};
+
+    const dimensionExplanations = {
+      mad: result.dimension_explanations_mad || '',
+      mao: result.dimension_explanations_mao || '',
+      maa: result.dimension_explanations_maa || '',
+      map: result.dimension_explanations_map || ''
+    };
+
     const overallRecommendation = result.overall_recommendation || '';
 
     // 更新合約資料
@@ -1031,4 +1010,3 @@ app.put("/contracts/:id/update-company", express.json(), async (req, res) => {
 
 // 啟動伺服器
 app.listen(3000, () => console.log("Server running on port 3000"));
-

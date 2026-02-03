@@ -1316,8 +1316,17 @@
             }
 
             // Overall recommendation
+            console.log('=== DEBUG overall_recommendation ===');
+            console.log('contract.overall_recommendation:', contract.overall_recommendation);
+            console.log('Type:', typeof contract.overall_recommendation);
+            console.log('Length:', contract.overall_recommendation ? contract.overall_recommendation.length : 0);
+            console.log('dimension_explanations.overall_recommendation:', contract.dimension_explanations?.overall_recommendation);
+            console.log('====================================');
+
             if (contract.overall_recommendation) {
                 displayRecommendation(contract.overall_recommendation);
+            } else {
+                console.warn('⚠️ overall_recommendation is empty or missing!');
             }
         }
 
