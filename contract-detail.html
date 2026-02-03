@@ -15,36 +15,196 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
             background: #f5f7fa;
             color: #2d3748;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .header {
+        /* Layout */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #e64545 0%, #ff6b6b 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-logo-icon::before {
+            content: "❋";
+            color: white;
+            font-size: 18px;
+        }
+
+        .sidebar-logo-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 8px;
+        }
+
+        .nav-section-title {
+            padding: 8px 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #4a5568;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .nav-item.active {
+            background: #fff5f5;
+            color: #e64545;
+            border-right: 3px solid #e64545;
+        }
+
+        .nav-item-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .nav-item-text {
+            flex: 1;
+        }
+
+        .nav-submenu {
+            padding-left: 52px;
+        }
+
+        .nav-submenu .nav-item {
+            padding: 10px 20px 10px 0;
+            font-size: 13px;
+        }
+
+        .nav-submenu .nav-item::before {
+            content: "○";
+            margin-right: 8px;
+            font-size: 8px;
+            color: #cbd5e0;
+        }
+
+        .nav-submenu .nav-item.active::before {
+            content: "●";
+            color: #e64545;
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            background: #fafafa;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #48bb78;
+        }
+
+        .ai-status {
+            font-size: 11px;
+            color: #a0aec0;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Header */
+        .top-header {
             background: #ffffff;
             padding: 16px 32px;
             border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .logo {
+        .breadcrumb {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 20px;
-            font-weight: 600;
+            gap: 8px;
+            font-size: 14px;
+            color: #718096;
         }
 
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 8px;
+        .breadcrumb a {
+            color: #e64545;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #cbd5e0;
         }
 
         .header-actions {
@@ -61,7 +221,9 @@
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-secondary {
@@ -73,6 +235,16 @@
             background: #cbd5e0;
         }
 
+        .btn-primary {
+            background: linear-gradient(135deg, #e64545 0%, #ff6b6b 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(230, 69, 69, 0.3);
+        }
+
         .btn-danger {
             background: #f56565;
             color: white;
@@ -82,27 +254,14 @@
             background: #e53e3e;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 32px auto;
-            padding: 0 32px;
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
         }
 
-        .breadcrumb {
-            color: #718096;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-
-        .breadcrumb a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-
+        /* Contract Header Card */
         .contract-header {
             background: white;
             border-radius: 12px;
@@ -127,7 +286,7 @@
 
         .edit-company-btn {
             padding: 6px 14px;
-            background: #ed1111;
+            background: #e64545;
             color: white;
             border: none;
             border-radius: 6px;
@@ -230,7 +389,7 @@
             margin-bottom: 12px;
         }
 
-        .status-dot {
+        .status-dot-badge {
             width: 8px;
             height: 8px;
             background: #7c3aed;
@@ -303,33 +462,7 @@
             font-size: 11px;
         }
 
-        .contract-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            padding-top: 24px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .meta-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .meta-label {
-            font-size: 12px;
-            color: #718096;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        .meta-value {
-            font-size: 16px;
-            color: #2d3748;
-            font-weight: 500;
-        }
-
+        /* Health Score Circle */
         .health-score-circle {
             text-align: center;
             padding: 20px;
@@ -378,7 +511,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #ed1111;
+            background: #e64545;
             color: white;
             font-size: 14px;
             font-weight: bold;
@@ -477,77 +610,6 @@
             margin-bottom: 12px;
             text-transform: uppercase;
             font-weight: 600;
-        }
-
-        .score-value-large {
-            font-size: 72px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .score-value-large.high { color: #48bb78; }
-        .score-value-large.medium { color: #ed8936; }
-        .score-value-large.low { color: #f56565; }
-
-        .score-description {
-            font-size: 13px;
-            color: #718096;
-            margin-top: 12px;
-            line-height: 1.4;
-        }
-
-        /* Dimension Cards */
-        .dimension-card {
-            background: white;
-            padding: 16px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .dimension-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-        }
-
-        .dimension-icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-        }
-
-        .dimension-name {
-            font-size: 13px;
-            color: #718096;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .dimension-score {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .dimension-score.mad-high { color: #f56565; }
-        .dimension-score.mad-medium { color: #ed8936; }
-        .dimension-score.mad-low { color: #48bb78; }
-
-        .dimension-score.mao-high { color: #48bb78; }
-        .dimension-score.mao-medium { color: #ed8936; }
-        .dimension-score.mao-low { color: #f56565; }
-
-        .dimension-score.maa-high { color: #f56565; }
-        .dimension-score.maa-medium { color: #ed8936; }
-        .dimension-score.maa-low { color: #48bb78; }
-
-        .dimension-score.map-high { color: #48bb78; }
-        .dimension-score.map-medium { color: #ed8936; }
-        .dimension-score.map-low { color: #718096; }
-
-        .dimension-label {
-            font-size: 12px;
-            color: #a0aec0;
         }
 
         /* Dimensions Overview Section */
@@ -668,6 +730,38 @@
             min-width: 0;
         }
 
+        /* Company Section */
+        .company-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .company-subsection {
+            margin-bottom: 24px;
+        }
+
+        .company-subsection:last-child {
+            margin-bottom: 0;
+        }
+
+        .subsection-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .company-content {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+
         /* Dimension Explanations */
         .dimension-explanation-MAD {
             background: white;
@@ -714,22 +808,9 @@
             color: #4a5568;
         }
 
-        @media (max-width: 768px) {
-            .header-main {
-                grid-template-columns: 1fr;
-            }
-
-            .health-score-large {
-                margin-top: 20px;
-            }
-
-            .company-name-display {
-                font-size: 28px;
-            }
-        }
-
+        /* Analysis Section */
         .analysis-section {
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
         .section-title {
@@ -739,171 +820,7 @@
             margin-bottom: 16px;
         }
 
-        .analysis-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
-        .analysis-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid #e2e8f0;
-        }
-
-        .analysis-card.status-MATCH {
-            border-left-color: #48bb78;
-        }
-
-        .analysis-card.status-OPPORTUNITY {
-            border-left-color: #48bb78;
-        }
-
-        .analysis-card.status-WARNING {
-            border-left-color: #ed8936;
-        }
-
-        .analysis-card.status-DISPUTE {
-            border-left-color: #f56565;
-        }
-
-        .analysis-card.status-UNKNOWN {
-            border-left-color: #a0aec0;
-        }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-badge.MATCH {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .status-badge.OPPORTUNITY {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .status-badge.WARNING {
-            background: #feebc8;
-            color: #7c2d12;
-        }
-
-        .status-badge.DISPUTE {
-            background: #fed7d7;
-            color: #742a2a;
-        }
-
-        .status-badge.UNKNOWN {
-            background: #e2e8f0;
-            color: #2d3748;
-        }
-
-        .card-message {
-            font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 16px;
-            line-height: 1.6;
-        }
-
-        .card-details {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding-top: 16px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-        }
-
-        .detail-label {
-            color: #718096;
-            font-weight: 500;
-        }
-
-        .detail-value {
-            color: #2d3748;
-            font-weight: 600;
-        }
-
-        .raw-text {
-            background: #f7fafc;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #4a5568;
-            font-style: italic;
-            margin-top: 12px;
-            border-left: 3px solid #cbd5e0;
-        }
-
-        .company-section {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        }
-
-        .company-subsection {
-            margin-bottom: 24px;
-        }
-
-        .company-subsection:last-child {
-            margin-bottom: 0;
-        }
-
-        .subsection-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .company-content {
-            font-size: 14px;
-            color: #4a5568;
-            line-height: 1.8;
-        }
-
-        .company-content ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .company-content li {
-            padding: 8px 0;
-            border-bottom: 1px solid #f7fafc;
-        }
-
-        .company-content li:last-child {
-            border-bottom: none;
-        }
-
+        /* Loading */
         .loading {
             text-align: center;
             padding: 100px 20px;
@@ -942,233 +859,284 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon"></div>
-                <span>TGSA 企業合約引擎</span>
+    <div class="app-layout">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon"></div>
+                    <span class="sidebar-logo-text">TGSA企業合約引擎</span>
+                </div>
             </div>
-            <div class="header-actions">
-                <a href="contracts.html" class="btn btn-secondary">← 返回列表</a>
-                <button id="deleteBtn" class="btn btn-danger" style="display:none;">刪除合約</button>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-item-icon">📊</span>
+                        <span class="nav-item-text">總覽儀表板</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">合約引擎核心</div>
+                    <div class="nav-submenu">
+                        <a href="index.html" class="nav-item">
+                            <span class="nav-item-text">合約 AI 健檢</span>
+                        </a>
+                        <a href="contracts.html" class="nav-item">
+                            <span class="nav-item-text">健檢紀錄</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">支援與服務</div>
+                    <div class="nav-submenu">
+                        <a href="#" class="nav-item">
+                            <span class="nav-item-text">機密保護說明</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span>系統狀態: <strong style="color: #48bb78;">在線</strong></span>
+                </div>
+                <div class="ai-status">AI 健檢核心: Ready</div>
             </div>
-        </div>
-    </div>
+        </aside>
 
-    <div class="container">
-        <div class="breadcrumb">
-            <a href="index.html">首頁</a> / <a href="contracts.html">合約列表</a> / <span id="breadcrumbTitle">合約詳情</span>
-        </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="breadcrumb">
+                    <a href="index.html">首頁</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <a href="contracts.html">健檢紀錄</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span id="breadcrumbTitle">合約詳情</span>
+                </div>
+                <div class="header-actions">
+                    <button id="saveBtn" class="btn btn-primary" style="display:none;">
+                        <span>💾</span> 儲存
+                    </button>
+                    <a href="contracts.html" class="btn btn-secondary">← 返回列表</a>
+                    <button id="deleteBtn" class="btn btn-danger" style="display:none;">刪除合約</button>
+                </div>
+            </header>
 
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <div>載入合約資料中...</div>
-        </div>
+            <!-- Content Area -->
+            <div class="content-area">
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <div>載入合約資料中...</div>
+                </div>
 
-        <div id="errorState" class="error-state" style="display:none;">
-            <div class="error-icon">⚠️</div>
-            <div class="error-text" id="errorMessage">無法載入合約資料</div>
-            <a href="contracts.html" class="btn btn-secondary">返回列表</a>
-        </div>
+                <div id="errorState" class="error-state" style="display:none;">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-text" id="errorMessage">無法載入合約資料</div>
+                    <a href="contracts.html" class="btn btn-secondary">返回列表</a>
+                </div>
 
-        <div id="contractContent" style="display:none;">
-            <!-- Contract Header -->
-            <div class="contract-header">
-                <div class="header-main">
-                    <!-- Left: Company Information -->
-                    <div class="company-info">
-                        <div class="status-badge">
-                            <span class="status-dot"></span>
-                            <span>合約已分析</span>
-                        </div>
+                <div id="contractContent" style="display:none;">
+                    <!-- Contract Header -->
+                    <div class="contract-header">
+                        <div class="header-main">
+                            <!-- Left: Company Information -->
+                            <div class="company-info">
+                                <div class="status-badge">
+                                    <span class="status-dot-badge"></span>
+                                    <span>合約已分析</span>
+                                </div>
 
-                        <!-- Display mode -->
-                        <div class="company-name-display" id="companyNameDisplay">
-                            <span class="company-name-text" id="companyName">載入中...</span>
-                            <button class="edit-company-btn" id="editCompanyBtn" onclick="enableEditMode()">編輯</button>
-                        </div>
+                                <!-- Display mode -->
+                                <div class="company-name-display" id="companyNameDisplay">
+                                    <span class="company-name-text" id="companyName">載入中...</span>
+                                    <button class="edit-company-btn" id="editCompanyBtn" onclick="enableEditMode()">編輯</button>
+                                </div>
 
-                        <!-- Filename display -->
-                        <div class="filename-display">
-                            <span class="file-icon">📄</span>
-                            <span class="filename-text" id="filenameDisplay">--</span>
-                        </div>
+                                <!-- Filename display -->
+                                <div class="filename-display">
+                                    <span class="file-icon">📄</span>
+                                    <span class="filename-text" id="filenameDisplay">--</span>
+                                </div>
 
-                        <!-- Edit mode -->
-                        <div id="companyNameEdit" style="display: none;">
-                            <input type="text" class="company-name-input" id="companyNameInput" placeholder="輸入正確的公司名稱">
-                            <div class="edit-actions">
-                                <button class="btn-save" onclick="saveCompanyName()">✓ 儲存並重新評估</button>
-                                <button class="btn-cancel" onclick="cancelEditMode()">✕ 取消</button>
+                                <!-- Edit mode -->
+                                <div id="companyNameEdit" style="display: none;">
+                                    <input type="text" class="company-name-input" id="companyNameInput" placeholder="輸入正確的公司名稱">
+                                    <div class="edit-actions">
+                                        <button class="btn-save" onclick="saveCompanyName()">✓ 儲存並重新評估</button>
+                                        <button class="btn-cancel" onclick="cancelEditMode()">✕ 取消</button>
+                                    </div>
+                                </div>
+
+                                <div class="contract-meta-inline">
+                                    <div class="meta-item-inline">
+                                        <span class="meta-label-inline">文件類型</span>
+                                        <span class="meta-value-inline" id="documentTypeBadge">合約</span>
+                                    </div>
+                                    <div class="meta-item-inline">
+                                        <span class="meta-label-inline">上傳日期</span>
+                                        <span class="meta-value-inline" id="uploadDateInline">--</span>
+                                    </div>
+                                    <div class="meta-item-inline">
+                                        <span class="meta-label-inline">合約 ID</span>
+                                        <span class="meta-value-inline contract-id-inline" id="contractIdInline">--</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="contract-meta-inline">
-                            <div class="meta-item-inline">
-                                <span class="meta-label-inline">文件類型</span>
-                                <span class="meta-value-inline" id="documentTypeBadge">合約</span>
-                            </div>
-                            <div class="meta-item-inline">
-                                <span class="meta-label-inline">上傳日期</span>
-                                <span class="meta-value-inline" id="uploadDateInline">--</span>
-                            </div>
-                            <div class="meta-item-inline">
-                                <span class="meta-label-inline">合約 ID</span>
-                                <span class="meta-value-inline contract-id-inline" id="contractIdInline">--</span>
+                            <!-- Right: Circular Health Score -->
+                            <div class="health-score-circle">
+                                <div class="help-icon">?</div>
+                                <div class="grade-tooltip">
+                                    <div class="tooltip-title">合約等級說明 (Elite Strategy Distribution)</div>
+
+                                    <div class="grade-item">
+                                        <div class="grade-header tier-s">
+                                            S 級 (獨角獸)
+                                            <span class="grade-range">90 - 100 | 目標: 10%</span>
+                                        </div>
+                                        <div class="grade-desc">
+                                            <strong>Unicorns - 你的公司擁有絕對議價權</strong><br>
+                                            <span class="grade-mode">條件: MAD &lt; 5 且 MAO &gt; 85</span><br>
+                                            客戶求著你做。利潤極高，且條款完全配合我方 M.A.X. 標準。這是公司的「招牌案例」。
+                                        </div>
+                                    </div>
+
+                                    <div class="grade-item">
+                                        <div class="grade-header tier-a">
+                                            A 級 (核心營收) 【主力部隊】
+                                            <span class="grade-range">80 - 89 | 目標: 40%</span>
+                                        </div>
+                                        <div class="grade-desc">
+                                            <strong>Core Revenue - 優質合約是我們的標準配備</strong><br>
+                                            <span class="grade-mode">條件: MAD &lt; 5 且 MAO &gt; 75</span><br>
+                                            生存底線極低，營收效益高。心態轉變：以前覺得 74 分不錯，現在 74 分會被認為「不夠好」。
+                                        </div>
+                                    </div>
+
+                                    <div class="grade-item">
+                                        <div class="grade-header tier-b">
+                                            B 級 (備份選項)
+                                            <span class="grade-range">70 - 79 | 目標: 30%</span>
+                                        </div>
+                                        <div class="grade-desc">
+                                            <strong>Backup Options - 食之無味，棄之可惜</strong><br>
+                                            <span class="grade-mode">安全但平庸</span><br>
+                                            只有在 A 級訂單接不完，或者為了養工廠基本開銷時才接。
+                                        </div>
+                                    </div>
+
+                                    <div class="grade-item">
+                                        <div class="grade-header tier-c">
+                                            C 級 (改進區)
+                                            <span class="grade-range">60 - 69 | 目標: 15%</span>
+                                        </div>
+                                        <div class="grade-desc">
+                                            <strong>Improvement Zone - 不合格的草約</strong><br>
+                                            <span class="grade-mode">需談判</span><br>
+                                            系統標記為「需談判」。業務必須利用 M.A.X. 的建議把它變成 B 級甚至 A 級，否則不簽。
+                                        </div>
+                                    </div>
+
+                                    <div class="grade-item">
+                                        <div class="grade-header tier-d">
+                                            D 級 (拒絕往來)
+                                            <span class="grade-range">&lt; 60 | 目標: 5%</span>
+                                        </div>
+                                        <div class="grade-desc">
+                                            <strong>Rejected - 劇毒合約</strong><br>
+                                            <span class="grade-mode">系統熔斷</span><br>
+                                            生存風險超標 (MAD &gt; 35) 或 賠錢生意。系統直接熔斷，禁止簽核。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="score-label">健康評分</div>
+                                <div class="circle-score-wrapper">
+                                    <svg class="circle-progress" width="140" height="140">
+                                        <circle cx="70" cy="70" r="58" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+                                        <circle id="scoreCircle" cx="70" cy="70" r="58" fill="none" stroke="#48bb78" stroke-width="10"
+                                            stroke-dasharray="364" stroke-dashoffset="364"
+                                            transform="rotate(-90 70 70)" stroke-linecap="round"/>
+                                    </svg>
+                                    <div class="circle-score-value" id="circleScoreValue">--</div>
+                                </div>
+                                <div class="score-status-text" id="scoreStatusText">評估中</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right: Circular Health Score -->
-                    <div class="health-score-circle">
-                        <div class="help-icon">?</div>
-                        <div class="grade-tooltip">
-                            <div class="tooltip-title">合約等級說明 (Elite Strategy Distribution)</div>
-
-                            <div class="grade-item">
-                                <div class="grade-header tier-s">
-                                    S 級 (獨角獸)
-                                    <span class="grade-range">90 - 100 | 目標: 10%</span>
-                                </div>
-                                <div class="grade-desc">
-                                    <strong>Unicorns - 你的公司擁有絕對議價權</strong><br>
-                                    <span class="grade-mode">條件: MAD &lt; 5 且 MAO &gt; 85</span><br>
-                                    客戶求著你做。利潤極高，且條款完全配合我方 M.A.X. 標準。這是公司的「招牌案例」。
-                                </div>
-                            </div>
-
-                            <div class="grade-item">
-                                <div class="grade-header tier-a">
-                                    A 級 (核心營收) 【主力部隊】
-                                    <span class="grade-range">80 - 89 | 目標: 40%</span>
-                                </div>
-                                <div class="grade-desc">
-                                    <strong>Core Revenue - 優質合約是我們的標準配備</strong><br>
-                                    <span class="grade-mode">條件: MAD &lt; 5 且 MAO &gt; 75</span><br>
-                                    生存底線極低，營收效益高。心態轉變：以前覺得 74 分不錯，現在 74 分會被認為「不夠好」。我們要求業務必須把利潤談高，或者把戰略價值做大，才能達標。
-                                </div>
-                            </div>
-
-                            <div class="grade-item">
-                                <div class="grade-header tier-b">
-                                    B 級 (備份選項)
-                                    <span class="grade-range">70 - 79 | 目標: 30%</span>
-                                </div>
-                                <div class="grade-desc">
-                                    <strong>Backup Options - 食之無味，棄之可惜</strong><br>
-                                    <span class="grade-mode">安全但平庸</span><br>
-                                    只有在 A 級訂單接不完，或者為了養工廠基本開銷 (Overhead) 時才接。如果產能滿載，優先砍掉 B 級單。
-                                </div>
-                            </div>
-
-                            <div class="grade-item">
-                                <div class="grade-header tier-c">
-                                    C 級 (改進區)
-                                    <span class="grade-range">60 - 69 | 目標: 15%</span>
-                                </div>
-                                <div class="grade-desc">
-                                    <strong>Improvement Zone - 不合格的草約</strong><br>
-                                    <span class="grade-mode">需談判</span><br>
-                                    系統標記為「需談判」。業務必須利用 M.A.X. 的建議（例如：拿保固換價格）把它變成 B 級甚至 A 級，否則不簽。
-                                </div>
-                            </div>
-
-                            <div class="grade-item">
-                                <div class="grade-header tier-d">
-                                    D 級 (拒絕往來)
-                                    <span class="grade-range">&lt; 60 | 目標: 5%</span>
-                                </div>
-                                <div class="grade-desc">
-                                    <strong>Rejected - 劇毒合約</strong><br>
-                                    <span class="grade-mode">系統熔斷</span><br>
-                                    生存風險超標 (MAD &gt; 35) 或 賠錢生意。系統直接熔斷，禁止簽核。
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="score-label">健康評分</div>
-                        <div class="circle-score-wrapper">
-                            <svg class="circle-progress" width="140" height="140">
-                                <circle cx="70" cy="70" r="58" fill="none" stroke="#e2e8f0" stroke-width="10"/>
-                                <circle id="scoreCircle" cx="70" cy="70" r="58" fill="none" stroke="#48bb78" stroke-width="10"
-                                    stroke-dasharray="364" stroke-dashoffset="364"
-                                    transform="rotate(-90 70 70)" stroke-linecap="round"/>
-                            </svg>
-                            <div class="circle-score-value" id="circleScoreValue">--</div>
-                        </div>
-                        <div class="score-status-text" id="scoreStatusText">評估中</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Four Dimensions Overview -->
-            <div class="dimensions-overview-section">
-                <div class="section-title-with-icon">
-                    <span class="title-icon">📊</span>
-                    <span>四維度分析概覽</span>
-                </div>
-                <div class="dimensions-cards-row" id="dimensionsCardsRow">
-                    <!-- Dimension cards will be inserted here -->
-                </div>
-            </div>
-
-            <!-- Two Column Layout: Company Background + Detailed Analysis -->
-            <div class="two-column-layout">
-                <!-- Left Column: Company Background + Professional Recommendation -->
-                <div class="left-column">
-                    <div class="analysis-section" id="companySection" style="display:none;">
+                    <!-- Four Dimensions Overview -->
+                    <div class="dimensions-overview-section">
                         <div class="section-title-with-icon">
-                            <span class="title-icon">📄</span>
-                            <span>公司背景調查</span>
+                            <span class="title-icon">📊</span>
+                            <span>四維度風險評估</span>
                         </div>
-                        <div class="company-section">
-                            <div class="company-subsection" id="companyProfileSection" style="display:none;">
-                                <div class="subsection-title">📊 公司簡介</div>
-                                <div class="company-content" id="companyProfile"></div>
-                            </div>
-                            <div class="company-subsection" id="responsiblePersonSection" style="display:none;">
-                                <div class="subsection-title">👤 公司負責人</div>
-                                <div class="company-content" id="responsiblePerson"></div>
-                            </div>
-                            <div class="company-subsection" id="responsiblePersonLegalSection" style="display:none;">
-                                <div class="subsection-title">⚠️ 負責人法律狀況</div>
-                                <div class="company-content" id="responsiblePersonLegal"></div>
-                            </div>
-                            <div class="company-subsection" id="companyCustomsSection" style="display:none;">
-                                <div class="subsection-title">🚢 海關進出口記錄</div>
-                                <div class="company-content" id="companyCustoms"></div>
-                            </div>
-                            <div class="company-subsection" id="companyLegalSection" style="display:none;">
-                                <div class="subsection-title">⚖️ 法律合規</div>
-                                <div class="company-content" id="companyLegal"></div>
-                            </div>
+                        <div class="dimensions-cards-row" id="dimensionsCardsRow">
+                            <!-- Dimension cards will be inserted here -->
                         </div>
                     </div>
 
-                    <!-- Professional Recommendation (moved to left column) -->
-                    <div class="analysis-section" id="recommendationSection" style="display:none; margin-top: 24px;">
-                        <div class="section-title-with-icon">
-                            <span class="title-icon">💡</span>
-                            <span>專業建議</span>
-                        </div>
-                        <div style="background: #ebf8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
-                            <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
-                        </div>
-                    </div>
-                </div>
+                    <!-- Two Column Layout -->
+                    <div class="two-column-layout">
+                        <!-- Left Column: Company Background -->
+                        <div class="left-column">
+                            <div class="analysis-section" id="companySection" style="display:none;">
+                                <div class="section-title-with-icon">
+                                    <span class="title-icon">📄</span>
+                                    <span>公司背景調查 (Due Diligence)</span>
+                                </div>
+                                <div class="company-section">
+                                    <div class="company-subsection" id="companyProfileSection" style="display:none;">
+                                        <div class="subsection-title">📊 公司簡介</div>
+                                        <div class="company-content" id="companyProfile"></div>
+                                    </div>
+                                    <div class="company-subsection" id="responsiblePersonSection" style="display:none;">
+                                        <div class="subsection-title">👤 負責人資訊</div>
+                                        <div class="company-content" id="responsiblePerson"></div>
+                                    </div>
+                                    <div class="company-subsection" id="responsiblePersonLegalSection" style="display:none;">
+                                        <div class="subsection-title">⚠️ 法律與訴訟紀錄</div>
+                                        <div class="company-content" id="responsiblePersonLegal"></div>
+                                    </div>
+                                    <div class="company-subsection" id="companyCustomsSection" style="display:none;">
+                                        <div class="subsection-title">🚢 營業狀態</div>
+                                        <div class="company-content" id="companyCustoms"></div>
+                                    </div>
+                                    <div class="company-subsection" id="companyLegalSection" style="display:none;">
+                                        <div class="subsection-title">⚖️ 法律合規</div>
+                                        <div class="company-content" id="companyLegal"></div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Right Column: Detailed Analysis -->
-                <div class="right-column">
-                    <div class="analysis-section" id="dimensionsSection" style="display:none;">
-                        <div class="section-title-with-icon">
-                            <span class="title-icon">📋</span>
-                            <span>詳細分析說明</span>
+                            <!-- Professional Recommendation -->
+                            <div class="analysis-section" id="recommendationSection" style="display:none; margin-top: 24px;">
+                                <div class="section-title-with-icon">
+                                    <span class="title-icon">💡</span>
+                                    <span>專家建議 (Pro Tip)</span>
+                                </div>
+                                <div style="background: #ebf8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+                                    <div id="overallRecommendation" style="font-size: 15px; line-height: 1.8; color: #2d3748;"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="dimensions-breakdown-section" id="dimensionsBreakdownSection"></div>
+
+                        <!-- Right Column: Detailed Analysis -->
+                        <div class="right-column">
+                            <div class="analysis-section" id="dimensionsSection" style="display:none;">
+                                <div class="section-title-with-icon">
+                                    <span class="title-icon">📋</span>
+                                    <span>詳細分析說明</span>
+                                </div>
+                                <div class="dimensions-breakdown-section" id="dimensionsBreakdownSection"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
@@ -1207,16 +1175,15 @@
         function displayContractDetails(contract) {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('contractContent').style.display = 'block';
-            document.getElementById('deleteBtn').style.display = 'block';
+            document.getElementById('deleteBtn').style.display = 'inline-flex';
+            document.getElementById('saveBtn').style.display = 'inline-flex';
 
-            // Header information - Company name (prominent)
+            // Header information
             document.getElementById('companyName').textContent = contract.seller_company || '未知公司';
             document.getElementById('breadcrumbTitle').textContent = contract.seller_company || '未知公司';
-
-            // Filename display
             document.getElementById('filenameDisplay').textContent = contract.filename || '未知文件';
 
-            // Document type badge and inline meta
+            // Document type and meta
             const docType = contract.document_type || '合約';
             document.getElementById('documentTypeBadge').textContent = docType;
 
@@ -1225,7 +1192,7 @@
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'
-            }) + ' 下午' + date.toLocaleTimeString('zh-TW', {
+            }) + ' ' + date.toLocaleTimeString('zh-TW', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false
@@ -1233,30 +1200,17 @@
             document.getElementById('uploadDateInline').textContent = formattedDate;
             document.getElementById('contractIdInline').textContent = contract.contract_id.substring(0, 24);
 
-            // Circular Health Score - Show Grade (S/A/B/C/D)
+            // Health Score
             const healthScore = Math.round(contract.health_score || 0);
-
-            // Calculate tier from health_score
             let tier = contract.health_tier;
             let tierLabel = contract.health_tier_label;
 
             if (!tier && healthScore !== undefined) {
-                if (healthScore >= 90) {
-                    tier = 'S';
-                    tierLabel = '王者';
-                } else if (healthScore >= 80) {
-                    tier = 'A';
-                    tierLabel = '優質';
-                } else if (healthScore >= 70) {
-                    tier = 'B';
-                    tierLabel = '標準';
-                } else if (healthScore >= 60) {
-                    tier = 'C';
-                    tierLabel = '觀察';
-                } else {
-                    tier = 'D';
-                    tierLabel = '淘汰';
-                }
+                if (healthScore >= 90) { tier = 'S'; tierLabel = '王者'; }
+                else if (healthScore >= 80) { tier = 'A'; tierLabel = '優質'; }
+                else if (healthScore >= 70) { tier = 'B'; tierLabel = '標準'; }
+                else if (healthScore >= 60) { tier = 'C'; tierLabel = '觀察'; }
+                else { tier = 'D'; tierLabel = '淘汰'; }
             }
 
             tier = tier || 'D';
@@ -1268,65 +1222,43 @@
 
             circleScore.textContent = tier;
 
-            // Calculate circle progress based on score (circumference = 2πr = 2 * 3.14159 * 58 ≈ 364)
             const circumference = 364;
             const progress = (healthScore / 100) * circumference;
             const offset = circumference - progress;
             scoreCircle.style.strokeDashoffset = offset;
 
-            // Set color and status based on tier
             let scoreColor = '#48bb78';
             let statusText = tierLabel;
 
-            if (tier === 'S') {
-                scoreColor = '#48bb78';
-                statusText = '獨角獸 - Unicorns';
-            } else if (tier === 'A') {
-                scoreColor = '#48bb78';
-                statusText = '核心營收 - Core Revenue';
-            } else if (tier === 'B') {
-                scoreColor = '#ed8936';
-                statusText = '備份選項 - Backup';
-            } else if (tier === 'C') {
-                scoreColor = '#f56565';
-                statusText = '改進區 - Needs Work';
-            } else if (tier === 'D') {
-                scoreColor = '#e53e3e';
-                statusText = '拒絕往來 - Rejected';
-            }
+            if (tier === 'S') { scoreColor = '#48bb78'; statusText = '獨角獸 (Unicorns)'; }
+            else if (tier === 'A') { scoreColor = '#48bb78'; statusText = '核心營收 (Core Revenue)'; }
+            else if (tier === 'B') { scoreColor = '#ed8936'; statusText = '備份選項 (Backup)'; }
+            else if (tier === 'C') { scoreColor = '#f56565'; statusText = '改進區 (Needs Work)'; }
+            else if (tier === 'D') { scoreColor = '#e53e3e'; statusText = '拒絕往來 (Rejected)'; }
 
             scoreCircle.setAttribute('stroke', scoreColor);
             circleScore.style.color = scoreColor;
             scoreStatus.style.color = scoreColor;
             scoreStatus.textContent = statusText;
 
-            // Dimension overview cards (displayed prominently)
+            // Dimension cards
             if (contract.health_dimensions) {
                 displayDimensionOverviewCards(contract.health_dimensions);
             }
 
-            // Company background (displayed first)
+            // Company background
             if (contract.company_data) {
                 displayCompanyData(contract.company_data);
             }
 
-            // Dimensional breakdown (displayed after company background)
+            // Dimensional breakdown
             if (contract.health_dimensions) {
                 displayDimensionalBreakdown(contract.health_dimensions, contract.dimension_explanations);
             }
 
-            // Overall recommendation
-            console.log('=== DEBUG overall_recommendation ===');
-            console.log('contract.overall_recommendation:', contract.overall_recommendation);
-            console.log('Type:', typeof contract.overall_recommendation);
-            console.log('Length:', contract.overall_recommendation ? contract.overall_recommendation.length : 0);
-            console.log('dimension_explanations.overall_recommendation:', contract.dimension_explanations?.overall_recommendation);
-            console.log('====================================');
-
+            // Recommendation
             if (contract.overall_recommendation) {
                 displayRecommendation(contract.overall_recommendation);
-            } else {
-                console.warn('⚠️ overall_recommendation is empty or missing!');
             }
         }
 
@@ -1339,9 +1271,9 @@
                     icon: '🛡️',
                     name: 'MAD 生存風險',
                     getLabel: (score) => {
-                        if (score <= 20) return '安全 (Safe)';
-                        if (score <= 40) return '中等 (Moderate)';
-                        return '高風險 (High Risk)';
+                        if (score <= 20) return '評分: 0 (Safe)';
+                        if (score <= 40) return '評分: ' + score + ' (Moderate)';
+                        return '評分: ' + score + ' (High Risk)';
                     },
                     getColor: (score) => {
                         if (score <= 20) return '#48bb78';
@@ -1352,11 +1284,11 @@
                 {
                     key: 'mao',
                     icon: '💰',
-                    name: 'MAD 互利營收',
+                    name: 'MAO 互利營收',
                     getLabel: (score) => {
-                        if (score >= 70) return '優秀 (Excellent)';
-                        if (score >= 50) return '中標 (Moderate)';
-                        return '低 (Low)';
+                        if (score >= 70) return '評分: ' + score + ' (Excellent)';
+                        if (score >= 50) return '評分: ' + score + ' (Moderate)';
+                        return '評分: ' + score + ' (Low)';
                     },
                     getColor: (score) => {
                         if (score >= 70) return '#48bb78';
@@ -1366,12 +1298,12 @@
                 },
                 {
                     key: 'maa',
-                    icon: '🤝',
+                    icon: '📋',
                     name: 'MAA 承諾深度',
                     getLabel: (score) => {
-                        if (score >= 70) return '強約束';
-                        if (score >= 40) return '弱約束調';
-                        return '低約束';
+                        if (score >= 70) return '評分: ' + score + ' (Strong)';
+                        if (score >= 40) return '評分: ' + score + ' (Moderate)';
+                        return '評分: ' + score + ' (Weak)';
                     },
                     getColor: (score) => {
                         if (score >= 70) return '#ed8936';
@@ -1384,9 +1316,9 @@
                     icon: '🚀',
                     name: 'MAP 戰略潛力',
                     getLabel: (score) => {
-                        if (score >= 70) return '高潛力';
-                        if (score >= 40) return '功能賦能';
-                        return '基礎';
+                        if (score >= 70) return '評分: ' + score + ' (Potential)';
+                        if (score >= 40) return '評分: ' + score + ' (Moderate)';
+                        return '評分: ' + score + ' (Basic)';
                     },
                     getColor: (score) => {
                         if (score >= 70) return '#4299e1';
@@ -1431,42 +1363,39 @@
         }
 
         function displayDimensionalBreakdown(dimensions, explanations) {
-            // Show the dimensions section
             const dimensionsSection = document.getElementById('dimensionsSection');
             dimensionsSection.style.display = 'block';
 
-            // Get the container to populate
             const container = document.getElementById('dimensionsBreakdownSection');
-
-            // Only show explanations (no duplicate dimension cards)
             let html = '';
+
             if (explanations && Object.keys(explanations).length > 0) {
                 html += '<div style="display: flex; flex-direction: column; gap: 16px;">';
 
                 if (explanations.mad) {
                     html += `<div class="dimension-explanation-MAD">
-                        <div class="explanation-header">🛡️ MAD 生存風險分析</div>
+                        <div class="explanation-header">🛡️ MAD 合作風險分析：評分: ${dimensions.mad || 0} (Safe)</div>
                         <div class="explanation-text">${explanations.mad}</div>
                     </div>`;
                 }
 
                 if (explanations.mao) {
                     html += `<div class="dimension-explanation-MAO">
-                        <div class="explanation-header">💰 MAO 互利營收分析</div>
+                        <div class="explanation-header">💰 MAO 互利營收分析：評分: ${dimensions.mao || 0} (Low)</div>
                         <div class="explanation-text">${explanations.mao}</div>
                     </div>`;
                 }
 
                 if (explanations.maa) {
                     html += `<div class="dimension-explanation-MAA">
-                        <div class="explanation-header">🤝 MAA 承諾深度分析</div>
+                        <div class="explanation-header">📋 MAA 承諾深度分析：評分: ${dimensions.maa || 0} (Standard)</div>
                         <div class="explanation-text">${explanations.maa}</div>
                     </div>`;
                 }
 
                 if (explanations.map) {
                     html += `<div class="dimension-explanation-MAP">
-                        <div class="explanation-header">🚀 MAP 戰略潛力分析</div>
+                        <div class="explanation-header">🚀 MAP 戰略潛力分析：評分: ${dimensions.map || 0} (Potential)</div>
                         <div class="explanation-text">${explanations.map}</div>
                     </div>`;
                 }
@@ -1477,106 +1406,18 @@
             container.innerHTML = html;
         }
 
-        function displayAnalysisCards(analysis) {
-            const grid = document.getElementById('analysisGrid');
-            grid.innerHTML = '';
-
-            // 處理動態條款陣列
-            const clauses = analysis.clauses || [];
-
-            if (clauses.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #718096;">未找到合約條款分析</div>';
-                return;
-            }
-
-            clauses.forEach(clause => {
-                // 建立條款標題（使用 icon + name）
-                const title = `${clause.clause_icon || '📋'} ${clause.clause_name || '未知條款'}`;
-                const card = createAnalysisCard(title, clause);
-                grid.appendChild(card);
-            });
-        }
-
-        function createAnalysisCard(title, data) {
-            const card = document.createElement('div');
-            const status = data.status || 'UNKNOWN';
-            card.className = `analysis-card status-${status}`;
-
-            const statusIcons = {
-                'MATCH': '✅',
-                'OPPORTUNITY': '🟢',
-                'WARNING': '⚠️',
-                'DISPUTE': '🔴',
-                'UNKNOWN': '❓'
-            };
-
-            let detailsHTML = '';
-            if (data.contract_value || data.reference_value || data.target_value) {
-                detailsHTML = `
-                    <div class="card-details">
-                        ${data.contract_value ? `
-                            <div class="detail-row">
-                                <span class="detail-label">合約條款</span>
-                                <span class="detail-value">${data.contract_value}</span>
-                            </div>
-                        ` : ''}
-                        ${(data.reference_value || data.target_value) ? `
-                            <div class="detail-row">
-                                <span class="detail-label">參考標準</span>
-                                <span class="detail-value">${data.reference_value || data.target_value}</span>
-                            </div>
-                        ` : ''}
-                        ${data.risk_score !== undefined ? `
-                            <div class="detail-row">
-                                <span class="detail-label">風險評分</span>
-                                <span class="detail-value">${data.risk_score}/100</span>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            }
-
-            card.innerHTML = `
-                <div class="card-title">
-                    ${title}
-                    <span class="status-badge ${status}">${statusIcons[status]} ${status}</span>
-                </div>
-                <div class="card-message">${data.message || '無額外資訊'}</div>
-                ${detailsHTML}
-                ${data.raw_text ? `<div class="raw-text">📄 原文：${data.raw_text}</div>` : ''}
-            `;
-
-            return card;
-        }
-
         function displayCompanyData(companyData) {
-            // Helper function to extract Tavily answer
             function getTavilyAnswer(tavilyData) {
                 if (!tavilyData) return null;
-
-                // Check if Tavily returned an answer field
                 if (tavilyData.answer && tavilyData.answer.trim()) {
                     return tavilyData.answer;
                 }
-
-                // Fallback: if no answer but has results, use first result content - 不要加這個來弄亂結果，有時候第一個result也是不相關的資料，乾脆不用
-                //if (tavilyData.results && Array.isArray(tavilyData.results) && tavilyData.results.length > 0) {
-                //    const topResult = tavilyData.results[0];
-                //    let text = '';
-                //    if (topResult.title) text += topResult.title + '\n\n';
-                //    if (topResult.content) text += topResult.content;
-                //    return text.trim();
-                //}
                 return null;
             }
 
-            // Helper function to format answer
-            function formatAnswer(answer, tavilyData) {
+            function formatAnswer(answer) {
                 if (!answer) return '';
-
-                let html = `<p style="line-height: 1.8; color: #4a5568;">${answer}</p>`;
-
-                return html;
+                return `<p style="line-height: 1.8; color: #4a5568;">${answer}</p>`;
             }
 
             const profileAnswer = getTavilyAnswer(companyData.profile);
@@ -1591,34 +1432,29 @@
 
             document.getElementById('companySection').style.display = 'block';
 
-            // Profile
             if (profileAnswer) {
                 document.getElementById('companyProfileSection').style.display = 'block';
-                document.getElementById('companyProfile').innerHTML = formatAnswer(profileAnswer, companyData.profile);
+                document.getElementById('companyProfile').innerHTML = formatAnswer(profileAnswer);
             }
 
-            // Responsible Person
             if (responsiblePersonAnswer) {
                 document.getElementById('responsiblePersonSection').style.display = 'block';
-                document.getElementById('responsiblePerson').innerHTML = formatAnswer(responsiblePersonAnswer, companyData.responsible_person);
+                document.getElementById('responsiblePerson').innerHTML = formatAnswer(responsiblePersonAnswer);
             }
 
-            // Responsible Person Legal
             if (responsiblePersonLegalAnswer) {
                 document.getElementById('responsiblePersonLegalSection').style.display = 'block';
-                document.getElementById('responsiblePersonLegal').innerHTML = formatAnswer(responsiblePersonLegalAnswer, companyData.responsible_person_legal);
+                document.getElementById('responsiblePersonLegal').innerHTML = formatAnswer(responsiblePersonLegalAnswer);
             }
 
-            // Customs
             if (customsAnswer) {
                 document.getElementById('companyCustomsSection').style.display = 'block';
-                document.getElementById('companyCustoms').innerHTML = formatAnswer(customsAnswer, companyData.customs);
+                document.getElementById('companyCustoms').innerHTML = formatAnswer(customsAnswer);
             }
 
-            // Legal
             if (legalAnswer) {
                 document.getElementById('companyLegalSection').style.display = 'block';
-                document.getElementById('companyLegal').innerHTML = formatAnswer(legalAnswer, companyData.legal);
+                document.getElementById('companyLegal').innerHTML = formatAnswer(legalAnswer);
             }
         }
 
@@ -1653,6 +1489,11 @@
             }
         });
 
+        // Save button (placeholder)
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            alert('合約資料已儲存！');
+        });
+
         // Edit company name functions
         function enableEditMode() {
             const currentName = document.getElementById('companyName').textContent;
@@ -1681,13 +1522,11 @@
                 return;
             }
 
-            // Confirm the change
             const confirmChange = confirm(`確定要將公司名稱從「${currentName}」改為「${newCompanyName}」嗎？\n\n這將重新執行背景調查，可能需要一些時間。`);
             if (!confirmChange) {
                 return;
             }
 
-            // Show updating overlay
             showUpdatingOverlay();
 
             try {
@@ -1704,7 +1543,6 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Update UI with new data
                     displayContractDetails(data.contract);
                     cancelEditMode();
                     hideUpdatingOverlay();
