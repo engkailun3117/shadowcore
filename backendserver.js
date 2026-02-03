@@ -422,6 +422,7 @@ async function analyzeContractWithBackground(fileId, companyName, companyData, d
         type: "json_object"
       }
     },
+    temperature: 0,
     input: [
       {
         role: "user",
@@ -653,6 +654,7 @@ CRITICAL: 只回傳 JSON 格式，不要其他文字：
           type: "json_object"
         }
       },
+      temperature: 0,
       input: [
         {
           role: "user",
