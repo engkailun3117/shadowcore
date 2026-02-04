@@ -856,6 +856,146 @@
             color: #f56565;
             margin-bottom: 24px;
         }
+
+        /* Privacy Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            font-size: 20px;
+            color: #a0aec0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f7fafc;
+            color: #4a5568;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .privacy-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .privacy-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .privacy-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 20px;
+        }
+
+        .privacy-icon.green {
+            background: #c6f6d5;
+        }
+
+        .privacy-icon.red {
+            background: #fed7d7;
+        }
+
+        .privacy-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 6px;
+        }
+
+        .privacy-content p {
+            font-size: 13px;
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            padding: 16px 24px 24px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-understand {
+            background: #e64545;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-understand:hover {
+            background: #d63939;
+        }
     </style>
 </head>
 <body>
@@ -889,7 +1029,7 @@
                 <div class="nav-section">
                     <div class="nav-section-title">支援與服務</div>
                     <div class="nav-submenu">
-                        <a href="#" class="nav-item">
+                        <a href="#" class="nav-item" id="privacyLink" onclick="openPrivacyModal(event)">
                             <span class="nav-item-text">機密保護說明</span>
                         </a>
                     </div>
@@ -1581,6 +1721,52 @@
 
         // Load contract on page load
         loadContractDetails();
+
+        // Privacy Modal Functions
+        function openPrivacyModal(event) {
+            event.preventDefault();
+            document.getElementById('privacyModal').classList.add('active');
+        }
+
+        function closePrivacyModal() {
+            document.getElementById('privacyModal').classList.remove('active');
+        }
+
+        // Close modal when clicking overlay
+        document.getElementById('privacyModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePrivacyModal();
+            }
+        });
     </script>
+
+    <!-- Privacy Protection Modal -->
+    <div class="modal-overlay" id="privacyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">機密保護說明</div>
+                <button class="modal-close" onclick="closePrivacyModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="privacy-item">
+                    <div class="privacy-icon green">🟢</div>
+                    <div class="privacy-content">
+                        <h4>沙盒隔離防護</h4>
+                        <p>TGSA 企業合約引擎採用軍規級沙盒技術。您的每一份文件都在獨立的、臨時生成的加密環境中運行。</p>
+                    </div>
+                </div>
+                <div class="privacy-item">
+                    <div class="privacy-icon red">🔴</div>
+                    <div class="privacy-content">
+                        <h4>拒絕模型訓練</h4>
+                        <p>我們嚴格遵守企業隱私協議。您的合約數據被標記為「Do Not Train」，絕不會被用於訓練公有模型。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-understand" onclick="closePrivacyModal()">了解</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
