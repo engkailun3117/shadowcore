@@ -885,11 +885,11 @@
                 <td>${contract.seller_company || '未知公司'}</td>
                 <td>
                     <div class="risk-badges">
-                        ${mad > 0 ? `<span class="risk-badge mad">MAD</span>` : ''}
-                        ${mao > 0 ? `<span class="risk-badge mao">MAO</span>` : ''}
-                        ${maa > 0 ? `<span class="risk-badge maa">MAA</span>` : ''}
-                        ${map > 0 ? `<span class="risk-badge map">MAP</span>` : ''}
-                        ${(!mad && !mao && !maa && !map) ? '-' : ''}
+                        ${mad > 21 ? `<span class="risk-badge mad">MAD</span>` : ''}
+                        ${mao < 50 ? `<span class="risk-badge mao">MAO</span>` : ''}
+                        ${maa < 40 ? `<span class="risk-badge maa">MAA</span>` : ''}
+                        ${map < 40 ? `<span class="risk-badge map">MAP</span>` : ''}
+                        ${(mad <= 21 && mao >= 50 && maa >= 40 && map >= 40) ? '-' : ''}
                     </div>
                 </td>
                 <td>
