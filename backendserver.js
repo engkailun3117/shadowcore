@@ -885,6 +885,7 @@ app.get("/contracts", (req, res) => {
       health_score: c.health_score,
       health_tier: c.health_tier,
       health_tier_label: c.health_tier_label,
+      health_dimensions: c.health_dimensions,
       upload_date: c.upload_date,
       document_type: c.document_type,
     }));
