@@ -21,8 +21,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files
-app.use(express.static('.'));
+// Serve static files from frontend folder
+app.use(express.static('./frontend'));
 
 // Configure multer to preserve file extension
 const storage = multer.diskStorage({
