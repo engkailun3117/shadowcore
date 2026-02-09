@@ -21,8 +21,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files
-app.use(express.static('.'));
+// Serve static files from frontend folder
+app.use(express.static('./frontend'));
 
 // Configure multer to preserve file extension
 const storage = multer.diskStorage({
@@ -329,6 +329,47 @@ function extractJSON(text) {
 }
 
 /**
+ * 帶超時和重試的 Tavily 搜索包裝函數
+ * @param {Object} searchParams - Tavily 搜索參數
+ * @param {number} timeout - 超時時間（毫秒），預設 60000ms
+ * @param {number} retries - 重試次數，預設 2
+ * @returns {Promise<Object>} 搜索結果或空結果
+ */
+async function tavilySearchWithTimeout(searchParams, timeout = 60000, retries = 2) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const result = await Promise.race([
+        tavily.search(searchParams),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Tavily request timeout')), timeout);
+        })
+      ]);
+
+      clearTimeout(timeoutId);
+      return result;
+    } catch (error) {
+      console.warn(`⚠️ Tavily 搜索失敗 (嘗試 ${attempt}/${retries}): ${error.message}`);
+
+      if (attempt === retries) {
+        console.error(`❌ Tavily 搜索最終失敗: ${searchParams.query.substring(0, 50)}...`);
+        // 返回空結果而不是拋出錯誤，讓系統可以繼續運作
+        return { answer: null, results: [] };
+      }
+
+      // 等待後重試（指數退避）
+      const waitTime = Math.min(2000 * Math.pow(2, attempt - 1), 8000);
+      console.log(`   等待 ${waitTime}ms 後重試...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+
+  return { answer: null, results: [] };
+}
+
+/**
  * 執行公司背景調查（使用 Tavily API）
  * @param {string} companyName - 公司名稱
  * @returns {Promise<Object>} 背景調查結果
@@ -336,38 +377,54 @@ function extractJSON(text) {
 async function performCompanyBackgroundCheck(companyName) {
   console.log(`對「${companyName}」進行背景調查...`);
 
-  const [companyProfile, customsInfo, legalInfo, responsiblePersonInfo, responsiblePersonLegal] = await Promise.all([
-    tavily.search({
+  // 使用 Promise.allSettled 確保即使部分請求失敗也能繼續
+  const results = await Promise.allSettled([
+    tavilySearchWithTimeout({
       query: `關於「${companyName}」的公司簡介。請用繁體中文回答。`,
       max_results: 3,
       search_depth: 'advanced',
       include_answer: true,
     }),
-    tavily.search({
+    tavilySearchWithTimeout({
       query: `關於「${companyName}」的海關進出口記錄、貿易數據、進出口業務。請用繁體中文回答。`,
       max_results: 3,
       search_depth: 'advanced',
       include_answer: true,
     }),
-    tavily.search({
+    tavilySearchWithTimeout({
       query: `關於「${companyName}」的法律合規狀況、訴訟記錄、破產紀錄、詐欺前科、法規遵循。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
       max_results: 3,
       search_depth: 'advanced',
       include_answer: true,
     }),
-    tavily.search({
+    tavilySearchWithTimeout({
       query: `「${companyName}」的公司負責人是誰？董事長、總經理、代表人姓名。請用繁體中文回答。`,
       max_results: 3,
       search_depth: 'advanced',
       include_answer: true,
     }),
-    tavily.search({
+    tavilySearchWithTimeout({
       query: `「${companyName}」公司負責人的法律問題、訴訟記錄、違法紀錄、司法案件、限制出境、欠稅。如果沒有相關公司記錄，請堅決說無記錄，避免發生錯誤信息引起法律糾紛。請用繁體中文回答。`,
       max_results: 3,
       search_depth: 'advanced',
       include_answer: true,
     })
   ]);
+
+  // 提取結果，失敗的返回空結果
+  const extractResult = (settledResult) => {
+    if (settledResult.status === 'fulfilled') {
+      return settledResult.value;
+    }
+    console.warn(`⚠️ 背景調查項目失敗: ${settledResult.reason?.message || '未知錯誤'}`);
+    return { answer: null, results: [] };
+  };
+
+  const [companyProfile, customsInfo, legalInfo, responsiblePersonInfo, responsiblePersonLegal] = results.map(extractResult);
+
+  // 統計成功率
+  const successCount = results.filter(r => r.status === 'fulfilled' && r.value?.answer).length;
+  console.log(`📊 背景調查完成: ${successCount}/5 項成功獲取資訊`);
 
   return {
     profile: companyProfile,
@@ -828,6 +885,7 @@ app.get("/contracts", (req, res) => {
       health_score: c.health_score,
       health_tier: c.health_tier,
       health_tier_label: c.health_tier_label,
+      health_dimensions: c.health_dimensions,
       upload_date: c.upload_date,
       document_type: c.document_type,
     }));
